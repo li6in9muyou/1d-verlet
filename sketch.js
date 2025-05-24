@@ -6,7 +6,7 @@ const MIN_Y = 0;
 const MAX_Y = 600;
 const HALF_SIZE = 6;
 
-const v = {
+const b = {
   prev: 16,
   curr: 26,
   acc: 0,
@@ -21,8 +21,8 @@ function draw() {
 
   t += dT;
   const subT = dT / SUBSTEPS;
-  let nextCurr = v.curr;
-  let nextPrev = v.prev;
+  let nextCurr = b.curr;
+  let nextPrev = b.prev;
   for (let i = 0; i < SUBSTEPS; i++) {
     const vel = nextCurr - nextPrev;
 
@@ -30,19 +30,19 @@ function draw() {
     if (nextCurr - HALF_SIZE < MIN_Y) {
       nextCurr = 0 + HALF_SIZE;
     }
-    if (v.curr + HALF_SIZE > MAX_Y) {
+    if (b.curr + HALF_SIZE > MAX_Y) {
       nextCurr = MAX_Y - HALF_SIZE;
     }
 
     // move it
-    nextCurr = nextCurr + vel * subT + v.acc * subT * subT;
+    nextCurr = nextCurr + vel * subT + b.acc * subT * subT;
   }
 
-  v.prev = v.curr;
-  v.curr = nextCurr;
+  b.prev = b.curr;
+  b.curr = nextCurr;
 
-  renderBox(v.curr);
-  text(`vel=${(v.curr - v.prev).toFixed(2)}`, 0, 15);
+  renderBox(b.curr);
+  text(`vel=${(b.curr - b.prev).toFixed(2)}`, 0, 15);
 }
 
 function renderBox(y, color = "red") {
