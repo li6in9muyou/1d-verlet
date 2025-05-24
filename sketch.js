@@ -11,6 +11,11 @@ const b = {
   y: 26,
 };
 
+const a = {
+  v: -5,
+  y: 500,
+};
+
 let t = 0;
 const dT = 1;
 const SUBSTEPS = 4;
@@ -39,6 +44,18 @@ function draw() {
     b.y = MAX_Y - HALF_SIZE;
     b.v = getVelocityAfterBounce(b.v, UP);
   }
+
+  a.y = addVelocityToPosition(a.v, a.y, dT);
+  if (a.y - HALF_SIZE < MIN_Y) {
+    a.y = 0 + HALF_SIZE;
+    a.v = getVelocityAfterBounce(a.v, DOWN);
+  }
+  if (a.y + HALF_SIZE > MAX_Y) {
+    a.y = MAX_Y - HALF_SIZE;
+    a.v = getVelocityAfterBounce(a.v, UP);
+  }
+  renderBox(a.y, "green");
+  text(`a=${a.v}`, 4, 30);
 
   renderBox(b.y);
   text(`vel=${b.v}`, 0, 15);
