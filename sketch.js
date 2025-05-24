@@ -17,7 +17,7 @@ const a = {
 };
 
 let t = 0;
-const dT = 1;
+const dt = 1;
 const SUBSTEPS = 4;
 
 function addVelocityToPosition(velocity, position, dt) {
@@ -34,7 +34,7 @@ const UP = -1;
 function draw() {
   background("#444");
 
-  b.y = addVelocityToPosition(b.v, b.y, dT);
+  b.y = addVelocityToPosition(b.v, b.y, dt);
 
   if (b.y - HALF_SIZE < MIN_Y) {
     b.y = 0 + HALF_SIZE;
@@ -45,7 +45,7 @@ function draw() {
     b.v = getVelocityAfterBounce(b.v, UP);
   }
 
-  a.y = addVelocityToPosition(a.v, a.y, dT);
+  a.y = addVelocityToPosition(a.v, a.y, dt);
   if (a.y - HALF_SIZE < MIN_Y) {
     a.y = 0 + HALF_SIZE;
     a.v = getVelocityAfterBounce(a.v, DOWN);
