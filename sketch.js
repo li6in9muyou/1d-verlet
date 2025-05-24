@@ -46,6 +46,6 @@ function draw() {
 }
 
 function renderBox(y, color = "red") {
-  fill("red");
+  fill(color);
   rect(100 / 2 - HALF_SIZE, y - HALF_SIZE, HALF_SIZE * 2);
 }
