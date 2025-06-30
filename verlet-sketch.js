@@ -7,41 +7,44 @@ const MAX_Y = 600;
 const HALF_SIZE = 6;
 
 const a = {
-  prevY: 508,
+  prevY: 504,
   y: 500,
   acc: 0,
   m: 10,
-  get v() {
-    return a.y - a.prevY;
-  },
 };
 
 const dt = 1;
 
 function doDt(elapsed) {
-  const nextY = a.y + a.v * elapsed + a.acc * elapsed * elapsed;
+  const nextY = 2 * a.y - a.prevY + a.acc * elapsed * elapsed;
   a.prevY = a.y;
   a.y = nextY;
 }
 
 function doBounds() {
+  const v = a.y - a.prevY;
+
   if (a.y < 0 + HALF_SIZE) {
-    a.prevY = a.y;
     a.y = 0 + HALF_SIZE;
+    a.prevY = a.y + v;
   }
   if (a.y > MAX_Y - HALF_SIZE) {
-    a.prevY = a.y;
     a.y = MAX_Y - HALF_SIZE;
+    a.prevY = a.y + v;
   }
 }
+
+const SUB_STEPS = 4;
 
 function draw() {
   background("#444");
 
-  doDt(dt);
-  console.log("libq draw/v after dodt", a.v);
-  doBounds();
-  console.log("libq draw/v after bounds", a.v);
+  for (let sub = 0; sub < SUB_STEPS; sub++) {
+    doDt(dt / SUB_STEPS);
+    doBounds();
+  }
+
+  console.log("libq draw/v ", a.y - a.prevY);
 
   renderBox(a.y, "green");
   text(`a=${a.y - a.prevY}`, 4, 30);
