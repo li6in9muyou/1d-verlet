@@ -7,16 +7,28 @@ const MAX_Y = 600;
 const HALF_SIZE = 6;
 
 const a = {
-  v: -4,
+  prevY: 504,
   y: 500,
+  acc: 0,
   m: 10,
 };
+
+const dt = 1;
+
+function doDt(elapsed) {
+  const va = a.y - a.prevY;
+  const nextY = a.y + va * elapsed + a.acc * elapsed * elapsed;
+  a.prevY = a.y;
+  a.y = nextY;
+}
 
 function draw() {
   background("#444");
 
+  doDt(dt);
+
   renderBox(a.y, "green");
-  text(`a=${a.v}`, 4, 30);
+  text(`a=${a.y - a.prevY}`, 4, 30);
 }
 
 function renderBox(y, color = "red") {
