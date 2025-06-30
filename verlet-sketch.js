@@ -6,7 +6,7 @@ const MIN_Y = 0;
 const MAX_Y = 600;
 const HALF_SIZE = 6;
 
-const a = {
+let a = {
   color: "green",
   prevY: 504,
   y: 500,
@@ -14,7 +14,7 @@ const a = {
   m: 10,
 };
 
-const b = {
+let b = {
   color: "red",
   prevY: 16,
   y: 26,
@@ -43,27 +43,48 @@ function doBounds(box) {
   }
 }
 
-function doCollide(i, j) {
-  const distance = Math.abs(Math.abs(i.y - j.y) - 2 * HALF_SIZE);
-  const collide = distance < 1e-3;
+function doCollide(elapsed, i, j) {
+  const iTravel = (i.y - i.prevY) * elapsed;
+  const jTravel = (j.y - j.prevY) * elapsed;
 
+  const distance = Math.abs(i.y + iTravel - j.y + jTravel) - 2 * HALF_SIZE;
+  const collide = distance < 0;
+
+  console.log("libq docollide/distance", distance);
   if (collide) {
     console.log("libq docollide/BOOM", distance);
   }
 }
 
-const SUB_STEPS = 1;
+const SUB_STEPS = 4;
+
+function toSubVerlet(box, stepCnt) {
+  const v = box.y - box.prevY;
+  box.prevY = box.y - v / stepCnt;
+  return box;
+}
+
+function toNormalVerlet(box, stepCnt) {
+  const v = box.y - box.prevY;
+  box.prevY = box.y - v * stepCnt;
+  return box;
+}
 
 function draw() {
   background("#444");
 
+  const aSub = toSubVerlet(a, SUB_STEPS);
+  const bSub = toSubVerlet(b, SUB_STEPS);
   for (let sub = 0; sub < SUB_STEPS; sub++) {
-    doDt(dt / SUB_STEPS, a);
-    doBounds(a);
-    doDt(dt / SUB_STEPS, b);
-    doBounds(b);
-    doCollide(a, b);
+    doDt(dt / SUB_STEPS, aSub);
+    doBounds(aSub);
+    doDt(dt / SUB_STEPS, bSub);
+    doBounds(bSub);
+    doCollide(dt / SUB_STEPS, aSub, bSub);
   }
+  a = toNormalVerlet(aSub, SUB_STEPS);
+  b = toNormalVerlet(bSub, SUB_STEPS);
+
 
   console.log("libq draw/v ", a.y - a.prevY);
 
