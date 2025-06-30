@@ -43,9 +43,16 @@ function doBounds(box) {
   }
 }
 
-function doCollide() {}
+function doCollide(i, j) {
+  const distance = Math.abs(Math.abs(i.y - j.y) - 2 * HALF_SIZE);
+  const collide = distance < 1e-3;
 
-const SUB_STEPS = 4;
+  if (collide) {
+    console.log("libq docollide/BOOM", distance);
+  }
+}
+
+const SUB_STEPS = 1;
 
 function draw() {
   background("#444");
@@ -55,6 +62,7 @@ function draw() {
     doBounds(a);
     doDt(dt / SUB_STEPS, b);
     doBounds(b);
+    doCollide(a, b);
   }
 
   console.log("libq draw/v ", a.y - a.prevY);
