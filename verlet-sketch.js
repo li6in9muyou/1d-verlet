@@ -7,8 +7,17 @@ const MAX_Y = 600;
 const HALF_SIZE = 6;
 
 const a = {
+  color: "green",
   prevY: 504,
   y: 500,
+  acc: 0,
+  m: 10,
+};
+
+const b = {
+  color: "red",
+  prevY: 16,
+  y: 26,
   acc: 0,
   m: 10,
 };
@@ -34,6 +43,8 @@ function doBounds(box) {
   }
 }
 
+function doCollide() {}
+
 const SUB_STEPS = 4;
 
 function draw() {
@@ -42,12 +53,17 @@ function draw() {
   for (let sub = 0; sub < SUB_STEPS; sub++) {
     doDt(dt / SUB_STEPS, a);
     doBounds(a);
+    doDt(dt / SUB_STEPS, b);
+    doBounds(b);
   }
 
   console.log("libq draw/v ", a.y - a.prevY);
 
-  renderBox(a.y, "green");
+  renderBox(a.y, a.color);
   text(`a=${a.y - a.prevY}`, 4, 30);
+
+  renderBox(b.y, b.color);
+  text(`b=${b.y - b.prevY}`, 4, 15);
 }
 
 function renderBox(y, color = "red") {
