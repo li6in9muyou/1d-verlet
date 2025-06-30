@@ -15,22 +15,22 @@ const a = {
 
 const dt = 1;
 
-function doDt(elapsed) {
-  const nextY = 2 * a.y - a.prevY + a.acc * elapsed * elapsed;
-  a.prevY = a.y;
-  a.y = nextY;
+function doDt(elapsed, box) {
+  const nextY = 2 * box.y - box.prevY + box.acc * elapsed * elapsed;
+  box.prevY = box.y;
+  box.y = nextY;
 }
 
-function doBounds() {
-  const v = a.y - a.prevY;
+function doBounds(box) {
+  const v = box.y - box.prevY;
 
-  if (a.y < 0 + HALF_SIZE) {
-    a.y = 0 + HALF_SIZE;
-    a.prevY = a.y + v;
+  if (box.y < 0 + HALF_SIZE) {
+    box.y = 0 + HALF_SIZE;
+    box.prevY = box.y + v;
   }
-  if (a.y > MAX_Y - HALF_SIZE) {
-    a.y = MAX_Y - HALF_SIZE;
-    a.prevY = a.y + v;
+  if (box.y > MAX_Y - HALF_SIZE) {
+    box.y = MAX_Y - HALF_SIZE;
+    box.prevY = box.y + v;
   }
 }
 
@@ -40,8 +40,8 @@ function draw() {
   background("#444");
 
   for (let sub = 0; sub < SUB_STEPS; sub++) {
-    doDt(dt / SUB_STEPS);
-    doBounds();
+    doDt(dt / SUB_STEPS, a);
+    doBounds(a);
   }
 
   console.log("libq draw/v ", a.y - a.prevY);
