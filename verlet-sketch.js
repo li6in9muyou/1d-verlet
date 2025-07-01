@@ -53,6 +53,14 @@ function doCollide(elapsed, i, j) {
   console.log("libq docollide/distance", distance);
   if (collide) {
     console.log("libq docollide/BOOM", distance);
+    const dist = Math.abs(distance);
+    const offset = dist / 2;
+    const iDir = Math.sign(iTravel);
+    const jDir = Math.sign(jTravel);
+    const iAdjY = i.y + iTravel - iDir * offset;
+    const jAdjY = j.y + jTravel - jDir * offset;
+    i.y = iAdjY;
+    j.y = jAdjY;
   }
 }
 
