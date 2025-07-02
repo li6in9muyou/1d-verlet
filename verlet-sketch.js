@@ -8,12 +8,12 @@ const HALF_SIZE = 6;
 
 let boxes = [
   {
-    color: "green",
-    prevY: 520,
-    y: 500,
+    color: "red",
+    prevY: 300 - 2 * HALF_SIZE,
+    y: 300 - 2 * HALF_SIZE,
     acc: 0,
     m: 10,
-    name: "a",
+    name: "b",
   },
   {
     color: "blue",
@@ -40,12 +40,12 @@ let boxes = [
     name: "i",
   },
   {
-    color: "red",
-    prevY: 300 - 2 * HALF_SIZE,
-    y: 300 - 2 * HALF_SIZE,
+    color: "green",
+    prevY: 520,
+    y: 500,
     acc: 0,
     m: 10,
-    name: "b",
+    name: "a",
   },
 ];
 
