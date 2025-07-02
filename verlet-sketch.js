@@ -7,29 +7,34 @@ const MIN_Y = 0;
 const MAX_Y = 600;
 const HALF_SIZE = 6;
 
-let a = {
+let boxes = [];
+
+boxes.push({
   color: "green",
   prevY: 504,
   y: 500,
   acc: 0,
   m: 10,
-};
+  name: "a",
+});
 
-let b = {
+boxes.push({
   color: "red",
   prevY: 16,
   y: 26,
   acc: 0,
   m: 10,
-};
+  name: "b",
+});
 
-let c = {
+boxes.push({
   color: "blue",
   prevY: 300,
   y: 300,
   acc: 0,
   m: 10,
-};
+  name: "c",
+});
 
 
 const dt = 1;
@@ -58,8 +63,6 @@ function doCollide(elapsed, i, j) {
   const collide = distance < 0;
 
   if (collide) {
-    console.log("libq docollide/BOOM", i.y, j.y, distance);
-
     const iV = (i.y - i.prevY) / elapsed;
     const jV = (j.y - j.prevY) / elapsed;
     const iNextV = (iV * (i.m - j.m) + 2 * j.m * jV) / (i.m + j.m);
@@ -70,8 +73,13 @@ function doCollide(elapsed, i, j) {
     const iPush = (overlap * j.m) / totalMass;
     const jPush = (overlap * i.m) / totalMass;
 
-    i.y = i.y + Math.sign(-iV) * iPush;
-    j.y = j.y + Math.sign(-jV) * jPush;
+    if (i.y > j.y) {
+      i.y += iPush;
+      j.y -= jPush;
+    } else {
+      i.y -= iPush;
+      j.y += jPush;
+    }
 
     i.prevY = i.y - iNextV * elapsed;
     j.prevY = j.y - jNextV * elapsed;
@@ -82,57 +90,58 @@ const SUB_STEPS = 4;
 
 function toSubVerlet(box, stepCnt) {
   const v = box.y - box.prevY;
-  box.prevY = box.y - v / stepCnt;
-  return box;
+  return { ...box, prevY: box.y - v / stepCnt };
 }
 
 function toNormalVerlet(box, stepCnt) {
   const v = box.y - box.prevY;
-  box.prevY = box.y - v * stepCnt;
-  return box;
+  return { ...box, prevY: box.y - v * stepCnt };
 }
 
 function draw() {
   background("#444");
 
-  const aSub = toSubVerlet(a, SUB_STEPS);
-  const bSub = toSubVerlet(b, SUB_STEPS);
-  const cSub = toSubVerlet(c, SUB_STEPS);
-  for (let sub = 0; sub < SUB_STEPS; sub++) {
-    doDt(dt / SUB_STEPS, aSub);
-    doBounds(aSub);
-    doDt(dt / SUB_STEPS, bSub);
-    doBounds(bSub);
-    doDt(dt / SUB_STEPS, cSub);
-    doBounds(cSub);
-    doCollide(dt / SUB_STEPS, aSub, bSub);
-    doCollide(dt / SUB_STEPS, bSub, cSub);
-    doCollide(dt / SUB_STEPS, cSub, aSub);
+  let subBoxes = [];
+  for (let i = 0; i < boxes.length; i++) {
+    subBoxes.push(toSubVerlet(boxes[i], SUB_STEPS));
   }
-  a = toNormalVerlet(aSub, SUB_STEPS);
-  b = toNormalVerlet(bSub, SUB_STEPS);
-  c = toNormalVerlet(cSub, SUB_STEPS);
 
-  console.assert(a.y > b.y, "a must be below b");
+  for (let sub = 0; sub < SUB_STEPS; sub++) {
+    for (let i = 0; i < subBoxes.length; i++) {
+      doDt(dt / SUB_STEPS, subBoxes[i]);
+      doBounds(subBoxes[i]);
+    }
 
-  renderBox(a.y, a.color);
-  text(`a=${(a.y - a.prevY).toFixed(4)}`, 4, 15);
+    for (let i = 0; i < subBoxes.length; i++) {
+      for (let j = i + 1; j < subBoxes.length; j++) {
+        doCollide(dt / SUB_STEPS, subBoxes[i], subBoxes[j]);
+      }
+    }
+  }
 
-  renderBox(b.y, b.color);
-  text(`b=${(b.y - b.prevY).toFixed(4)}`, 4, 30);
+  for (let i = 0; i < boxes.length; i++) {
+    boxes[i] = toNormalVerlet(subBoxes[i], SUB_STEPS);
+  }
 
-  renderBox(c.y, c.color);
-  text(`c=${(c.y - c.prevY).toFixed(4)}`, 4, 45);
+  let textY = 15;
+  let totalMomentum = 0;
+  let totalKineticEnergy = 0;
+
+  for (let i = 0; i < boxes.length; i++) {
+    const box = boxes[i];
+    renderBox(box.y, box.color);
+    const v = box.y - box.prevY;
+    text(`${box.name}=${v.toFixed(4)}`, 4, textY);
+    textY += 15;
+
+    totalMomentum += box.m * v;
+    totalKineticEnergy += 0.5 * box.m * v * v;
+  }
 
   fill("#fff");
-  const aV = a.y - a.prevY;
-  const bV = b.y - b.prevY;
-  text(`\u03a3mv=${(a.m * aV + b.m * bV).toFixed(4)}`, 4, 60);
-  text(
-    `\u03a3\u00bdmv\u00b2=${(0.5 * a.m * aV * aV + 0.5 * b.m * bV * bV).toFixed(4)}`,
-    4,
-    75,
-  );
+  text(`\u03a3mv=${totalMomentum.toFixed(4)}`, 4, textY);
+  textY += 15;
+  text(`\u03a3\u00bdmv\u00b2=${totalKineticEnergy.toFixed(4)}`, 4, textY);
 }
 
 function renderBox(y, color = "red") {
