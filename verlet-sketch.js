@@ -103,10 +103,13 @@ function draw() {
   text(`b=${(b.y - b.prevY).toFixed(4)}`, 4, 30);
 
   fill("#fff");
+  const aV = a.y - a.prevY;
+  const bV = b.y - b.prevY;
+  text(`\u03a3mv=${(a.m * aV + b.m * bV).toFixed(4)}`, 4, 45);
   text(
-    `\u03a3mv=${(a.m * (a.y - a.prevY) + b.m * (b.y - b.prevY)).toFixed(4)}`,
+    `\u03a3\u00bdmv\u00b2=${(0.5 * a.m * aV * aV + 0.5 * b.m * bV * bV).toFixed(4)}`,
     4,
-    45,
+    60,
   );
 }
 
