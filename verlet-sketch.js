@@ -22,6 +22,15 @@ let b = {
   m: 10,
 };
 
+let c = {
+  color: "green",
+  prevY: 300,
+  y: 300,
+  acc: 0,
+  m: 10,
+};
+
+
 const dt = 1;
 
 function doDt(elapsed, box) {
@@ -87,15 +96,21 @@ function draw() {
 
   const aSub = toSubVerlet(a, SUB_STEPS);
   const bSub = toSubVerlet(b, SUB_STEPS);
+  const cSub = toSubVerlet(c, SUB_STEPS);
   for (let sub = 0; sub < SUB_STEPS; sub++) {
     doDt(dt / SUB_STEPS, aSub);
     doBounds(aSub);
     doDt(dt / SUB_STEPS, bSub);
     doBounds(bSub);
+    doDt(dt / SUB_STEPS, cSub);
+    doBounds(cSub);
     doCollide(dt / SUB_STEPS, aSub, bSub);
+    doCollide(dt / SUB_STEPS, bSub, cSub);
+    doCollide(dt / SUB_STEPS, cSub, aSub);
   }
   a = toNormalVerlet(aSub, SUB_STEPS);
   b = toNormalVerlet(bSub, SUB_STEPS);
+  c = toNormalVerlet(cSub, SUB_STEPS);
 
   console.assert(a.y > b.y, "a must be below b");
 
@@ -105,14 +120,17 @@ function draw() {
   renderBox(b.y, b.color);
   text(`b=${(b.y - b.prevY).toFixed(4)}`, 4, 30);
 
+  renderBox(c.y, c.color);
+  text(`c=${(c.y - c.prevY).toFixed(4)}`, 4, 45);
+
   fill("#fff");
   const aV = a.y - a.prevY;
   const bV = b.y - b.prevY;
-  text(`\u03a3mv=${(a.m * aV + b.m * bV).toFixed(4)}`, 4, 45);
+  text(`\u03a3mv=${(a.m * aV + b.m * bV).toFixed(4)}`, 4, 60);
   text(
     `\u03a3\u00bdmv\u00b2=${(0.5 * a.m * aV * aV + 0.5 * b.m * bV * bV).toFixed(4)}`,
     4,
-    60,
+    75,
   );
 }
 
