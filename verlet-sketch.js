@@ -99,8 +99,6 @@ function draw() {
 
   console.assert(a.y > b.y, "a must be below b");
 
-  console.log("libq draw/v ", a.y - a.prevY);
-
   renderBox(a.y, a.color);
   text(`a=${(a.y - a.prevY).toFixed(4)}`, 4, 15);
 
