@@ -1,5 +1,4 @@
 function setup() {
-  noStroke();
   createCanvas(100, MAX_Y);
 }
 
