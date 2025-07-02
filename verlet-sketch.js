@@ -44,23 +44,27 @@ function doBounds(box) {
 }
 
 function doCollide(elapsed, i, j) {
-  const iTravel = (i.y - i.prevY) * elapsed;
-  const jTravel = (j.y - j.prevY) * elapsed;
-
-  const distance = Math.abs(i.y + iTravel - j.y + jTravel) - 2 * HALF_SIZE;
+  const distance = Math.abs(i.y - j.y) - 2 * HALF_SIZE;
   const collide = distance < 0;
 
-  console.log("libq docollide/distance", distance);
   if (collide) {
-    console.log("libq docollide/BOOM", distance);
-    const dist = Math.abs(distance);
-    const offset = dist / 2;
-    const iDir = Math.sign(iTravel);
-    const jDir = Math.sign(jTravel);
-    const iAdjY = i.y + iTravel - iDir * offset;
-    const jAdjY = j.y + jTravel - jDir * offset;
-    i.y = iAdjY;
-    j.y = jAdjY;
+    console.log("libq docollide/BOOM", i.y, j.y, distance);
+
+    const iV = (i.y - i.prevY) / elapsed;
+    const jV = (j.y - j.prevY) / elapsed;
+    const iNextV = (iV * (i.m - j.m) + 2 * j.m * jV) / (i.m + j.m);
+    const jNextV = (jV * (j.m - i.m) + 2 * i.m * iV) / (i.m + j.m);
+
+    const overlap = -distance;
+    const totalMass = i.m + j.m;
+    const iPush = (overlap * j.m) / totalMass;
+    const jPush = (overlap * i.m) / totalMass;
+
+    i.y = i.y + Math.sign(-iV) * iPush;
+    j.y = j.y + Math.sign(-jV) * jPush;
+
+    i.prevY = i.y - iNextV * elapsed;
+    j.prevY = j.y - jNextV * elapsed;
   }
 }
 
