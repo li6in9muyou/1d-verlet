@@ -97,10 +97,16 @@ function draw() {
   console.log("libq draw/v ", a.y - a.prevY);
 
   renderBox(a.y, a.color);
-  text(`a=${a.y - a.prevY}`, 4, 30);
+  text(`a=${a.y - a.prevY}`, 4, 15);
 
   renderBox(b.y, b.color);
-  text(`b=${b.y - b.prevY}`, 4, 15);
+  text(`b=${b.y - b.prevY}`, 4, 30);
+
+  text(
+    `\u03a3mv=${(a.m * (a.y - a.prevY) + b.m * (b.y - b.prevY)).toFixed(4)}`,
+    4,
+    45,
+  );
 }
 
 function renderBox(y, color = "red") {
