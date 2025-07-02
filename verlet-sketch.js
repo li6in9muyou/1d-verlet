@@ -93,6 +93,7 @@ function draw() {
   a = toNormalVerlet(aSub, SUB_STEPS);
   b = toNormalVerlet(bSub, SUB_STEPS);
 
+  console.assert(a.y > b.y, "a must be below b");
 
   console.log("libq draw/v ", a.y - a.prevY);
 
