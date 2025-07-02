@@ -9,19 +9,11 @@ const HALF_SIZE = 6;
 let boxes = [
   {
     color: "green",
-    prevY: 504,
+    prevY: 520,
     y: 500,
     acc: 0,
     m: 10,
     name: "a",
-  },
-  {
-    color: "red",
-    prevY: 16,
-    y: 26,
-    acc: 0,
-    m: 10,
-    name: "b",
   },
   {
     color: "blue",
@@ -29,9 +21,35 @@ let boxes = [
     y: 300,
     acc: 0,
     m: 10,
-    name: "c",
+    name: "i",
+  },
+  {
+    color: "blue",
+    prevY: 300 + 2 * HALF_SIZE,
+    y: 300 + 2 * HALF_SIZE,
+    acc: 0,
+    m: 10,
+    name: "i",
+  },
+  {
+    color: "blue",
+    prevY: 300 + 4 * HALF_SIZE,
+    y: 300 + 4 * HALF_SIZE,
+    acc: 0,
+    m: 10,
+    name: "i",
+  },
+  {
+    color: "red",
+    prevY: 300 - 2 * HALF_SIZE,
+    y: 300 - 2 * HALF_SIZE,
+    acc: 0,
+    m: 10,
+    name: "b",
   },
 ];
+
+// boxes.forEach((box) => (box.acc = 0.6));
 
 const dt = 1;
 
@@ -82,7 +100,7 @@ function doCollide(elapsed, i, j) {
   }
 }
 
-const SUB_STEPS = 4;
+const SUB_STEPS = 14;
 
 function toSubVerlet(box, stepCnt) {
   const v = box.y - box.prevY;
