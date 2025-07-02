@@ -1,4 +1,5 @@
 function setup() {
+  noStroke();
   createCanvas(100, MAX_Y);
 }
 
@@ -23,7 +24,7 @@ let b = {
 };
 
 let c = {
-  color: "green",
+  color: "blue",
   prevY: 300,
   y: 300,
   acc: 0,
