@@ -7,35 +7,32 @@ const MIN_Y = 0;
 const MAX_Y = 600;
 const HALF_SIZE = 6;
 
-let boxes = [];
-
-boxes.push({
-  color: "green",
-  prevY: 504,
-  y: 500,
-  acc: 0,
-  m: 10,
-  name: "a",
-});
-
-boxes.push({
-  color: "red",
-  prevY: 16,
-  y: 26,
-  acc: 0,
-  m: 10,
-  name: "b",
-});
-
-boxes.push({
-  color: "blue",
-  prevY: 300,
-  y: 300,
-  acc: 0,
-  m: 10,
-  name: "c",
-});
-
+let boxes = [
+  {
+    color: "green",
+    prevY: 504,
+    y: 500,
+    acc: 0,
+    m: 10,
+    name: "a",
+  },
+  {
+    color: "red",
+    prevY: 16,
+    y: 26,
+    acc: 0,
+    m: 10,
+    name: "b",
+  },
+  {
+    color: "blue",
+    prevY: 300,
+    y: 300,
+    acc: 0,
+    m: 10,
+    name: "c",
+  },
+];
 
 const dt = 1;
 
