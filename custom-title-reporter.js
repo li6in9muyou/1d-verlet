@@ -16,6 +16,10 @@ export default class CustomTitleReporter {
     this.updateTerminalTitle();
   }
 
+  onTestRunStart() {
+    this.passed = this.failed = this.total = 0;
+  }
+
   onTestRunEnd() {
     this.updateTerminalTitle();
   }
