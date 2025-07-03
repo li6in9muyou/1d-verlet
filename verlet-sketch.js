@@ -84,7 +84,7 @@ function doBounds(ctx, box) {
   });
 }
 
-function doCollide(elapsed, i, j) {
+export function doCollide(elapsed, i, j) {
   const distance = Math.abs(i.y - j.y) - 2 * HALF_SIZE;
   const collide = distance < 0;
 
