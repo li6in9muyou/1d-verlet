@@ -1,4 +1,4 @@
-function setup() {
+export function setup() {
   createCanvas(100, MAX_Y);
 }
 
@@ -112,7 +112,7 @@ function toNormalVerlet(box, stepCnt) {
   return { ...box, prevY: box.y - v * stepCnt };
 }
 
-function draw() {
+export function draw() {
   background("#444");
 
   let subBoxes = [];

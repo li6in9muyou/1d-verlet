@@ -8,6 +8,11 @@
   </head>
   <body>
     <main></main>
-    <script src="verlet-sketch.js"></script>
+    <script src="verlet-sketch.js" type="module"></script>
+    <script type="module">
+      import { setup, draw } from "./verlet-sketch.js";
+      window.setup = setup;
+      window.draw = draw;
+    </script>
   </body>
 </html>
