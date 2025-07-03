@@ -3,6 +3,7 @@ export default class CustomTitleReporter {
     this.passed = 0;
     this.failed = 0;
     this.total = 0;
+    this.runCnt = 0;
   }
 
   onTestCaseResult(testCase) {
@@ -17,6 +18,7 @@ export default class CustomTitleReporter {
   }
 
   onTestRunStart() {
+    this.runCnt++;
     this.passed = this.failed = this.total = 0;
   }
 
@@ -26,7 +28,7 @@ export default class CustomTitleReporter {
 
   updateTerminalTitle() {
     setTimeout(() => {
-      const title = `Tests: ${this.passed}/${this.total} (Failed: ${this.failed})`;
+      const title = `Tests (${this.runCnt} runs): ${this.passed}/${this.total} (Failed: ${this.failed})`;
       process.stdout.write(`\x1b]0;${title}\x07`);
     }, 100);
   }
