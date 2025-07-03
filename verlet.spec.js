@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeAll } from "vitest";
-import { boundLowerAndUppserY } from "./verlet-sketch";
+import { boundLowerAndUpperY } from "./verlet-sketch";
 
 beforeAll(() => {
   global.window = {};
@@ -16,7 +16,7 @@ describe("boundLowerAndUppserY", () => {
       prevY: 295,
       size: TEST_HALF_SIZE * 2,
     };
-    boundLowerAndUppserY(box, TEST_LOWER, TEST_UPPER);
+    boundLowerAndUpperY(box, TEST_LOWER, TEST_UPPER);
     expect(box.y).toBe(300);
     expect(box.prevY).toBe(295);
   });
@@ -28,7 +28,7 @@ describe("boundLowerAndUppserY", () => {
       size: TEST_HALF_SIZE * 2,
     };
     const initialV = box.y - box.prevY;
-    boundLowerAndUppserY(box, TEST_LOWER, TEST_UPPER);
+    boundLowerAndUpperY(box, TEST_LOWER, TEST_UPPER);
     expect(box.y).toBe(TEST_LOWER + TEST_HALF_SIZE);
     expect(box.prevY).toBe(box.y + initialV);
   });
@@ -40,7 +40,7 @@ describe("boundLowerAndUppserY", () => {
       size: TEST_HALF_SIZE * 2,
     };
     const initialV = box.y - box.prevY;
-    boundLowerAndUppserY(box, TEST_LOWER, TEST_UPPER);
+    boundLowerAndUpperY(box, TEST_LOWER, TEST_UPPER);
     expect(box.y).toBe(TEST_UPPER - TEST_HALF_SIZE);
     expect(box.prevY).toBe(box.y + initialV);
   });
@@ -52,7 +52,7 @@ describe("boundLowerAndUppserY", () => {
       size: TEST_HALF_SIZE * 2,
     };
     const initialV = box.y - box.prevY;
-    boundLowerAndUppserY(box, TEST_LOWER, TEST_UPPER);
+    boundLowerAndUpperY(box, TEST_LOWER, TEST_UPPER);
     expect(box.y).toBe(TEST_LOWER + TEST_HALF_SIZE);
     expect(box.prevY).toBe(box.y + initialV);
   });
@@ -64,7 +64,7 @@ describe("boundLowerAndUppserY", () => {
       size: TEST_HALF_SIZE * 2,
     };
     const initialV = box.y - box.prevY;
-    boundLowerAndUppserY(box, TEST_LOWER, TEST_UPPER);
+    boundLowerAndUpperY(box, TEST_LOWER, TEST_UPPER);
     expect(box.y).toBe(TEST_UPPER - TEST_HALF_SIZE);
     expect(box.prevY).toBe(box.y + initialV);
   });
@@ -75,7 +75,7 @@ describe("boundLowerAndUppserY", () => {
       prevY: TEST_LOWER + TEST_HALF_SIZE - 5,
       size: TEST_HALF_SIZE * 2,
     };
-    boundLowerAndUppserY(box, TEST_LOWER, TEST_UPPER);
+    boundLowerAndUpperY(box, TEST_LOWER, TEST_UPPER);
     expect(box.y).toBe(TEST_LOWER + TEST_HALF_SIZE);
     expect(box.prevY).toBe(TEST_LOWER + TEST_HALF_SIZE - 5);
   });
@@ -86,7 +86,7 @@ describe("boundLowerAndUppserY", () => {
       prevY: TEST_UPPER - TEST_HALF_SIZE + 5,
       size: TEST_HALF_SIZE * 2,
     };
-    boundLowerAndUppserY(box, TEST_LOWER, TEST_UPPER);
+    boundLowerAndUpperY(box, TEST_LOWER, TEST_UPPER);
     expect(box.y).toBe(TEST_UPPER - TEST_HALF_SIZE);
     expect(box.prevY).toBe(TEST_UPPER - TEST_HALF_SIZE + 5);
   });
@@ -97,7 +97,7 @@ describe("boundLowerAndUppserY", () => {
       prevY: TEST_LOWER + TEST_HALF_SIZE,
       size: TEST_HALF_SIZE * 2,
     };
-    boundLowerAndUppserY(box, TEST_LOWER, TEST_UPPER);
+    boundLowerAndUpperY(box, TEST_LOWER, TEST_UPPER);
     expect(box.y).toBe(TEST_LOWER + TEST_HALF_SIZE);
     expect(box.prevY).toBe(TEST_LOWER + TEST_HALF_SIZE);
   });
@@ -108,7 +108,7 @@ describe("boundLowerAndUppserY", () => {
       prevY: TEST_UPPER - TEST_HALF_SIZE,
       size: TEST_HALF_SIZE * 2,
     };
-    boundLowerAndUppserY(box, TEST_LOWER, TEST_UPPER);
+    boundLowerAndUpperY(box, TEST_LOWER, TEST_UPPER);
     expect(box.y).toBe(TEST_UPPER - TEST_HALF_SIZE);
     expect(box.prevY).toBe(TEST_UPPER - TEST_HALF_SIZE);
   });

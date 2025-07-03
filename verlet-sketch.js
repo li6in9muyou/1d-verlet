@@ -60,7 +60,7 @@ function doDt(elapsed, box) {
   box.y = nextY;
 }
 
-export function boundLowerAndUppserY(box, lower, upper) {
+export function boundLowerAndUpperY(box, lower, upper) {
   const v = box.y - box.prevY;
   const sizeToCenter = box.size / 2;
 
@@ -75,7 +75,7 @@ export function boundLowerAndUppserY(box, lower, upper) {
 }
 
 const CTX = {
-  boundings: [(box) => boundLowerAndUppserY(box, MIN_Y, MAX_Y)],
+  boundings: [(box) => boundLowerAndUpperY(box, MIN_Y, MAX_Y)],
 };
 
 function doBounds(ctx, box) {
