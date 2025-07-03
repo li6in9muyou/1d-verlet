@@ -48,6 +48,7 @@ let boxes = [
     name: "a",
   },
 ];
+boxes.forEach((box) => (box.size = HALF_SIZE * 2));
 
 // boxes.forEach((box) => (box.acc = 0.6));
 
@@ -59,17 +60,28 @@ function doDt(elapsed, box) {
   box.y = nextY;
 }
 
-function doBounds(box) {
+export function boundLowerAndUppserY(box, lower, upper) {
   const v = box.y - box.prevY;
+  const sizeToCenter = box.size / 2;
 
-  if (box.y < 0 + HALF_SIZE) {
-    box.y = 0 + HALF_SIZE;
+  if (box.y < lower + sizeToCenter) {
+    box.y = lower + sizeToCenter;
     box.prevY = box.y + v;
   }
-  if (box.y > MAX_Y - HALF_SIZE) {
-    box.y = MAX_Y - HALF_SIZE;
+  if (box.y > upper - sizeToCenter) {
+    box.y = upper - sizeToCenter;
     box.prevY = box.y + v;
   }
+}
+
+const CTX = {
+  boundings: [(box) => boundLowerAndUppserY(box, MIN_Y, MAX_Y)],
+};
+
+function doBounds(ctx, box) {
+  ctx.boundings.forEach((bd) => {
+    bd(box);
+  });
 }
 
 function doCollide(elapsed, i, j) {
@@ -123,7 +135,7 @@ export function draw() {
   for (let sub = 0; sub < SUB_STEPS; sub++) {
     for (let i = 0; i < subBoxes.length; i++) {
       doDt(dt / SUB_STEPS, subBoxes[i]);
-      doBounds(subBoxes[i]);
+      doBounds(CTX, subBoxes[i]);
     }
 
     for (let i = 0; i < subBoxes.length; i++) {
