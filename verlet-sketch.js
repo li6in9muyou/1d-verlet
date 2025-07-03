@@ -54,7 +54,7 @@ boxes.forEach((box) => (box.size = HALF_SIZE * 2));
 
 const dt = 1;
 
-function doDt(elapsed, box) {
+export function doDt(elapsed, box) {
   const nextY = 2 * box.y - box.prevY + box.acc * elapsed * elapsed;
   box.prevY = box.y;
   box.y = nextY;
