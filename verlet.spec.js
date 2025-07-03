@@ -1,9 +1,5 @@
-import { describe, test, expect, beforeAll } from "vitest";
+import { describe, test, expect } from "vitest";
 import { boundLowerAndUpperY } from "./verlet-sketch";
-
-beforeAll(() => {
-  global.window = {};
-});
 
 describe("boundLowerAndUppserY", () => {
   const TEST_HALF_SIZE = 6;
