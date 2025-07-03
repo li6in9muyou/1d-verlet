@@ -420,3 +420,163 @@ describe("doCollide", () => {
     expect(box2.prevY).toBeCloseTo(108);
   });
 });
+
+describe("doCollide - Parameter Order Invariance", () => {
+  const TEST_HALF_SIZE = 6;
+
+  // Helper function to create a test box
+  const createTestBox = (y, prevY, m, name) => ({
+    y,
+    prevY,
+    m,
+    name,
+    size: TEST_HALF_SIZE * 2,
+  });
+
+  // Test Case 1: Equal masses moving towards each other
+  test("should produce same result when parameters are swapped (equal masses)", () => {
+    const elapsed = 1;
+
+    // Original order
+    const box1_orig = createTestBox(100, 105, 10, "box1_orig");
+    const box2_orig = createTestBox(108, 103, 10, "box2_orig");
+    doCollide(elapsed, box1_orig, box2_orig);
+
+    // Swapped order
+    const box1_swapped = createTestBox(100, 105, 10, "box1_swapped");
+    const box2_swapped = createTestBox(108, 103, 10, "box2_swapped");
+    doCollide(elapsed, box2_swapped, box1_swapped); // Swapped parameters
+
+    // Expect the final states to be the same for the corresponding boxes
+    expect(box1_swapped.y).toBeCloseTo(box1_orig.y);
+    expect(box1_swapped.prevY).toBeCloseTo(box1_orig.prevY);
+    expect(box2_swapped.y).toBeCloseTo(box2_orig.y);
+    expect(box2_swapped.prevY).toBeCloseTo(box2_orig.prevY);
+  });
+
+  // Test Case 2: Unequal masses (lighter hits heavier)
+  test("should produce same result when parameters are swapped (lighter hits heavier)", () => {
+    const elapsed = 1;
+
+    // Original order
+    const box1_orig = createTestBox(100, 105, 5, "box1_orig"); // m=5
+    const box2_orig = createTestBox(108, 103, 15, "box2_orig"); // m=15
+    doCollide(elapsed, box1_orig, box2_orig);
+
+    // Swapped order
+    const box1_swapped = createTestBox(100, 105, 5, "box1_swapped");
+    const box2_swapped = createTestBox(108, 103, 15, "box2_swapped");
+    doCollide(elapsed, box2_swapped, box1_swapped); // Swapped parameters
+
+    // Expect the final states to be the same for the corresponding boxes
+    expect(box1_swapped.y).toBeCloseTo(box1_orig.y);
+    expect(box1_swapped.prevY).toBeCloseTo(box1_orig.prevY);
+    expect(box2_swapped.y).toBeCloseTo(box2_orig.y);
+    expect(box2_swapped.prevY).toBeCloseTo(box2_orig.prevY);
+  });
+
+  // Test Case 3: Unequal masses (heavier hits lighter)
+  test("should produce same result when parameters are swapped (heavier hits lighter)", () => {
+    const elapsed = 1;
+
+    // Original order
+    const box1_orig = createTestBox(100, 105, 15, "box1_orig"); // m=15
+    const box2_orig = createTestBox(108, 103, 5, "box2_orig"); // m=5
+    doCollide(elapsed, box1_orig, box2_orig);
+
+    // Swapped order
+    const box1_swapped = createTestBox(100, 105, 15, "box1_swapped");
+    const box2_swapped = createTestBox(108, 103, 5, "box2_swapped");
+    doCollide(elapsed, box2_swapped, box1_swapped); // Swapped parameters
+
+    // Expect the final states to be the same for the corresponding boxes
+    expect(box1_swapped.y).toBeCloseTo(box1_orig.y);
+    expect(box1_swapped.prevY).toBeCloseTo(box1_orig.prevY);
+    expect(box2_swapped.y).toBeCloseTo(box2_orig.y);
+    expect(box2_swapped.prevY).toBeCloseTo(box2_orig.prevY);
+  });
+
+  // Test Case 4: One stationary (moving hits stationary, equal mass)
+  test("should produce same result when parameters are swapped (one stationary, equal mass)", () => {
+    const elapsed = 1;
+
+    // Original order
+    const box1_orig = createTestBox(100, 105, 10, "box1_orig"); // m=10, v=-5
+    const box2_orig = createTestBox(108, 108, 10, "box2_orig"); // m=10, v=0
+    doCollide(elapsed, box1_orig, box2_orig);
+
+    // Swapped order
+    const box1_swapped = createTestBox(100, 105, 10, "box1_swapped");
+    const box2_swapped = createTestBox(108, 108, 10, "box2_swapped");
+    doCollide(elapsed, box2_swapped, box1_swapped); // Swapped parameters
+
+    // Expect the final states to be the same for the corresponding boxes
+    expect(box1_swapped.y).toBeCloseTo(box1_orig.y);
+    expect(box1_swapped.prevY).toBeCloseTo(box1_orig.prevY);
+    expect(box2_swapped.y).toBeCloseTo(box2_orig.y);
+    expect(box2_swapped.prevY).toBeCloseTo(box2_orig.prevY);
+  });
+
+  // Test Case 5: One stationary (moving hits stationary, lighter hits heavier)
+  test("should produce same result when parameters are swapped (one stationary, lighter hits heavier)", () => {
+    const elapsed = 1;
+
+    // Original order
+    const box1_orig = createTestBox(100, 105, 5, "box1_orig"); // m=5, v=-5
+    const box2_orig = createTestBox(108, 108, 15, "box2_orig"); // m=15, v=0
+    doCollide(elapsed, box1_orig, box2_orig);
+
+    // Swapped order
+    const box1_swapped = createTestBox(100, 105, 5, "box1_swapped");
+    const box2_swapped = createTestBox(108, 108, 15, "box2_swapped");
+    doCollide(elapsed, box2_swapped, box1_swapped); // Swapped parameters
+
+    // Expect the final states to be the same for the corresponding boxes
+    expect(box1_swapped.y).toBeCloseTo(box1_orig.y);
+    expect(box1_swapped.prevY).toBeCloseTo(box1_orig.prevY);
+    expect(box2_swapped.y).toBeCloseTo(box2_orig.y);
+    expect(box2_swapped.prevY).toBeCloseTo(box2_orig.prevY);
+  });
+
+  // Test Case 6: One stationary (moving hits stationary, heavier hits lighter)
+  test("should produce same result when parameters are swapped (one stationary, heavier hits lighter)", () => {
+    const elapsed = 1;
+
+    // Original order
+    const box1_orig = createTestBox(100, 105, 15, "box1_orig"); // m=15, v=-5
+    const box2_orig = createTestBox(108, 108, 5, "box2_orig"); // m=5, v=0
+    doCollide(elapsed, box1_orig, box2_orig);
+
+    // Swapped order
+    const box1_swapped = createTestBox(100, 105, 15, "box1_swapped");
+    const box2_swapped = createTestBox(108, 108, 5, "box2_swapped");
+    doCollide(elapsed, box2_swapped, box1_swapped); // Swapped parameters
+
+    // Expect the final states to be the same for the corresponding boxes
+    expect(box1_swapped.y).toBeCloseTo(box1_orig.y);
+    expect(box1_swapped.prevY).toBeCloseTo(box1_orig.prevY);
+    expect(box2_swapped.y).toBeCloseTo(box2_orig.y);
+    expect(box2_swapped.prevY).toBeCloseTo(box2_orig.prevY);
+  });
+
+  // Test Case 7: Boxes are already separating but still overlapping
+  test("should produce same result when parameters are swapped (separating but overlapping)", () => {
+    const elapsed = 1;
+
+    // Original order
+    const box1_orig = createTestBox(100, 98, 10, "box1_orig"); // v=2
+    const box2_orig = createTestBox(108, 110, 10, "box2_orig"); // v=-2
+    doCollide(elapsed, box1_orig, box2_orig);
+
+    // Swapped order
+    const box1_swapped = createTestBox(100, 98, 10, "box1_swapped");
+    const box2_swapped = createTestBox(108, 110, 10, "box2_swapped");
+    doCollide(elapsed, box2_swapped, box1_swapped); // Swapped parameters
+
+    // Expect the final states to be the same for the corresponding boxes
+    expect(box1_swapped.y).toBeCloseTo(box1_orig.y);
+    expect(box1_swapped.prevY).toBeCloseTo(box1_orig.prevY);
+    expect(box2_swapped.y).toBeCloseTo(box2_orig.y);
+    expect(box2_swapped.prevY).toBeCloseTo(box2_orig.prevY);
+  });
+});
