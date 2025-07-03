@@ -99,13 +99,9 @@ export function doCollide(elapsed, i, j) {
     const iPush = (overlap * j.m) / totalMass;
     const jPush = (overlap * i.m) / totalMass;
 
-    if (i.y > j.y) {
-      i.y += iPush;
-      j.y -= jPush;
-    } else {
-      i.y -= iPush;
-      j.y += jPush;
-    }
+    const jToI = Math.sign(i.y - j.y);
+    i.y += iPush * jToI;
+    j.y -= jPush * jToI;
 
     i.prevY = i.y - iNextV * elapsed;
     j.prevY = j.y - jNextV * elapsed;
