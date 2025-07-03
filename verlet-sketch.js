@@ -1,4 +1,4 @@
-function setup() {
+export function setup() {
   createCanvas(100, MAX_Y);
 }
 
@@ -48,31 +48,43 @@ let boxes = [
     name: "a",
   },
 ];
+boxes.forEach((box) => (box.size = HALF_SIZE * 2));
 
 // boxes.forEach((box) => (box.acc = 0.6));
 
 const dt = 1;
 
-function doDt(elapsed, box) {
+export function doDt(elapsed, box) {
   const nextY = 2 * box.y - box.prevY + box.acc * elapsed * elapsed;
   box.prevY = box.y;
   box.y = nextY;
 }
 
-function doBounds(box) {
+export function boundLowerAndUpperY(box, lower, upper) {
   const v = box.y - box.prevY;
+  const sizeToCenter = box.size / 2;
 
-  if (box.y < 0 + HALF_SIZE) {
-    box.y = 0 + HALF_SIZE;
+  if (box.y < lower + sizeToCenter) {
+    box.y = lower + sizeToCenter;
     box.prevY = box.y + v;
   }
-  if (box.y > MAX_Y - HALF_SIZE) {
-    box.y = MAX_Y - HALF_SIZE;
+  if (box.y > upper - sizeToCenter) {
+    box.y = upper - sizeToCenter;
     box.prevY = box.y + v;
   }
 }
 
-function doCollide(elapsed, i, j) {
+const CTX = {
+  boundings: [(box) => boundLowerAndUpperY(box, MIN_Y, MAX_Y)],
+};
+
+function doBounds(ctx, box) {
+  ctx.boundings.forEach((bd) => {
+    bd(box);
+  });
+}
+
+export function doCollide(elapsed, i, j) {
   const distance = Math.abs(i.y - j.y) - 2 * HALF_SIZE;
   const collide = distance < 0;
 
@@ -87,13 +99,9 @@ function doCollide(elapsed, i, j) {
     const iPush = (overlap * j.m) / totalMass;
     const jPush = (overlap * i.m) / totalMass;
 
-    if (i.y > j.y) {
-      i.y += iPush;
-      j.y -= jPush;
-    } else {
-      i.y -= iPush;
-      j.y += jPush;
-    }
+    const jToI = Math.sign(i.y - j.y);
+    i.y += iPush * jToI;
+    j.y -= jPush * jToI;
 
     i.prevY = i.y - iNextV * elapsed;
     j.prevY = j.y - jNextV * elapsed;
@@ -112,7 +120,7 @@ function toNormalVerlet(box, stepCnt) {
   return { ...box, prevY: box.y - v * stepCnt };
 }
 
-function draw() {
+export function draw() {
   background("#444");
 
   let subBoxes = [];
@@ -123,7 +131,7 @@ function draw() {
   for (let sub = 0; sub < SUB_STEPS; sub++) {
     for (let i = 0; i < subBoxes.length; i++) {
       doDt(dt / SUB_STEPS, subBoxes[i]);
-      doBounds(subBoxes[i]);
+      doBounds(CTX, subBoxes[i]);
     }
 
     for (let i = 0; i < subBoxes.length; i++) {

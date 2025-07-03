@@ -1,0 +1,23 @@
+{
+  "name": "1d-verlet",
+  "version": "1.0.0",
+  "description": "It's 1 dimensional because 2d is too hard",
+  "main": "index.html",
+  "scripts": {
+    "test": "vitest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/li6in9muyou/1d-verlet.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/li6in9muyou/1d-verlet/issues"
+  },
+  "homepage": "https://github.com/li6in9muyou/1d-verlet#readme",
+  "dependencies": {
+    "vitest": "^3.2.4"
+  }
+}
