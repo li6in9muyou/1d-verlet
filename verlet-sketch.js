@@ -1,5 +1,5 @@
 export function setup() {
-  createCanvas(100, MAX_Y);
+  createCanvas(100, MAX_Y + 300);
 }
 
 const MIN_Y = 0;
@@ -232,37 +232,65 @@ export function draw() {
     boxes[i] = toNormalVerlet(subBoxes[i], SUB_STEPS);
   }
 
-  let textY = 15;
-  let totalMomentum = 0;
-  let totalKineticEnergy = 0;
-
   for (let i = 0; i < boxes.length; i++) {
     const box = boxes[i];
     renderBox(box.y, box.color);
-    const v = box.y - box.prevY;
-
-    text(`${box.name}=${v.toFixed(4)}`, 4, textY);
-    textY += 15;
-
-    totalMomentum += box.m * v;
-    totalKineticEnergy += 0.5 * box.m * v * v;
   }
-
-  const boxByName = new Map();
-  boxes.forEach((box) => {
-    boxByName.set(box.name, box);
-  });
 
   renderSprings(springs, boxes);
 
-  fill("#fff");
-  text(`\u03a3mv=${totalMomentum.toFixed(4)}`, 4, textY);
-  textY += 15;
-  text(`\u03a3\u00bdmv\u00b2=${totalKineticEnergy.toFixed(4)}`, 4, textY);
+  renderStats(boxes, springs);
 }
 
 function renderBox(y, color = "red") {
   stroke("#000");
   fill(color);
   rect(100 / 2 - HALF_SIZE, y - HALF_SIZE, HALF_SIZE * 2);
+}
+
+const LINE_HEIGHT = 15;
+const vec = p5.Vector;
+const STAT_TOP_LEFT = new vec(4, MAX_Y);
+let _nextLineY = STAT_TOP_LEFT.y;
+function resetStatNextLineY() {
+  _nextLineY = STAT_TOP_LEFT.y;
+}
+function nextLineY() {
+  return (_nextLineY += LINE_HEIGHT);
+}
+function renderStats(boxes, springs) {
+  resetStatNextLineY();
+  stroke("blue");
+  line(0, STAT_TOP_LEFT.y, 100, STAT_TOP_LEFT.y);
+
+  noStroke();
+  fill("white");
+
+  let totalKineticEnergy = 0;
+  for (const box of boxes) {
+    const v = box.y - box.prevY;
+    text(`${box.name}=${v.toFixed(2)}`, STAT_TOP_LEFT.x, nextLineY());
+    totalKineticEnergy += 0.5 * box.m * v * v;
+  }
+  text(
+    `\u03a3\u00bdmv\u00b2=${totalKineticEnergy.toFixed(2)}`,
+    STAT_TOP_LEFT.x,
+    nextLineY(),
+  );
+
+  let totalElasticEnergy = 0;
+  for (const spring of springs) {
+    const i = getBoxByName(boxes, spring.one);
+    const j = getBoxByName(boxes, spring.two);
+    const actualLen = Math.abs(i.y - j.y);
+    const dd = Math.abs(actualLen - spring.restingLen);
+    const e = 0.5 * spring.k * dd * dd;
+    text(`${spring.one}-${spring.two}=${e}`, STAT_TOP_LEFT.x, nextLineY());
+    totalElasticEnergy += e;
+  }
+  text(
+    `\u03a3\u00bdkd\u00b2=${totalElasticEnergy.toFixed(2)}`,
+    STAT_TOP_LEFT.x,
+    nextLineY(),
+  );
 }
