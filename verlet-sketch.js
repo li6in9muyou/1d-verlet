@@ -6,6 +6,7 @@ export function setup() {
 const MIN_Y = 0;
 const MAX_Y = 600;
 const HALF_SIZE = 6;
+const SUB_STEPS = 320;
 
 let boxes = [
   {
@@ -147,8 +148,6 @@ export function doCollide(elapsed, i, j) {
     j.prevY = j.y - jNextV * elapsed;
   }
 }
-
-const SUB_STEPS = 14;
 
 function toSubVerlet(box, stepCnt) {
   const v = box.y - box.prevY;
