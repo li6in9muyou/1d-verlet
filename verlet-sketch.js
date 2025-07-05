@@ -210,16 +210,68 @@ function renderBox(y, color = "red") {
   rect(100 / 2 - HALF_SIZE, y - HALF_SIZE, HALF_SIZE * 2);
 }
 
+// Data structure for all simulation stats
+function getStats(boxes, springs) {
+  const stats = {
+    boxes: [],
+    springs: [],
+    totalKineticEnergy: 0,
+    totalElasticEnergy: 0,
+    totalEnergy: 0,
+  };
+
+  for (const box of boxes) {
+    const v = box.y - box.prevY;
+    const ke = 0.5 * box.m * v * v;
+    stats.boxes.push({
+      name: box.name,
+      velocity: v,
+      kineticEnergy: ke,
+    });
+    stats.totalKineticEnergy += ke;
+  }
+
+  for (const spring of springs) {
+    const i = getBoxByName(boxes, spring.one);
+    const j = getBoxByName(boxes, spring.two);
+
+    const actualLen = Math.abs(i.y - j.y);
+    const displacement = actualLen - spring.restingLen;
+    const force = spring.k * displacement;
+    const elasticEnergy = 0.5 * spring.k * displacement * displacement;
+
+    stats.springs.push({
+      name: `${spring.one}-${spring.two}`,
+      force: force,
+      elasticEnergy: elasticEnergy,
+    });
+    stats.totalElasticEnergy += elasticEnergy;
+  }
+
+  stats.totalEnergy = stats.totalKineticEnergy + stats.totalElasticEnergy;
+
+  return stats;
+}
+
+// Function to render the calculated stats
 const LINE_HEIGHT = 15;
-const STAT_TOP_LEFT = { x: 4, y: MAX_Y };
+const STAT_TOP_LEFT = {
+  x: 4,
+  y: MAX_Y,
+};
 let _nextLineY = STAT_TOP_LEFT.y;
+
 function resetStatNextLineY() {
   _nextLineY = STAT_TOP_LEFT.y;
 }
-function nextLineY() {
+
+function getNextLineY() {
   return (_nextLineY += LINE_HEIGHT);
 }
+
 function renderStats(boxes, springs) {
+  const stats = getStats(boxes, springs);
+
   resetStatNextLineY();
   stroke("blue");
   line(0, STAT_TOP_LEFT.y, 100, STAT_TOP_LEFT.y);
@@ -227,40 +279,34 @@ function renderStats(boxes, springs) {
   noStroke();
   fill("white");
 
-  let totalKineticEnergy = 0;
-  for (const box of boxes) {
-    const v = box.y - box.prevY;
-    text(`${box.name}=${v.toFixed(2)}`, STAT_TOP_LEFT.x, nextLineY());
-    totalKineticEnergy += 0.5 * box.m * v * v;
+  for (const boxStat of stats.boxes) {
+    text(
+      `${boxStat.name}=${boxStat.velocity.toFixed(2)}`,
+      STAT_TOP_LEFT.x,
+      getNextLineY(),
+    );
   }
   text(
-    `\u03a3\u00bdmv\u00b2=${totalKineticEnergy.toFixed(2)}`,
+    `\u03a3\u00bdmv\u00b2=${stats.totalKineticEnergy.toFixed(2)}`,
     STAT_TOP_LEFT.x,
-    nextLineY(),
+    getNextLineY(),
   );
 
-  let totalElasticEnergy = 0;
-  for (const spring of springs) {
-    const i = getBoxByName(boxes, spring.one);
-    const j = getBoxByName(boxes, spring.two);
-    const actualLen = Math.abs(i.y - j.y);
-    const dd = Math.abs(actualLen - spring.restingLen);
-    const e = 0.5 * spring.k * dd * dd;
+  for (const springStat of stats.springs) {
     text(
-      `${spring.one}-${spring.two}=${e.toFixed(2)}`,
+      `${springStat.name}=${springStat.elasticEnergy.toFixed(2)}`,
       STAT_TOP_LEFT.x,
-      nextLineY(),
+      getNextLineY(),
     );
-    totalElasticEnergy += e;
   }
   text(
-    `\u03a3\u00bdkd\u00b2=${totalElasticEnergy.toFixed(2)}`,
+    `\u03a3\u00bdkd\u00b2=${stats.totalElasticEnergy.toFixed(2)}`,
     STAT_TOP_LEFT.x,
-    nextLineY(),
+    getNextLineY(),
   );
   text(
-    `\u03a3E=${(totalElasticEnergy + totalKineticEnergy).toFixed(2)}`,
+    `\u03a3E=${stats.totalEnergy.toFixed(2)}`,
     STAT_TOP_LEFT.x,
-    nextLineY(),
+    getNextLineY(),
   );
 }
