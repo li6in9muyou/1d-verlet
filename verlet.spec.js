@@ -221,6 +221,13 @@ describe("doCollide", () => {
     size: TEST_HALF_SIZE * 2,
   });
 
+  // 计算两个盒子的总动能
+  const calculateTotalKineticEnergy = (box1, box2, elapsed) => {
+    const v1 = (box1.y - box1.prevY) / elapsed;
+    const v2 = (box2.y - box2.prevY) / elapsed;
+    return 0.5 * box1.m * v1 * v1 + 0.5 * box2.m * v2 * v2;
+  };
+
   test("should do nothing if boxes are not colliding", () => {
     const box1 = createTestBox(100, 90, 10, "box1");
     const box2 = createTestBox(200, 190, 10, "box2");
@@ -242,22 +249,14 @@ describe("doCollide", () => {
     const box2 = createTestBox(108, 103, 10, "box2"); // y=108, prevY=103 => moving down (velocity = 5)
     const elapsed = 1;
 
-    // Initial overlap: (108 - 100) - 2 * 6 = 8 - 12 = -4 (overlap of 4)
-    // Expected velocities after elastic collision (equal masses, swap velocities):
-    // box1_next_v = 5
-    // box2_next_v = -5
+    const initialKE = calculateTotalKineticEnergy(box1, box2, elapsed);
 
     doCollide(elapsed, box1, box2);
 
-    // After collision, box1 should move down, box2 should move up
-    // The overlap resolution pushes them apart first.
-    // Overlap = 4. Push per box = 4 / (10+10) * 10 = 2
-    // box1.y should be 100 - 2 = 98 (since box1.y < box2.y, box1 moves up)
-    // box2.y should be 108 + 2 = 110 (since box1.y < box2.y, box2 moves down)
+    const finalKE = calculateTotalKineticEnergy(box1, box2, elapsed);
 
-    // Then prevY is set based on the new velocities
-    // box1.prevY = box1.y - box1_next_v * elapsed = 98 - 5 * 1 = 93
-    // box2.prevY = box2.y - box2_next_v * elapsed = 110 - (-5) * 1 = 115
+    // 断言碰撞前后总动能相等（在浮点误差范围内）
+    expect(finalKE).toBeCloseTo(initialKE);
 
     expect(box1.y).toBeCloseTo(98);
     expect(box1.prevY).toBeCloseTo(93);
@@ -270,21 +269,14 @@ describe("doCollide", () => {
     const box2 = createTestBox(108, 103, 15, "box2"); // m=15, v=5
     const elapsed = 1;
 
-    // Initial overlap: 4
-    // v1_initial = -5, v2_initial = 5
-    // v1_final = ((-5)*(5-15) + 2*15*5) / (5+15) = ((-5)*(-10) + 150) / 20 = (50 + 150) / 20 = 200 / 20 = 10
-    // v2_final = ((5)*(15-5) + 2*5*(-5)) / (5+15) = (5*10 - 50) / 20 = (50 - 50) / 20 = 0
+    const initialKE = calculateTotalKineticEnergy(box1, box2, elapsed);
 
     doCollide(elapsed, box1, box2);
 
-    // Overlap = 4. totalMass = 20
-    // iPush (for box1) = (4 * 15) / 20 = 60 / 20 = 3
-    // jPush (for box2) = (4 * 5) / 20 = 20 / 20 = 1
-    // box1.y should be 100 - 3 = 97
-    // box2.y should be 108 + 1 = 109
+    const finalKE = calculateTotalKineticEnergy(box1, box2, elapsed);
 
-    // box1.prevY = box1.y - v1_final * elapsed = 97 - 10 * 1 = 87
-    // box2.prevY = box2.y - v2_final * elapsed = 109 - 0 * 1 = 109
+    // 断言碰撞前后总动能相等
+    expect(finalKE).toBeCloseTo(initialKE);
 
     expect(box1.y).toBeCloseTo(97);
     expect(box1.prevY).toBeCloseTo(87);
@@ -297,21 +289,14 @@ describe("doCollide", () => {
     const box2 = createTestBox(108, 103, 5, "box2"); // m=5, v=5
     const elapsed = 1;
 
-    // Initial overlap: 4
-    // v1_initial = -5, v2_initial = 5
-    // v1_final = ((-5)*(15-5) + 2*5*5) / (15+5) = ((-5)*10 + 50) / 20 = (-50 + 50) / 20 = 0
-    // v2_final = ((5)*(5-15) + 2*15*(-5)) / (15+5) = (5*(-10) - 150) / 20 = (-50 - 150) / 20 = -200 / 20 = -10
+    const initialKE = calculateTotalKineticEnergy(box1, box2, elapsed);
 
     doCollide(elapsed, box1, box2);
 
-    // Overlap = 4. totalMass = 20
-    // iPush (for box1) = (4 * 5) / 20 = 1
-    // jPush (for box2) = (4 * 15) / 20 = 3
-    // box1.y should be 100 - 1 = 99
-    // box2.y should be 108 + 3 = 111
+    const finalKE = calculateTotalKineticEnergy(box1, box2, elapsed);
 
-    // box1.prevY = box1.y - v1_final * elapsed = 99 - 0 * 1 = 99
-    // box2.prevY = box2.y - v2_final * elapsed = 111 - (-10) * 1 = 121
+    // 断言碰撞前后总动能相等
+    expect(finalKE).toBeCloseTo(initialKE);
 
     expect(box1.y).toBeCloseTo(99);
     expect(box1.prevY).toBeCloseTo(99);
@@ -324,21 +309,14 @@ describe("doCollide", () => {
     const box2 = createTestBox(108, 108, 10, "box2"); // m=10, v=0
     const elapsed = 1;
 
-    // Initial overlap: 4
-    // v1_initial = -5, v2_initial = 0
-    // v1_final = ((-5)*(10-10) + 2*10*0) / (10+10) = 0 / 20 = 0
-    // v2_final = ((0)*(10-10) + 2*10*(-5)) / (10+10) = -100 / 20 = -5
+    const initialKE = calculateTotalKineticEnergy(box1, box2, elapsed);
 
     doCollide(elapsed, box1, box2);
 
-    // Overlap = 4. totalMass = 20
-    // iPush (for box1) = (4 * 10) / 20 = 2
-    // jPush (for box2) = (4 * 10) / 20 = 2
-    // box1.y should be 100 - 2 = 98
-    // box2.y should be 108 + 2 = 110
+    const finalKE = calculateTotalKineticEnergy(box1, box2, elapsed);
 
-    // box1.prevY = box1.y - v1_final * elapsed = 98 - 0 * 1 = 98
-    // box2.prevY = box2.y - v2_final * elapsed = 110 - (-5) * 1 = 115
+    // 断言碰撞前后总动能相等
+    expect(finalKE).toBeCloseTo(initialKE);
 
     expect(box1.y).toBeCloseTo(98);
     expect(box1.prevY).toBeCloseTo(98);
@@ -351,21 +329,14 @@ describe("doCollide", () => {
     const box2 = createTestBox(108, 108, 15, "box2"); // m=15, v=0
     const elapsed = 1;
 
-    // Initial overlap: 4
-    // v1_initial = -5, v2_initial = 0
-    // v1_final = ((-5)*(5-15) + 2*15*0) / (5+15) = ((-5)*(-10)) / 20 = 50 / 20 = 2.5
-    // v2_final = ((0)*(15-5) + 2*5*(-5)) / (5+15) = -50 / 20 = -2.5
+    const initialKE = calculateTotalKineticEnergy(box1, box2, elapsed);
 
     doCollide(elapsed, box1, box2);
 
-    // Overlap = 4. totalMass = 20
-    // iPush (for box1) = (4 * 15) / 20 = 3
-    // jPush (for box2) = (4 * 5) / 20 = 1
-    // box1.y should be 100 - 3 = 97
-    // box2.y should be 108 + 1 = 109
+    const finalKE = calculateTotalKineticEnergy(box1, box2, elapsed);
 
-    // box1.prevY = box1.y - v1_final * elapsed = 97 - 2.5 * 1 = 94.5
-    // box2.prevY = box2.y - v2_final * elapsed = 109 - (-2.5) * 1 = 111.5
+    // 断言碰撞前后总动能相等
+    expect(finalKE).toBeCloseTo(initialKE);
 
     expect(box1.y).toBeCloseTo(97);
     expect(box1.prevY).toBeCloseTo(94.5);
@@ -378,21 +349,14 @@ describe("doCollide", () => {
     const box2 = createTestBox(108, 108, 5, "box2"); // m=5, v=0
     const elapsed = 1;
 
-    // Initial overlap: 4
-    // v1_initial = -5, v2_initial = 0
-    // v1_final = ((-5)*(15-5) + 2*5*0) / (15+5) = ((-5)*10) / 20 = -50 / 20 = -2.5
-    // v2_final = ((0)*(5-15) + 2*15*(-5)) / (15+5) = -150 / 20 = -7.5
+    const initialKE = calculateTotalKineticEnergy(box1, box2, elapsed);
 
     doCollide(elapsed, box1, box2);
 
-    // Overlap = 4. totalMass = 20
-    // iPush (for box1) = (4 * 5) / 20 = 1
-    // jPush (for box2) = (4 * 15) / 20 = 3
-    // box1.y should be 100 - 1 = 99
-    // box2.y should be 108 + 3 = 111
+    const finalKE = calculateTotalKineticEnergy(box1, box2, elapsed);
 
-    // box1.prevY = box1.y - v1_final * elapsed = 99 - (-2.5) * 1 = 101.5
-    // box2.prevY = box2.y - v2_final * elapsed = 111 - (-7.5) * 1 = 118.5
+    // 断言碰撞前后总动能相等
+    expect(finalKE).toBeCloseTo(initialKE);
 
     expect(box1.y).toBeCloseTo(99);
     expect(box1.prevY).toBeCloseTo(101.5);
@@ -405,20 +369,14 @@ describe("doCollide", () => {
     const box2 = createTestBox(108, 110, 10, "box2"); // y=108, prevY=110 => v=-2 (moving up)
     const elapsed = 1;
 
-    // Initial overlap: (108 - 100) - 12 = -4 (overlap of 4)
-    // They are moving apart, but the current `doCollide` will still apply push.
-    // v1_initial = 2, v2_initial = -2
-    // v1_final = ((2)*(10-10) + 2*10*(-2)) / (10+10) = -40 / 20 = -2
-    // v2_final = ((-2)*(10-10) + 2*10*2) / (10+10) = 40 / 20 = 2
+    const initialKE = calculateTotalKineticEnergy(box1, box2, elapsed);
 
     doCollide(elapsed, box1, box2);
 
-    // Overlap = 4. Push per box = 2
-    // box1.y should be 100 - 2 = 98 (since box1.y < box2.y, box1 moves up)
-    // box2.y should be 108 + 2 = 110 (since box1.y < box2.y, box2 moves down)
+    const finalKE = calculateTotalKineticEnergy(box1, box2, elapsed);
 
-    // box1.prevY = box1.y - v1_final * elapsed = 98 - (-2) * 1 = 100
-    // box2.prevY = box2.y - v2_final * elapsed = 110 - 2 * 1 = 108
+    // 断言碰撞前后总动能相等
+    expect(finalKE).toBeCloseTo(initialKE);
 
     expect(box1.y).toBeCloseTo(98);
     expect(box1.prevY).toBeCloseTo(100);
