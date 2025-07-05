@@ -36,38 +36,6 @@ const springs = [
   },
 ];
 
-function buildSpringConnectionsMap(boxes, springs) {
-  const boxByName = new Map();
-  boxes.forEach((box) => {
-    boxByName.set(box.name, box);
-  });
-
-  const springConnectionsMap = new Map();
-
-  boxes.forEach((box) => {
-    springConnectionsMap.set(box, []);
-  });
-
-  springs.forEach((spring) => {
-    const boxOne = boxByName.get(spring.one);
-    const boxTwo = boxByName.get(spring.two);
-
-    springConnectionsMap.get(boxOne).push({
-      otherBox: boxTwo,
-      k: spring.k,
-      restingLen: spring.restingLen,
-    });
-
-    springConnectionsMap.get(boxTwo).push({
-      otherBox: boxOne,
-      k: spring.k,
-      restingLen: spring.restingLen,
-    });
-  });
-
-  return springConnectionsMap;
-}
-
 export function doSprings(springs, allBoxes) {
   springs.forEach((spring) => {
     const i = getBoxByName(allBoxes, spring.one);
