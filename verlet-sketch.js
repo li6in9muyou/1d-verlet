@@ -229,6 +229,9 @@ export function getStats(boxes, springs) {
       name: box.name,
       velocity: v,
       kineticEnergy: ke,
+      // TODO: find another way to pass data to renderStats
+      color: box.color,
+      y: box.y,
     });
     stats.totalKineticEnergy += ke;
   }
@@ -332,13 +335,16 @@ function renderStats(boxes, springs) {
   noStroke();
   fill("white");
 
+  stats.boxes.sort((i, j) => i.y - j.y);
   for (const boxStat of stats.boxes) {
+    fill(boxStat.color);
     text(
       `${boxStat.name}=${boxStat.velocity.toFixed(2)}`,
       STAT_TOP_LEFT.x,
       getNextLineY(),
     );
   }
+  fill("white");
   for (const springStat of stats.springs) {
     text(
       `${springStat.name}=${springStat.elasticEnergy.toFixed(2)}`,
