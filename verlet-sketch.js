@@ -17,8 +17,8 @@ let boxes = [
   },
   {
     color: "green",
-    prevY: 504,
-    y: 500,
+    prevY: 480,
+    y: 480,
     acc: 0,
     m: 10,
     name: "a",
@@ -31,7 +31,7 @@ const springs = [
     one: "a",
     two: "b",
     k: 1e-4,
-    restingLen: 6 * 2 * HALF_SIZE,
+    restingLen: 80,
   },
 ];
 
@@ -95,51 +95,38 @@ function doSprings(springConnectionsMap) {
   }
 }
 
-function renderSprings(springs, boxByName) {
-  const springIndicatorX = 20;
-  const lineThickness = 2;
-
+const SPRING_X = 20;
+const SPRING_TENSION_OFFSET = 4;
+function renderSprings(springs, boxes) {
   for (const spring of springs) {
-    const i = boxByName.get(spring.one);
-    const j = boxByName.get(spring.two);
-    const actualLen = Math.abs(i.y - j.y);
-    const jiDir = Math.sign(i.y - j.y);
-    drawSpringLengths(
-      springIndicatorX,
-      i.y,
-      -jiDir * spring.restingLen,
-      -jiDir * actualLen,
-      lineThickness,
-    );
+    const i = getBoxByName(boxes, spring.one);
+    const j = getBoxByName(boxes, spring.two);
+    renderOneSpring(spring, i, j);
   }
 }
 
-function drawSpringLengths(
-  xPos,
-  yStart,
-  restingLen,
-  actualLen,
-  lineThickness = 2,
-) {
-  stroke(255); // White for resting length
-  strokeWeight(lineThickness);
-  line(xPos, yStart, xPos, yStart + restingLen);
+function renderOneSpring(spring, i, j) {
+  stroke("white");
+  strokeWeight(2);
+  const ij = Math.sign(j.y - i.y);
+  line(SPRING_X, i.y, SPRING_X, i.y + spring.restingLen * ij);
 
-  let actualLineColor;
-  if (actualLen < restingLen) {
-    actualLineColor = color(255, 0, 0); // Red if shorter
-  } else if (actualLen > restingLen) {
-    actualLineColor = color(255, 255, 0); // Yellow if longer
+  const actualLen = Math.abs(i.y - j.y);
+  let tensionColor;
+  if (actualLen < spring.restingLen) {
+    tensionColor = "red";
+  } else if (actualLen > spring.restingLen) {
+    tensionColor = "yellow";
   } else {
-    actualLineColor = color(255); // White if equal
+    tensionColor = "white";
   }
-
-  stroke(actualLineColor);
+  stroke(tensionColor);
+  strokeWeight(2);
   line(
-    xPos + lineThickness * 2,
-    yStart,
-    xPos + lineThickness * 2,
-    yStart + actualLen,
+    SPRING_X + SPRING_TENSION_OFFSET,
+    i.y,
+    SPRING_X + SPRING_TENSION_OFFSET,
+    j.y,
   );
 }
 
@@ -213,6 +200,10 @@ function toNormalVerlet(box, stepCnt) {
   return { ...box, prevY: box.y - v * stepCnt };
 }
 
+function getBoxByName(boxes, name) {
+  return boxes.find((b) => b.name === name);
+}
+
 export function draw() {
   background("#444");
 
@@ -262,7 +253,7 @@ export function draw() {
     boxByName.set(box.name, box);
   });
 
-  renderSprings(springs, boxByName);
+  renderSprings(springs, boxes);
 
   fill("#fff");
   text(`\u03a3mv=${totalMomentum.toFixed(4)}`, 4, textY);
