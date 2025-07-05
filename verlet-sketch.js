@@ -30,8 +30,9 @@ const springs = [
   {
     one: "a",
     two: "b",
-    k: 1e-4,
-    restingLen: 80,
+    k: 1e-2,
+    // restingLen: 80,
+    restingLen: 70,
   },
 ];
 
@@ -67,32 +68,22 @@ function buildSpringConnectionsMap(boxes, springs) {
   return springConnectionsMap;
 }
 
-function doSprings(springConnectionsMap) {
-  for (const [box, connections] of springConnectionsMap.entries()) {
-    connections.forEach((connection) => {
-      const otherBox = connection.otherBox;
-      const k = connection.k;
-      const restingLen = connection.restingLen;
+function doSprings(springs, allBoxes) {
+  springs.forEach((spring) => {
+    const i = getBoxByName(allBoxes, spring.one);
+    const j = getBoxByName(allBoxes, spring.two);
 
-      // Process each spring force only once per pair.
-      // Use box `name` for consistent ordering to prevent double-counting.
-      if (box.name > otherBox.name) {
-        return;
-      }
+    const ji = i.y - j.y;
+    const actualLen = Math.abs(ji);
+    const displacement = actualLen - spring.restingLen;
 
-      const deltaY = box.y - otherBox.y;
-      const actualLen = Math.abs(deltaY);
-      const displacement = actualLen - restingLen;
+    const force = spring.k * displacement;
+    const iForce = -force * Math.sign(ji);
+    const jForce = -iForce;
 
-      const forceMagnitude = k * displacement;
-
-      const forceOnBoxY = -forceMagnitude * Math.sign(deltaY);
-      const forceOnOtherBoxY = -forceOnBoxY;
-
-      box.acc += forceOnBoxY / box.m;
-      otherBox.acc += forceOnOtherBoxY / otherBox.m;
-    });
-  }
+    i.acc += iForce / i.m;
+    j.acc += jForce / j.m;
+  });
 }
 
 const SPRING_X = 20;
@@ -207,6 +198,10 @@ function getBoxByName(boxes, name) {
 export function draw() {
   background("#444");
 
+  for (const box of boxes) {
+    box.acc = 0;
+  }
+
   let subBoxes = [];
   for (let i = 0; i < boxes.length; i++) {
     subBoxes.push(toSubVerlet(boxes[i], SUB_STEPS));
@@ -224,8 +219,7 @@ export function draw() {
       }
     }
 
-    const springConnections = buildSpringConnectionsMap(subBoxes, springs);
-    doSprings(springConnections);
+    doSprings(springs, subBoxes);
   }
 
   for (let i = 0; i < boxes.length; i++) {
