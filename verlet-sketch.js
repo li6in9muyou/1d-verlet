@@ -36,10 +36,10 @@ const springs = [
   },
 ];
 
-export function doSprings(springs, allBoxes) {
+export function doSprings(springs, boxes) {
   springs.forEach((spring) => {
-    const i = getBoxByName(allBoxes, spring.one);
-    const j = getBoxByName(allBoxes, spring.two);
+    const i = getBoxByName(boxes, spring.one);
+    const j = getBoxByName(boxes, spring.two);
 
     const ji = i.y - j.y;
     const actualLen = Math.abs(ji);
