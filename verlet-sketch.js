@@ -253,6 +253,56 @@ export function getStats(boxes, springs) {
   return stats;
 }
 
+function StatsSmoothed(getStats) {
+  // 滑动窗口大小
+  const WINDOW_SIZE = 800;
+
+  // 初始化滑动窗口缓存
+  const kineticEnergyBuffer = Array(WINDOW_SIZE).fill(0);
+  const elasticEnergyBuffer = Array(WINDOW_SIZE).fill(0);
+  const totalEnergyBuffer = Array(WINDOW_SIZE).fill(0);
+
+  // 缓冲区指针
+  let bufferIndex = 0;
+  // 记录已收集的数据点数量（用于初始化阶段）
+  let dataPoints = 0;
+
+  return function (boxes, springs) {
+    // 调用原始函数获取当前统计数据
+    const stats = getStats(boxes, springs);
+
+    // 将当前值添加到滑动窗口缓冲区
+    kineticEnergyBuffer[bufferIndex] = stats.totalKineticEnergy;
+    elasticEnergyBuffer[bufferIndex] = stats.totalElasticEnergy;
+    totalEnergyBuffer[bufferIndex] = stats.totalEnergy;
+
+    // 更新缓冲区指针和数据点计数
+    bufferIndex = (bufferIndex + 1) % WINDOW_SIZE;
+    dataPoints = Math.min(dataPoints + 1, WINDOW_SIZE);
+
+    // 计算滑动窗口平均值
+    const sumKE = kineticEnergyBuffer
+      .slice(0, dataPoints)
+      .reduce((a, b) => a + b, 0);
+    const sumEE = elasticEnergyBuffer
+      .slice(0, dataPoints)
+      .reduce((a, b) => a + b, 0);
+    const sumTE = totalEnergyBuffer
+      .slice(0, dataPoints)
+      .reduce((a, b) => a + b, 0);
+
+    // 创建新的统计对象，使用平滑后的值
+    const smoothedStats = {
+      ...stats,
+      totalKineticEnergy: sumKE / dataPoints,
+      totalElasticEnergy: sumEE / dataPoints,
+      totalEnergy: sumTE / dataPoints,
+    };
+
+    return smoothedStats;
+  };
+}
+
 // Function to render the calculated stats
 const LINE_HEIGHT = 15;
 const STAT_TOP_LEFT = {
@@ -269,8 +319,9 @@ function getNextLineY() {
   return (_nextLineY += LINE_HEIGHT);
 }
 
+const getStatsSmoothed = StatsSmoothed(getStats);
 function renderStats(boxes, springs) {
-  const stats = getStats(boxes, springs);
+  const stats = getStatsSmoothed(boxes, springs);
 
   resetStatNextLineY();
   stroke("blue");
