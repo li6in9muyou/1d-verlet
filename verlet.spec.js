@@ -116,6 +116,38 @@ describe("boundLowerAndUppserY", () => {
   });
 });
 
+describe("doDt Physics Verification", () => {
+  test("should correctly simulate motion with initial velocity and constant acceleration over 10 seconds", () => {
+    // 初始条件：y=500, v=1m/s, a=2m/s²
+    const box = {
+      prevY: 499, // 500 - 1（基于初始速度计算）
+      y: 500,
+      acc: 2,
+    };
+
+    // 模拟参数
+    const elapsed = 1; // 时间步长（秒）
+    const totalTime = 10; // 总时间（秒）
+    const steps = totalTime / elapsed; // 步数
+
+    // 执行10次更新
+    for (let i = 0; i < steps; i++) {
+      doDt(elapsed, box);
+    }
+
+    // 物理学公式计算预期位置
+    // s = s₀ + v₀*t + ½*a*t² = 500 + 1*10 + ½*2*10² = 610
+    const expectedPosition = 610;
+
+    // 验证最终位置
+    expect(box.y).toBeCloseTo(expectedPosition);
+
+    // 验证最终速度（v = v₀ + a*t = 1 + 2*10 = 21）
+    // 上一帧位置应为：610 - 21 = 589
+    expect(box.prevY).toBeCloseTo(589);
+  });
+});
+
 describe("doDt", () => {
   test("should correctly update position for a stationary box with zero acceleration", () => {
     const box = {
