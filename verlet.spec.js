@@ -3,6 +3,7 @@ import {
   doCollide,
   doDt,
   doSprings,
+  getStats,
   boundLowerAndUpperY,
 } from "./verlet-sketch";
 
@@ -926,5 +927,147 @@ describe("doSprings - 3 boxes, 2 springs", () => {
     expect(boxA.acc).toBeCloseTo(expectedAccA);
     expect(boxB.acc).toBeCloseTo(expectedAccB);
     expect(boxC.acc).toBeCloseTo(expectedAccC);
+  });
+});
+
+describe("getStats", () => {
+  test("calculates kinetic energy correctly with boxes moving in different directions", () => {
+    const boxes = [
+      { name: "box1", y: 10, prevY: 15, m: 2 }, // Moving up (negative velocity)
+      { name: "box2", y: 20, prevY: 15, m: 3 }, // Moving down (positive velocity)
+      { name: "box3", y: 30, prevY: 35, m: 1 }, // Moving up (negative velocity)
+    ];
+    const springs = [];
+
+    const stats = getStats(boxes, springs);
+
+    // 计算并使用速度变量
+    const box1Velocity = boxes[0].y - boxes[0].prevY; // -5
+    const box2Velocity = boxes[1].y - boxes[1].prevY; // 5
+    const box3Velocity = boxes[2].y - boxes[2].prevY; // -5
+
+    // 使用速度变量计算动能
+    const box1KE = 0.5 * boxes[0].m * box1Velocity * box1Velocity; // 25
+    const box2KE = 0.5 * boxes[1].m * box2Velocity * box2Velocity; // 37.5
+    const box3KE = 0.5 * boxes[2].m * box3Velocity * box3Velocity; // 12.5
+
+    const expectedTotalKE = box1KE + box2KE + box3KE; // 75
+
+    expect(stats.totalKineticEnergy).toBe(expectedTotalKE);
+
+    expect(stats.boxes.find((b) => b.name === "box1").kineticEnergy).toBe(
+      box1KE,
+    );
+    expect(stats.boxes.find((b) => b.name === "box2").kineticEnergy).toBe(
+      box2KE,
+    );
+    expect(stats.boxes.find((b) => b.name === "box3").kineticEnergy).toBe(
+      box3KE,
+    );
+  });
+
+  test("calculates elastic energy correctly with extended, compressed, and resting springs", () => {
+    const boxes = [
+      { name: "boxA", y: 10, prevY: 10, m: 1 },
+      { name: "boxB", y: 30, prevY: 30, m: 1 }, // 20 units from boxA (extended)
+      { name: "boxC", y: 15, prevY: 15, m: 1 }, // 5 units from boxA (resting)
+      { name: "boxD", y: 25, prevY: 25, m: 1 }, // 10 units from boxC (compressed)
+    ];
+    const springs = [
+      { one: "boxA", two: "boxB", k: 1, restingLen: 15 }, // Extended by 5
+      { one: "boxA", two: "boxC", k: 1, restingLen: 5 }, // At resting length
+      { one: "boxC", two: "boxD", k: 1, restingLen: 15 }, // Compressed by 5
+    ];
+
+    const stats = getStats(boxes, springs);
+
+    // 计算并使用弹簧长度变量
+    const spring1Length = Math.abs(
+      boxes.find((b) => b.name === springs[0].one).y -
+        boxes.find((b) => b.name === springs[0].two).y,
+    ); // 20
+    const spring2Length = Math.abs(
+      boxes.find((b) => b.name === springs[1].one).y -
+        boxes.find((b) => b.name === springs[1].two).y,
+    ); // 5
+    const spring3Length = Math.abs(
+      boxes.find((b) => b.name === springs[2].one).y -
+        boxes.find((b) => b.name === springs[2].two).y,
+    ); // 10
+
+    // 使用弹簧长度计算弹性势能
+    const spring1Displacement = spring1Length - springs[0].restingLen; // 5
+    const spring2Displacement = spring2Length - springs[1].restingLen; // 0
+    const spring3Displacement = spring3Length - springs[2].restingLen; // -5
+
+    const spring1Energy =
+      0.5 * springs[0].k * spring1Displacement * spring1Displacement; // 12.5
+    const spring2Energy =
+      0.5 * springs[1].k * spring2Displacement * spring2Displacement; // 0
+    const spring3Energy =
+      0.5 * springs[2].k * spring3Displacement * spring3Displacement; // 12.5
+
+    const expectedTotalEE = spring1Energy + spring2Energy + spring3Energy; // 25
+
+    expect(stats.totalElasticEnergy).toBe(expectedTotalEE);
+
+    // 使用动态生成的弹簧名称
+    expect(
+      stats.springs.find(
+        (s) => s.name === `${springs[0].one}-${springs[0].two}`,
+      ).elasticEnergy,
+    ).toBe(spring1Energy);
+    expect(
+      stats.springs.find(
+        (s) => s.name === `${springs[1].one}-${springs[1].two}`,
+      ).elasticEnergy,
+    ).toBe(spring2Energy);
+    expect(
+      stats.springs.find(
+        (s) => s.name === `${springs[2].one}-${springs[2].two}`,
+      ).elasticEnergy,
+    ).toBe(spring3Energy);
+  });
+
+  test("total energy is the sum of kinetic and elastic energy (only kinetic)", () => {
+    const boxes = [
+      { name: "box1", y: 10, prevY: 15, m: 2 },
+      { name: "box2", y: 20, prevY: 15, m: 3 },
+    ];
+    const springs = [];
+
+    const stats = getStats(boxes, springs);
+    const expectedTotalEnergy =
+      stats.totalKineticEnergy + stats.totalElasticEnergy;
+
+    expect(stats.totalEnergy).toBe(expectedTotalEnergy);
+  });
+
+  test("total energy is the sum of kinetic and elastic energy (only elastic)", () => {
+    const boxes = [
+      { name: "boxA", y: 10, prevY: 10, m: 1 },
+      { name: "boxB", y: 30, prevY: 30, m: 1 },
+    ];
+    const springs = [{ one: "boxA", two: "boxB", k: 1, restingLen: 15 }];
+
+    const stats = getStats(boxes, springs);
+    const expectedTotalEnergy =
+      stats.totalKineticEnergy + stats.totalElasticEnergy;
+
+    expect(stats.totalEnergy).toBe(expectedTotalEnergy);
+  });
+
+  test("total energy is the sum of kinetic and elastic energy (both present)", () => {
+    const boxes = [
+      { name: "box1", y: 10, prevY: 15, m: 2 },
+      { name: "box2", y: 30, prevY: 30, m: 1 },
+    ];
+    const springs = [{ one: "box1", two: "box2", k: 1, restingLen: 15 }];
+
+    const stats = getStats(boxes, springs);
+    const expectedTotalEnergy =
+      stats.totalKineticEnergy + stats.totalElasticEnergy;
+
+    expect(stats.totalEnergy).toBe(expectedTotalEnergy);
   });
 });

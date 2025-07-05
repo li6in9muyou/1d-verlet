@@ -211,7 +211,7 @@ function renderBox(y, color = "red") {
 }
 
 // Data structure for all simulation stats
-function getStats(boxes, springs) {
+export function getStats(boxes, springs) {
   const stats = {
     boxes: [],
     springs: [],
