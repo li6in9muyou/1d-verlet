@@ -1,4 +1,5 @@
 export function setup() {
+  textSize(2 * HALF_SIZE);
   createCanvas(100, MAX_Y + 300);
 }
 
@@ -194,20 +195,22 @@ export function draw() {
     boxes[i] = toNormalVerlet(subBoxes[i], SUB_STEPS);
   }
 
-  for (let i = 0; i < boxes.length; i++) {
-    const box = boxes[i];
-    renderBox(box.y, box.color);
-  }
+  renderBox(boxes);
 
   renderSprings(springs, boxes);
 
   renderStats(boxes, springs);
 }
 
-function renderBox(y, color = "red") {
-  stroke("#000");
-  fill(color);
-  rect(100 / 2 - HALF_SIZE, y - HALF_SIZE, HALF_SIZE * 2);
+function renderBox(boxes) {
+  for (const box of boxes) {
+    const y = box.y;
+    stroke("#000");
+    strokeWeight(2);
+    fill(box.color);
+    rect(100 / 2 - HALF_SIZE, y - HALF_SIZE, HALF_SIZE * 2);
+    text(box.m, 100 / 2 + 2 * HALF_SIZE, y + HALF_SIZE - 2);
+  }
 }
 
 // Data structure for all simulation stats
