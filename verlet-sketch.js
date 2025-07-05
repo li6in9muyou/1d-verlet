@@ -285,11 +285,20 @@ function renderStats(boxes, springs) {
     const actualLen = Math.abs(i.y - j.y);
     const dd = Math.abs(actualLen - spring.restingLen);
     const e = 0.5 * spring.k * dd * dd;
-    text(`${spring.one}-${spring.two}=${e}`, STAT_TOP_LEFT.x, nextLineY());
+    text(
+      `${spring.one}-${spring.two}=${e.toFixed(2)}`,
+      STAT_TOP_LEFT.x,
+      nextLineY(),
+    );
     totalElasticEnergy += e;
   }
   text(
     `\u03a3\u00bdkd\u00b2=${totalElasticEnergy.toFixed(2)}`,
+    STAT_TOP_LEFT.x,
+    nextLineY(),
+  );
+  text(
+    `\u03a3E=${(totalElasticEnergy + totalKineticEnergy).toFixed(2)}`,
     STAT_TOP_LEFT.x,
     nextLineY(),
   );
