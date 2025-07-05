@@ -243,8 +243,7 @@ function renderBox(y, color = "red") {
 }
 
 const LINE_HEIGHT = 15;
-const vec = p5.Vector;
-const STAT_TOP_LEFT = new vec(4, MAX_Y);
+const STAT_TOP_LEFT = { x: 4, y: MAX_Y };
 let _nextLineY = STAT_TOP_LEFT.y;
 function resetStatNextLineY() {
   _nextLineY = STAT_TOP_LEFT.y;
