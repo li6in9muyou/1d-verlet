@@ -68,7 +68,7 @@ function buildSpringConnectionsMap(boxes, springs) {
   return springConnectionsMap;
 }
 
-function doSprings(springs, allBoxes) {
+export function doSprings(springs, allBoxes) {
   springs.forEach((spring) => {
     const i = getBoxByName(allBoxes, spring.one);
     const j = getBoxByName(allBoxes, spring.two);

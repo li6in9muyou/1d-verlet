@@ -1,5 +1,10 @@
 import { describe, test, expect } from "vitest";
-import { doCollide, doDt, boundLowerAndUpperY } from "./verlet-sketch";
+import {
+  doCollide,
+  doDt,
+  doSprings,
+  boundLowerAndUpperY,
+} from "./verlet-sketch";
 
 describe("boundLowerAndUppserY", () => {
   const TEST_HALF_SIZE = 6;
@@ -578,5 +583,348 @@ describe("doCollide - Parameter Order Invariance", () => {
     expect(box1_swapped.prevY).toBeCloseTo(box1_orig.prevY);
     expect(box2_swapped.y).toBeCloseTo(box2_orig.y);
     expect(box2_swapped.prevY).toBeCloseTo(box2_orig.prevY);
+  });
+});
+
+describe("doSprings", () => {
+  // Helper to create a box object for tests
+  const createBox = (name, y, m, acc = 0) => ({
+    name,
+    y,
+    prevY: y, // prevY not directly used by doSprings, but good practice
+    m,
+    acc,
+  });
+
+  // Test Case 1: Springs at resting length exert no force and thus no acceleration
+  test("should exert no force when spring is at resting length", () => {
+    const boxA = createBox("a", 100, 10);
+    const boxB = createBox("b", 150, 10); // Distance 50
+
+    const springs = [
+      {
+        one: "a",
+        two: "b",
+        k: 0.1,
+        restingLen: 50,
+      },
+    ]; // restingLen matches actualLen
+
+    const initialAccA = boxA.acc;
+    const initialAccB = boxB.acc;
+
+    doSprings(springs, [boxA, boxB]);
+
+    expect(boxA.acc).toBeCloseTo(initialAccA);
+    expect(boxB.acc).toBeCloseTo(initialAccB);
+  });
+
+  // Test Case 2: Springs push or pull boxes depending on whether it's being compressed or extended.
+
+  // Sub-test 2.1: Spring is compressed (boxes are closer than resting length)
+  test("should push boxes apart when spring is compressed", () => {
+    const boxA = createBox("a", 100, 10);
+    const boxB = createBox("b", 140, 10); // Actual length = 40
+    const k = 0.1;
+    const restingLen = 50;
+
+    const springs = [
+      {
+        one: "a",
+        two: "b",
+        k,
+        restingLen,
+      },
+    ];
+
+    const displacement = 40 - 50; // -10 (compressed)
+    const expectedForceMagnitude = k * displacement; // 0.1 * -10 = -1
+
+    // ji = i.y - j.y = 100 - 140 = -40
+    // iForce = -force * Math.sign(ji) = -(-1) * Math.sign(-40) = 1 * -1 = -1
+    // jForce = -iForce = 1
+
+    const expectedAccA = boxA.acc + -1 / boxA.m; // -0.1
+    const expectedAccB = boxB.acc + 1 / boxB.m; // 0.1
+
+    doSprings(springs, [boxA, boxB]);
+
+    expect(boxA.acc).toBeCloseTo(expectedAccA); // Box A should be pushed up (negative acc)
+    expect(boxB.acc).toBeCloseTo(expectedAccB); // Box B should be pushed down (positive acc)
+  });
+
+  // Sub-test 2.2: Spring is extended (boxes are further than resting length)
+  test("should pull boxes together when spring is extended", () => {
+    const boxA = createBox("a", 100, 10);
+    const boxB = createBox("b", 160, 10); // Actual length = 60
+    const k = 0.1;
+    const restingLen = 50;
+
+    const springs = [
+      {
+        one: "a",
+        two: "b",
+        k,
+        restingLen,
+      },
+    ];
+
+    const displacement = 60 - 50; // 10 (extended)
+    const expectedForceMagnitude = k * displacement; // 0.1 * 10 = 1
+
+    // ji = i.y - j.y = 100 - 160 = -60
+    // iForce = -force * Math.sign(ji) = -(1) * Math.sign(-60) = -1 * -1 = 1
+    // jForce = -iForce = -1
+
+    const expectedAccA = boxA.acc + 1 / boxA.m; // 0.1
+    const expectedAccB = boxB.acc + -1 / boxB.m; // -0.1
+
+    doSprings(springs, [boxA, boxB]);
+
+    expect(boxA.acc).toBeCloseTo(expectedAccA); // Box A should be pulled down (positive acc)
+    expect(boxB.acc).toBeCloseTo(expectedAccB); // Box B should be pulled up (negative acc)
+  });
+
+  // Sub-test 2.3: Spring is compressed (box B is above box A)
+  test("should push boxes apart when spring is compressed (reversed order)", () => {
+    const boxA = createBox("a", 140, 10); // Actual length = 40
+    const boxB = createBox("b", 100, 10);
+    const k = 0.1;
+    const restingLen = 50;
+
+    const springs = [
+      {
+        one: "a",
+        two: "b",
+        k,
+        restingLen,
+      },
+    ];
+
+    const displacement = 40 - 50; // -10 (compressed)
+    const expectedForceMagnitude = k * displacement; // 0.1 * -10 = -1
+
+    // ji = i.y - j.y = 140 - 100 = 40
+    // iForce = -force * Math.sign(ji) = -(-1) * Math.sign(40) = 1 * 1 = 1
+    // jForce = -iForce = -1
+
+    const expectedAccA = boxA.acc + 1 / boxA.m; // 0.1
+    const expectedAccB = boxB.acc + -1 / boxB.m; // -0.1
+
+    doSprings(springs, [boxA, boxB]);
+
+    expect(boxA.acc).toBeCloseTo(expectedAccA); // Box A should be pushed down (positive acc)
+    expect(boxB.acc).toBeCloseTo(expectedAccB); // Box B should be pushed up (negative acc)
+  });
+
+  // Sub-test 2.4: Spring is extended (box B is above box A)
+  test("should pull boxes together when spring is extended (reversed order)", () => {
+    const boxA = createBox("a", 160, 10); // Actual length = 60
+    const boxB = createBox("b", 100, 10);
+    const k = 0.1;
+    const restingLen = 50;
+
+    const springs = [
+      {
+        one: "a",
+        two: "b",
+        k,
+        restingLen,
+      },
+    ];
+
+    const displacement = 60 - 50; // 10 (extended)
+    const expectedForceMagnitude = k * displacement; // 0.1 * 10 = 1
+
+    // ji = i.y - j.y = 160 - 100 = 60
+    // iForce = -force * Math.sign(ji) = -(1) * Math.sign(60) = -1 * 1 = -1
+    // jForce = -iForce = 1
+
+    const expectedAccA = boxA.acc + -1 / boxA.m; // -0.1
+    const expectedAccB = boxB.acc + 1 / boxB.m; // 0.1
+
+    doSprings(springs, [boxA, boxB]);
+
+    expect(boxA.acc).toBeCloseTo(expectedAccA); // Box A should be pulled up (negative acc)
+    expect(boxB.acc).toBeCloseTo(expectedAccB); // Box B should be pulled down (positive acc)
+  });
+
+  test("should handle multiple springs and different masses", () => {
+    const boxA = createBox("a", 100, 5); // Lighter
+    const boxB = createBox("b", 120, 10); // Heavier
+    const boxC = createBox("c", 150, 15); // Heaviest
+
+    const springs = [
+      {
+        one: "a",
+        two: "b",
+        k: 0.2,
+        restingLen: 10,
+      }, // Compressed: actual=20, rest=10 => disp=10. Force=0.2*10=2.
+      {
+        one: "b",
+        two: "c",
+        k: 0.3,
+        restingLen: 40,
+      }, // Extended: actual=30, rest=40 => disp=10. Force=0.3*10=3.
+    ];
+
+    const expectedAccA = 0.4;
+    const expectedAccB = -0.5;
+    const expectedAccC = 0.2;
+
+    doSprings(springs, [boxA, boxB, boxC]);
+
+    expect(boxA.acc).toBeCloseTo(expectedAccA);
+    expect(boxB.acc).toBeCloseTo(expectedAccB);
+    expect(boxC.acc).toBeCloseTo(expectedAccC);
+  });
+});
+
+describe("doSprings - 3 boxes, 2 springs", () => {
+  // Helper to create a box object for tests
+  const createBox = (name, y, m, acc = 0) => ({
+    name,
+    y,
+    prevY: y, // prevY not directly used by doSprings, but good practice
+    m,
+    acc,
+  });
+
+  // Test Case 1: One spring at resting length, another compressed
+  test("should handle one resting and one compressed spring", () => {
+    const boxA = createBox("a", 100, 10);
+    const boxB = createBox("b", 150, 10);
+    const boxC = createBox("c", 180, 10);
+
+    const springs = [
+      {
+        one: "a",
+        two: "b",
+        k: 0.1,
+        restingLen: 50,
+      }, // Actual 50, Resting 50 => Displacement 0
+      {
+        one: "b",
+        two: "c",
+        k: 0.2,
+        restingLen: 40,
+      }, // Actual 30, Resting 40 => Displacement -10 (compressed)
+    ];
+
+    // Calculations:
+    // Spring A-B: Force = 0.1 * (50 - 50) = 0. Accel = 0 for A and B.
+    // Spring B-C:
+    //   ji = boxB.y - boxC.y = 150 - 180 = -30
+    //   actualLen = 30, restingLen = 40, displacement = 30 - 40 = -10
+    //   forceMagnitude = 0.2 * -10 = -2
+    //   iForce (on B) = -(-2) * Math.sign(-30) = 2 * -1 = -2
+    //   jForce (on C) = -iForce = 2
+    //   accB_from_BC = -2 / 10 = -0.2
+    //   accC_from_BC = 2 / 10 = 0.2
+
+    // Total Accelerations:
+    // boxA.acc = 0
+    // boxB.acc = 0 + (-0.2) = -0.2
+    // boxC.acc = 0.2
+
+    const expectedAccA = 0;
+    const expectedAccB = -0.2;
+    const expectedAccC = 0.2;
+
+    doSprings(springs, [boxA, boxB, boxC]);
+
+    expect(boxA.acc).toBeCloseTo(expectedAccA);
+    expect(boxB.acc).toBeCloseTo(expectedAccB);
+    expect(boxC.acc).toBeCloseTo(expectedAccC);
+  });
+
+  // Test Case 2: One spring at resting length, another extended
+  test("should handle one resting and one extended spring", () => {
+    const boxA = createBox("a", 100, 10);
+    const boxB = createBox("b", 150, 10);
+    const boxC = createBox("c", 220, 10);
+
+    const springs = [
+      {
+        one: "a",
+        two: "b",
+        k: 0.1,
+        restingLen: 50,
+      }, // Actual 50, Resting 50 => Displacement 0
+      {
+        one: "b",
+        two: "c",
+        k: 0.2,
+        restingLen: 60,
+      }, // Actual 70, Resting 60 => Displacement 10 (extended)
+    ];
+
+    // Calculations:
+    // Spring A-B: Force = 0. Accel = 0 for A and B.
+    // Spring B-C:
+    //   ji = boxB.y - boxC.y = 150 - 220 = -70
+    //   actualLen = 70, restingLen = 60, displacement = 70 - 60 = 10
+    //   forceMagnitude = 0.2 * 10 = 2
+    //   iForce (on B) = -2 * Math.sign(-70) = -2 * -1 = 2
+    //   jForce (on C) = -iForce = -2
+    //   accB_from_BC = 2 / 10 = 0.2
+    //   accC_from_BC = -2 / 10 = -0.2
+
+    // Total Accelerations:
+    // boxA.acc = 0
+    // boxB.acc = 0 + 0.2 = 0.2
+    // boxC.acc = -0.2
+
+    const expectedAccA = 0;
+    const expectedAccB = 0.2;
+    const expectedAccC = -0.2;
+
+    doSprings(springs, [boxA, boxB, boxC]);
+
+    expect(boxA.acc).toBeCloseTo(expectedAccA);
+    expect(boxB.acc).toBeCloseTo(expectedAccB);
+    expect(boxC.acc).toBeCloseTo(expectedAccC);
+  });
+
+  // Test Case 3: Both springs are at resting length
+  test("should exert no force when both springs are at resting length", () => {
+    const boxA = createBox("a", 100, 10);
+    const boxB = createBox("b", 150, 10);
+    const boxC = createBox("c", 200, 10);
+
+    const springs = [
+      {
+        one: "a",
+        two: "b",
+        k: 0.1,
+        restingLen: 50,
+      }, // Actual 50, Resting 50 => Displacement 0
+      {
+        one: "b",
+        two: "c",
+        k: 0.2,
+        restingLen: 50,
+      }, // Actual 50, Resting 50 => Displacement 0
+    ];
+
+    // Calculations:
+    // Spring A-B: Force = 0. Accel = 0 for A and B.
+    // Spring B-C: Force = 0. Accel = 0 for B and C.
+
+    // Total Accelerations:
+    // boxA.acc = 0
+    // boxB.acc = 0
+    // boxC.acc = 0
+
+    const expectedAccA = 0;
+    const expectedAccB = 0;
+    const expectedAccC = 0;
+
+    doSprings(springs, [boxA, boxB, boxC]);
+
+    expect(boxA.acc).toBeCloseTo(expectedAccA);
+    expect(boxB.acc).toBeCloseTo(expectedAccB);
+    expect(boxC.acc).toBeCloseTo(expectedAccC);
   });
 });
