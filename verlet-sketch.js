@@ -337,12 +337,6 @@ function renderStats(boxes, springs) {
       getNextLineY(),
     );
   }
-  text(
-    `\u03a3\u00bdmv\u00b2=${stats.totalKineticEnergy.toFixed(2)}`,
-    STAT_TOP_LEFT.x,
-    getNextLineY(),
-  );
-
   for (const springStat of stats.springs) {
     text(
       `${springStat.name}=${springStat.elasticEnergy.toFixed(2)}`,
@@ -350,6 +344,12 @@ function renderStats(boxes, springs) {
       getNextLineY(),
     );
   }
+
+  text(
+    `\u03a3\u00bdmv\u00b2=${stats.totalKineticEnergy.toFixed(2)}`,
+    STAT_TOP_LEFT.x,
+    getNextLineY(),
+  );
   text(
     `\u03a3\u00bdkd\u00b2=${stats.totalElasticEnergy.toFixed(2)}`,
     STAT_TOP_LEFT.x,
