@@ -10,19 +10,27 @@ const SUB_STEPS = 320;
 
 let boxes = [
   {
-    color: "red",
-    prevY: 400,
-    y: 400,
+    color: "#0ff",
+    prevY: 105,
+    y: 100,
     acc: 0,
-    m: 10,
+    m: 20,
+    name: "c",
+  },
+  {
+    color: "red",
+    prevY: 300 - HALF_SIZE,
+    y: 300 - HALF_SIZE,
+    acc: 0,
+    m: 20,
     name: "b",
   },
   {
     color: "green",
-    prevY: 480,
-    y: 480,
+    prevY: 600 - HALF_SIZE,
+    y: 600 - HALF_SIZE,
     acc: 0,
-    m: 10,
+    m: 10000,
     name: "a",
   },
 ];
@@ -32,9 +40,8 @@ const springs = [
   {
     one: "a",
     two: "b",
-    k: 1e-2,
-    // restingLen: 80,
-    restingLen: 70,
+    k: 5 * 1e-5,
+    restingLen: 300,
   },
 ];
 
