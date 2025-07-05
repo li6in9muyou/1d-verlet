@@ -9,39 +9,15 @@ const HALF_SIZE = 6;
 let boxes = [
   {
     color: "red",
-    prevY: 300 - 2 * HALF_SIZE,
-    y: 300 - 2 * HALF_SIZE,
+    prevY: 400,
+    y: 400,
     acc: 0,
     m: 10,
     name: "b",
   },
   {
-    color: "blue",
-    prevY: 300,
-    y: 300,
-    acc: 0,
-    m: 10,
-    name: "i",
-  },
-  {
-    color: "blue",
-    prevY: 300 + 2 * HALF_SIZE,
-    y: 300 + 2 * HALF_SIZE,
-    acc: 0,
-    m: 10,
-    name: "i",
-  },
-  {
-    color: "blue",
-    prevY: 300 + 4 * HALF_SIZE,
-    y: 300 + 4 * HALF_SIZE,
-    acc: 0,
-    m: 10,
-    name: "i",
-  },
-  {
     color: "green",
-    prevY: 520,
+    prevY: 504,
     y: 500,
     acc: 0,
     m: 10,
@@ -49,6 +25,123 @@ let boxes = [
   },
 ];
 boxes.forEach((box) => (box.size = HALF_SIZE * 2));
+
+const springs = [
+  {
+    one: "a",
+    two: "b",
+    k: 1e-4,
+    restingLen: 6 * 2 * HALF_SIZE,
+  },
+];
+
+function buildSpringConnectionsMap(boxes, springs) {
+  const boxByName = new Map();
+  boxes.forEach((box) => {
+    boxByName.set(box.name, box);
+  });
+
+  const springConnectionsMap = new Map();
+
+  boxes.forEach((box) => {
+    springConnectionsMap.set(box, []);
+  });
+
+  springs.forEach((spring) => {
+    const boxOne = boxByName.get(spring.one);
+    const boxTwo = boxByName.get(spring.two);
+
+    springConnectionsMap.get(boxOne).push({
+      otherBox: boxTwo,
+      k: spring.k,
+      restingLen: spring.restingLen,
+    });
+
+    springConnectionsMap.get(boxTwo).push({
+      otherBox: boxOne,
+      k: spring.k,
+      restingLen: spring.restingLen,
+    });
+  });
+
+  return springConnectionsMap;
+}
+
+function doSprings(springConnectionsMap) {
+  for (const [box, connections] of springConnectionsMap.entries()) {
+    connections.forEach((connection) => {
+      const otherBox = connection.otherBox;
+      const k = connection.k;
+      const restingLen = connection.restingLen;
+
+      // Process each spring force only once per pair.
+      // Use box `name` for consistent ordering to prevent double-counting.
+      if (box.name > otherBox.name) {
+        return;
+      }
+
+      const deltaY = box.y - otherBox.y;
+      const actualLen = Math.abs(deltaY);
+      const displacement = actualLen - restingLen;
+
+      const forceMagnitude = k * displacement;
+
+      const forceOnBoxY = -forceMagnitude * Math.sign(deltaY);
+      const forceOnOtherBoxY = -forceOnBoxY;
+
+      box.acc += forceOnBoxY / box.m;
+      otherBox.acc += forceOnOtherBoxY / otherBox.m;
+    });
+  }
+}
+
+function renderSprings(springs, boxByName) {
+  const springIndicatorX = 20;
+  const lineThickness = 2;
+
+  for (const spring of springs) {
+    const i = boxByName.get(spring.one);
+    const j = boxByName.get(spring.two);
+    const actualLen = Math.abs(i.y - j.y);
+    const jiDir = Math.sign(i.y - j.y);
+    drawSpringLengths(
+      springIndicatorX,
+      i.y,
+      -jiDir * spring.restingLen,
+      -jiDir * actualLen,
+      lineThickness,
+    );
+  }
+}
+
+function drawSpringLengths(
+  xPos,
+  yStart,
+  restingLen,
+  actualLen,
+  lineThickness = 2,
+) {
+  stroke(255); // White for resting length
+  strokeWeight(lineThickness);
+  line(xPos, yStart, xPos, yStart + restingLen);
+
+  let actualLineColor;
+  if (actualLen < restingLen) {
+    actualLineColor = color(255, 0, 0); // Red if shorter
+  } else if (actualLen > restingLen) {
+    actualLineColor = color(255, 255, 0); // Yellow if longer
+  } else {
+    actualLineColor = color(255); // White if equal
+  }
+
+  stroke(actualLineColor);
+  line(
+    xPos + lineThickness * 2,
+    yStart,
+    xPos + lineThickness * 2,
+    yStart + actualLen,
+  );
+}
 
 // boxes.forEach((box) => (box.acc = 0.6));
 
@@ -139,6 +232,9 @@ export function draw() {
         doCollide(dt / SUB_STEPS, subBoxes[i], subBoxes[j]);
       }
     }
+
+    const springConnections = buildSpringConnectionsMap(subBoxes, springs);
+    doSprings(springConnections);
   }
 
   for (let i = 0; i < boxes.length; i++) {
@@ -153,12 +249,20 @@ export function draw() {
     const box = boxes[i];
     renderBox(box.y, box.color);
     const v = box.y - box.prevY;
+
     text(`${box.name}=${v.toFixed(4)}`, 4, textY);
     textY += 15;
 
     totalMomentum += box.m * v;
     totalKineticEnergy += 0.5 * box.m * v * v;
   }
+
+  const boxByName = new Map();
+  boxes.forEach((box) => {
+    boxByName.set(box.name, box);
+  });
+
+  renderSprings(springs, boxByName);
 
   fill("#fff");
   text(`\u03a3mv=${totalMomentum.toFixed(4)}`, 4, textY);
@@ -167,6 +271,7 @@ export function draw() {
 }
 
 function renderBox(y, color = "red") {
+  stroke("#000");
   fill(color);
   rect(100 / 2 - HALF_SIZE, y - HALF_SIZE, HALF_SIZE * 2);
 }
