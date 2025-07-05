@@ -206,9 +206,9 @@ function renderBox(boxes) {
   for (const box of boxes) {
     const y = box.y;
     stroke("#000");
-    strokeWeight(2);
+    strokeWeight(1);
     fill(box.color);
-    rect(100 / 2 - HALF_SIZE, y - HALF_SIZE, HALF_SIZE * 2);
+    rect(100 / 2 - HALF_SIZE, y - HALF_SIZE, HALF_SIZE * 2 - 2);
     text(box.m, 100 / 2 + 2 * HALF_SIZE, y + HALF_SIZE - 2);
   }
 }
