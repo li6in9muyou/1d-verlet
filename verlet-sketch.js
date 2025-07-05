@@ -267,7 +267,7 @@ export function getStats(boxes, springs) {
 
 function StatsSmoothed(getStats) {
   // 滑动窗口大小
-  const WINDOW_SIZE = 800;
+  const WINDOW_SIZE = 50;
 
   // 初始化滑动窗口缓存
   const kineticEnergyBuffer = Array(WINDOW_SIZE).fill(0);
