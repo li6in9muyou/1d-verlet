@@ -173,16 +173,17 @@ function getBoxByName(boxes, name) {
 export function draw() {
   background("#444");
 
-  for (const box of boxes) {
-    box.acc = 0;
-  }
-
   let subBoxes = [];
   for (let i = 0; i < boxes.length; i++) {
     subBoxes.push(toSubVerlet(boxes[i], SUB_STEPS));
   }
 
   for (let sub = 0; sub < SUB_STEPS; sub++) {
+    for (const box of subBoxes) {
+      box.acc = 0;
+    }
+    doSprings(springs, subBoxes);
+
     for (let i = 0; i < subBoxes.length; i++) {
       doDt(dt / SUB_STEPS, subBoxes[i]);
       doBounds(CTX, subBoxes[i]);
@@ -193,8 +194,6 @@ export function draw() {
         doCollide(dt / SUB_STEPS, subBoxes[i], subBoxes[j]);
       }
     }
-
-    doSprings(springs, subBoxes);
   }
 
   for (let i = 0; i < boxes.length; i++) {
