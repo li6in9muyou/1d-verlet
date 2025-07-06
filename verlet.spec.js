@@ -116,35 +116,64 @@ describe("boundLowerAndUppserY", () => {
   });
 });
 
-describe("doDt Physics Verification", () => {
-  test("should correctly simulate motion with initial velocity and constant acceleration over 10 seconds", () => {
-    // 初始条件：y=500, v=1m/s, a=2m/s²
+describe("doDt should compute an accurate enough position", () => {
+  test.each([
+    { acc: 1e-4 },
+    { acc: 1e-3 },
+    { acc: 1e-2 },
+    { acc: 1e-1 },
+    { acc: 1 },
+    { acc: 2 },
+    { acc: 10 },
+    { acc: 30 },
+    { acc: 40 },
+    { acc: 70 },
+    { acc: 100 },
+    { acc: 200 },
+  ])("should simulate motion with a=$acc m/s²", ({ acc }) => {
+    const SIM_CONFIG = {
+      dt: 1,
+      SUB_STEPS: 3000,
+    };
+    const totalSteps = 10;
+
+    const INIT_Y = 0;
+    const INIT_V = 1;
     const box = {
-      prevY: 499, // 500 - 1（基于初始速度计算）
-      y: 500,
-      acc: 2,
+      prevY: INIT_Y - INIT_V,
+      y: INIT_Y,
+      acc,
     };
 
-    // 模拟参数
-    const elapsed = 1; // 时间步长（秒）
-    const totalTime = 10; // 总时间（秒）
-    const steps = totalTime / elapsed; // 步数
-
-    // 执行10次更新
-    for (let i = 0; i < steps; i++) {
-      doDt(elapsed, box);
+    function toSubVerlet(box, stepCnt) {
+      const v = box.y - box.prevY;
+      return { ...box, prevY: box.y - v / stepCnt };
     }
 
-    // 物理学公式计算预期位置
-    // s = s₀ + v₀*t + ½*a*t² = 500 + 1*10 + ½*2*10² = 610
-    const expectedPosition = 610;
+    function toNormalVerlet(box, stepCnt) {
+      const v = box.y - box.prevY;
+      return { ...box, prevY: box.y - v * stepCnt };
+    }
 
-    // 验证最终位置
-    expect(box.y).toBeCloseTo(expectedPosition);
+    const sub = toSubVerlet(box, SIM_CONFIG.SUB_STEPS);
+    for (let i = 0; i < totalSteps; i++) {
+      for (let i = 0; i < SIM_CONFIG.SUB_STEPS; i++) {
+        doDt(SIM_CONFIG.dt / SIM_CONFIG.SUB_STEPS, sub);
+      }
+    }
+    const after = toNormalVerlet(sub, SIM_CONFIG.SUB_STEPS);
 
-    // 验证最终速度（v = v₀ + a*t = 1 + 2*10 = 21）
-    // 上一帧位置应为：610 - 21 = 589
-    expect(box.prevY).toBeCloseTo(589);
+    // Physics formulas for expected values
+    const expectedPosition =
+      INIT_Y + INIT_V * totalSteps + 0.5 * acc * totalSteps ** 2;
+    const expectedVelocity = INIT_V + acc * totalSteps;
+    const expectedPrevY = expectedPosition - expectedVelocity;
+
+    // Assertions with appropriate precision
+    const precision = acc >= 1 ? 0 : Math.abs(Math.floor(Math.log10(acc)));
+
+    expect(after.y).toBeCloseTo(expectedPosition, precision);
+    expect(after.prevY).toBeCloseTo(expectedPrevY, precision);
   });
 });
 
