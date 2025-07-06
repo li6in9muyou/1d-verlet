@@ -24,13 +24,13 @@ export function createBox(speed = 0, y = 300, _color = undefined) {
 }
 
 export function updateWorld(boxes, springs, rods) {
-  WORLD = {
+  Object.assign(WORLD, {
     ...WORLD,
     boxes:
       boxes?.map((box) => ({ ...box, size: box.halfSize * 2 })) ?? WORLD.boxes,
     springs: springs ?? WORLD.springs,
     rods: rods ?? WORLD.rods,
-  };
+  });
 }
 
 export function setWorld(w) {

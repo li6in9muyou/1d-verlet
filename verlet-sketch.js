@@ -489,7 +489,7 @@ export function runSimulationStep(world, simConfig) {
 
 const SIM_CONFIG = {
   dt: 1,
-  SUB_STEPS: 320,
+  SUB_STEPS: 3000,
 };
 
 export function draw() {
