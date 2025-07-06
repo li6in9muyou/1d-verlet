@@ -250,6 +250,7 @@ describe("doCollide", () => {
     prevY,
     m,
     name,
+    halfSize: TEST_HALF_SIZE,
     size: TEST_HALF_SIZE * 2,
   });
 
