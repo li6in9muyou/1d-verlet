@@ -1,65 +1,65 @@
-export function setup() {
-  textSize(2 * HALF_SIZE);
-  createCanvas(100, MAX_Y + 300);
-}
-
 const MIN_Y = 0;
 const MAX_Y = 600;
 const HALF_SIZE = 6;
 const SUB_STEPS = 320;
+const dt = 1;
+const SPRING_X = 20;
+const SPRING_TENSION_OFFSET = 4;
+const ROD_X = 35;
+const LINE_HEIGHT = 15;
+const STAT_TOP_LEFT = {
+  x: 4,
+  y: MAX_Y,
+};
 
-let boxes = [
-  {
-    color: "#f0f",
-    prevY: 50,
-    y: 50,
-    acc: 0,
-    m: 10,
-    name: "d",
-  },
-  {
-    color: "#0ff",
-    prevY: 100,
-    y: 100,
-    acc: 0,
-    m: 10,
-    name: "c",
-  },
-  {
-    color: "red",
-    prevY: 300,
-    y: 295,
-    acc: 0,
-    m: 20,
-    name: "b",
-  },
-  // {
-  //   color: "green",
-  //   prevY: 600 - HALF_SIZE,
-  //   y: 600 - HALF_SIZE,
-  //   acc: 0,
-  //   m: 10000,
-  //   name: "a",
-  // },
-];
-boxes.forEach((box) => (box.size = HALF_SIZE * 2));
+// World object to hold simulation data
+const world = {
+  boxes: [
+    {
+      color: "#f0f",
+      prevY: 50,
+      y: 50,
+      acc: 0,
+      m: 10,
+      name: "d",
+    },
+    {
+      color: "#0ff",
+      prevY: 100,
+      y: 100,
+      acc: 0,
+      m: 10,
+      name: "c",
+    },
+    {
+      color: "red",
+      prevY: 300,
+      y: 295,
+      acc: 0,
+      m: 20,
+      name: "b",
+    },
+  ],
+  springs: [],
+  rods: [
+    {
+      one: "c",
+      two: "d",
+      len: 50,
+    },
+  ],
+};
 
-const springs = [
-  // {
-  //   one: "a",
-  //   two: "b",
-  //   k: 5 * 1e-5,
-  //   restingLen: 300,
-  // },
-];
+world.boxes.forEach((box) => (box.size = HALF_SIZE * 2));
 
-const rods = [
-  {
-    one: "c",
-    two: "d",
-    len: 50,
-  },
-];
+function getBoxByName(boxes, name) {
+  return boxes.find((b) => b.name === name);
+}
+
+export function setup() {
+  textSize(2 * HALF_SIZE);
+  createCanvas(100, MAX_Y + 300);
+}
 
 export function doSprings(springs, boxes) {
   springs.forEach((spring) => {
@@ -79,8 +79,6 @@ export function doSprings(springs, boxes) {
   });
 }
 
-const SPRING_X = 20;
-const SPRING_TENSION_OFFSET = 4;
 function renderSprings(springs, boxes) {
   for (const spring of springs) {
     const i = getBoxByName(boxes, spring.one);
@@ -114,10 +112,6 @@ function renderOneSpring(spring, i, j) {
   );
 }
 
-// boxes.forEach((box) => (box.acc = 0.6));
-
-const dt = 1;
-
 export function doDt(elapsed, box) {
   const nextY = 2 * box.y - box.prevY + box.acc * elapsed * elapsed;
   box.prevY = box.y;
@@ -138,14 +132,8 @@ export function boundLowerAndUpperY(box, lower, upper) {
   }
 }
 
-const CTX = {
-  boundings: [(box) => boundLowerAndUpperY(box, MIN_Y, MAX_Y)],
-};
-
-function doBounds(ctx, box) {
-  ctx.boundings.forEach((bd) => {
-    bd(box);
-  });
+function doBounds(box) {
+  return boundLowerAndUpperY(box, MIN_Y, MAX_Y);
 }
 
 export function doCollide(elapsed, i, j, boxes, rods) {
@@ -262,50 +250,6 @@ function toNormalVerlet(box, stepCnt) {
   return { ...box, prevY: box.y - v * stepCnt };
 }
 
-function getBoxByName(boxes, name) {
-  return boxes.find((b) => b.name === name);
-}
-
-export function draw() {
-  background("#444");
-
-  let subBoxes = [];
-  for (let i = 0; i < boxes.length; i++) {
-    subBoxes.push(toSubVerlet(boxes[i], SUB_STEPS));
-  }
-
-  for (let sub = 0; sub < SUB_STEPS; sub++) {
-    for (const box of subBoxes) {
-      box.acc = 0;
-    }
-    doSprings(springs, subBoxes);
-
-    for (let i = 0; i < subBoxes.length; i++) {
-      doDt(dt / SUB_STEPS, subBoxes[i]);
-      doBounds(CTX, subBoxes[i]);
-    }
-
-    for (let i = 0; i < subBoxes.length; i++) {
-      for (let j = i + 1; j < subBoxes.length; j++) {
-        doCollide(dt / SUB_STEPS, subBoxes[i], subBoxes[j], subBoxes, rods);
-      }
-    }
-    doRods(dt / SUB_STEPS, rods, subBoxes);
-  }
-
-  for (let i = 0; i < boxes.length; i++) {
-    boxes[i] = toNormalVerlet(subBoxes[i], SUB_STEPS);
-  }
-
-  renderBox(boxes);
-
-  renderSprings(springs, boxes);
-
-  renderRods(rods, boxes);
-
-  renderStats(boxes, springs);
-}
-
 function doRods(elapsed, rods, boxes) {
   rods.forEach((rod) => {
     const i = getBoxByName(boxes, rod.one);
@@ -320,7 +264,6 @@ function doRods(elapsed, rods, boxes) {
   });
 }
 
-const ROD_X = 35;
 function renderRods(rods, boxes) {
   stroke("orange");
   strokeWeight(4);
@@ -392,33 +335,33 @@ export function getStats(boxes, springs) {
 }
 
 function StatsSmoothed(getStats) {
-  // 滑动窗口大小
+  // Sliding window size
   const WINDOW_SIZE = 50;
 
-  // 初始化滑动窗口缓存
+  // Initialize the sliding window buffer
   const kineticEnergyBuffer = Array(WINDOW_SIZE).fill(0);
   const elasticEnergyBuffer = Array(WINDOW_SIZE).fill(0);
   const totalEnergyBuffer = Array(WINDOW_SIZE).fill(0);
 
-  // 缓冲区指针
+  // Buffer pointer
   let bufferIndex = 0;
-  // 记录已收集的数据点数量（用于初始化阶段）
+  // Record the number of collected data points (for the initialization phase)
   let dataPoints = 0;
 
   return function (boxes, springs) {
-    // 调用原始函数获取当前统计数据
+    // Call the original function to get the current statistical data
     const stats = getStats(boxes, springs);
 
-    // 将当前值添加到滑动窗口缓冲区
+    // Add the current value to the sliding window buffer
     kineticEnergyBuffer[bufferIndex] = stats.totalKineticEnergy;
     elasticEnergyBuffer[bufferIndex] = stats.totalElasticEnergy;
     totalEnergyBuffer[bufferIndex] = stats.totalEnergy;
 
-    // 更新缓冲区指针和数据点计数
+    // Update the buffer pointer and data point count
     bufferIndex = (bufferIndex + 1) % WINDOW_SIZE;
     dataPoints = Math.min(dataPoints + 1, WINDOW_SIZE);
 
-    // 计算滑动窗口平均值
+    // Calculate the sliding window average
     const sumKE = kineticEnergyBuffer
       .slice(0, dataPoints)
       .reduce((a, b) => a + b, 0);
@@ -429,7 +372,7 @@ function StatsSmoothed(getStats) {
       .slice(0, dataPoints)
       .reduce((a, b) => a + b, 0);
 
-    // 创建新的统计对象，使用平滑后的值
+    // Create a new statistical object using the smoothed values
     const smoothedStats = {
       ...stats,
       totalKineticEnergy: sumKE / dataPoints,
@@ -442,11 +385,6 @@ function StatsSmoothed(getStats) {
 }
 
 // Function to render the calculated stats
-const LINE_HEIGHT = 15;
-const STAT_TOP_LEFT = {
-  x: 4,
-  y: MAX_Y,
-};
 let _nextLineY = STAT_TOP_LEFT.y;
 
 function resetStatNextLineY() {
@@ -501,4 +439,52 @@ function renderStats(boxes, springs) {
     STAT_TOP_LEFT.x,
     getNextLineY(),
   );
+}
+
+// Function to run one step of the simulation
+function runSimulationStep(world) {
+  let subBoxes = [];
+  for (let i = 0; i < world.boxes.length; i++) {
+    subBoxes.push(toSubVerlet(world.boxes[i], SUB_STEPS));
+  }
+
+  for (let sub = 0; sub < SUB_STEPS; sub++) {
+    for (const box of subBoxes) {
+      box.acc = 0;
+    }
+    doSprings(world.springs, subBoxes);
+
+    for (let i = 0; i < subBoxes.length; i++) {
+      doDt(dt / SUB_STEPS, subBoxes[i]);
+      doBounds(subBoxes[i]);
+    }
+
+    for (let i = 0; i < subBoxes.length; i++) {
+      for (let j = i + 1; j < subBoxes.length; j++) {
+        doCollide(
+          dt / SUB_STEPS,
+          subBoxes[i],
+          subBoxes[j],
+          subBoxes,
+          world.rods,
+        );
+      }
+    }
+    doRods(dt / SUB_STEPS, world.rods, subBoxes);
+  }
+
+  for (let i = 0; i < world.boxes.length; i++) {
+    world.boxes[i] = toNormalVerlet(subBoxes[i], SUB_STEPS);
+  }
+}
+
+export function draw() {
+  background("#444");
+
+  runSimulationStep(world);
+
+  renderBox(world.boxes);
+  renderSprings(world.springs, world.boxes);
+  renderRods(world.rods, world.boxes);
+  renderStats(world.boxes, world.springs);
 }
