@@ -1,5 +1,6 @@
 import { describe, test, expect } from "vitest";
 import { runSimulationStep, getStats } from "./verlet-sketch";
+import { makeSimpleHarmonicMotion } from "./interesting-worlds";
 
 const SIM_CONFIG = {
   dt: 1,
@@ -224,6 +225,22 @@ describe("End-to-End Tests for runSimulationStep", () => {
       }
     };
 
+    runStepsAndAssert(world, SIM_CONFIG, assertions);
+  });
+
+  test.each([
+    { amplitude: 100, name: "100" },
+    { amplitude: 10, name: "10" },
+    { amplitude: 5, name: "5" },
+    { amplitude: 2, name: "2" },
+    { amplitude: 1, name: "1" },
+    { amplitude: 1e-1, name: "1e-1" },
+    { amplitude: 1e-2, name: "1e-2" },
+    { amplitude: 1e-3, name: "1e-3" },
+    { amplitude: 1e-4, name: "1e-4" },
+  ])("simple harmonic motion $name", ({ amplitude }) => {
+    const world = makeSimpleHarmonicMotion(amplitude);
+    const assertions = () => {};
     runStepsAndAssert(world, SIM_CONFIG, assertions);
   });
 });
