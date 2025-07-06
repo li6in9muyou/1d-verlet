@@ -2,7 +2,6 @@
 const WORLD = {
   MIN_Y: 0,
   MAX_Y: 600,
-  HALF_SIZE: 6,
   boxes: [
     {
       color: "#f0f",
@@ -11,6 +10,7 @@ const WORLD = {
       acc: 0,
       m: 10,
       name: "d",
+      halfSize: 6,
     },
     {
       color: "#0ff",
@@ -19,6 +19,7 @@ const WORLD = {
       acc: 0,
       m: 10,
       name: "c",
+      halfSize: 6,
     },
     {
       color: "red",
@@ -27,6 +28,7 @@ const WORLD = {
       acc: 0,
       m: 20,
       name: "b",
+      halfSize: 25 + 6,
     },
   ],
   springs: [],
@@ -39,14 +41,14 @@ const WORLD = {
   ],
 };
 
-WORLD.boxes.forEach((box) => (box.size = WORLD.HALF_SIZE * 2));
+WORLD.boxes.forEach((box) => (box.size = box.halfSize * 2));
 
 function getBoxByName(boxes, name) {
   return boxes.find((b) => b.name === name);
 }
 
 export function setup() {
-  textSize(2 * WORLD.HALF_SIZE);
+  textSize(2 * WORLD.boxes[0].halfSize);
   createCanvas(100, WORLD.MAX_Y + 300);
 }
 
@@ -131,7 +133,7 @@ function doBounds(box) {
 }
 
 export function doCollide(elapsed, i, j, boxes, rods) {
-  const distance = Math.abs(i.y - j.y) - 2 * WORLD.HALF_SIZE;
+  const distance = Math.abs(i.y - j.y) - i.halfSize - j.halfSize;
   const collide = distance < 0;
 
   if (collide) {
@@ -276,17 +278,9 @@ function renderBox(boxes) {
     stroke("#000");
     strokeWeight(1);
     fill(box.color);
-    rect(
-      100 / 2 - WORLD.HALF_SIZE,
-      y - WORLD.HALF_SIZE,
-      WORLD.HALF_SIZE * 2 - 2,
-    );
+    rect(100 / 2 - 6 - 1, y - box.halfSize - 1, 12 + 2, 2 * box.halfSize + 2);
     fill("white");
-    text(
-      `${box.m} ${box.name}`,
-      100 / 2 + 2 * WORLD.HALF_SIZE,
-      y + WORLD.HALF_SIZE - 2,
-    );
+    text(`${box.m} ${box.name}`, 100 / 2 + 2 * 6, y + 6 - 2);
   }
 }
 
