@@ -210,6 +210,7 @@ export function draw() {
         doCollide(dt / SUB_STEPS, subBoxes[i], subBoxes[j]);
       }
     }
+    doRods(dt / SUB_STEPS, rods, subBoxes);
   }
 
   for (let i = 0; i < boxes.length; i++) {
@@ -220,7 +221,61 @@ export function draw() {
 
   renderSprings(springs, boxes);
 
+  renderRods(rods, boxes);
+
   renderStats(boxes, springs);
+}
+
+function doRods(elapsed, rods, boxes) {
+  rods.forEach((rod) => {
+    const i = getBoxByName(boxes, rod.one);
+    const j = getBoxByName(boxes, rod.two);
+
+    const d1 = i.prevY - j.prevY;
+    const d2 = Math.abs(d1);
+    const d3 = (d2 - rod.len) / d2;
+
+    // if (Math.abs(d3) < 1e-5) {
+    //   return;
+    // }
+
+    // const iPV = (i.y - i.prevY) / elapsed;
+    // const jPV = (j.y - j.prevY) / elapsed;
+    // const needRedistV = Math.abs(iPV) !== Math.abs(jPV);
+    // const nextDir = Math.sign(iPV * i.m + jPV * j.m);
+
+    j.y = j.y + 0.5 * d1 * d3;
+    i.y = i.y - 0.5 * d1 * d3;
+
+    // if (needRedistV) {
+    //   // 计算总动能
+    //   const keSum = 0.5 * i.m * iPV * iPV + 0.5 * j.m * jPV * jPV;
+    //
+    //   // 计算满足总动能不变的共同速度大小
+    //   const commonSpeed = Math.sqrt(keSum / (0.5 * (i.m + j.m)));
+    //
+    //   // 保持速度方向不变，调整为共同速度大小
+    //   const iVNew = nextDir * commonSpeed;
+    //   const jVNew = nextDir * commonSpeed;
+    //
+    //   // 调整 prevY 以匹配新速度
+    //   i.prevY = i.y - iVNew;
+    //   j.prevY = j.y - jVNew;
+    // }
+  });
+}
+
+const ROD_X = 35;
+function renderRods(rods, boxes) {
+  stroke("orange");
+  strokeWeight(4);
+
+  for (const rod of rods) {
+    const i = getBoxByName(boxes, rod.one);
+    const j = getBoxByName(boxes, rod.two);
+    const ij = Math.sign(j.y - i.y);
+    line(ROD_X, i.y, ROD_X, i.y + rod.len * ij);
+  }
 }
 
 function renderBox(boxes) {
