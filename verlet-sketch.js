@@ -450,7 +450,7 @@ function renderStats(boxes, springs) {
 }
 
 // Function to run one step of the simulation
-function runSimulationStep(world, simConfig) {
+export function runSimulationStep(world, simConfig) {
   const { dt, SUB_STEPS } = simConfig;
   let subBoxes = [];
   for (let i = 0; i < world.boxes.length; i++) {
