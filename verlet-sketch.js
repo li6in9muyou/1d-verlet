@@ -1,19 +1,8 @@
-const MIN_Y = 0;
-const MAX_Y = 600;
-const HALF_SIZE = 6;
-const SUB_STEPS = 320;
-const dt = 1;
-const SPRING_X = 20;
-const SPRING_TENSION_OFFSET = 4;
-const ROD_X = 35;
-const LINE_HEIGHT = 15;
-const STAT_TOP_LEFT = {
-  x: 4,
-  y: MAX_Y,
-};
-
 // World object to hold simulation data
-const world = {
+const WORLD = {
+  MIN_Y: 0,
+  MAX_Y: 600,
+  HALF_SIZE: 6,
   boxes: [
     {
       color: "#f0f",
@@ -50,15 +39,15 @@ const world = {
   ],
 };
 
-world.boxes.forEach((box) => (box.size = HALF_SIZE * 2));
+WORLD.boxes.forEach((box) => (box.size = WORLD.HALF_SIZE * 2));
 
 function getBoxByName(boxes, name) {
   return boxes.find((b) => b.name === name);
 }
 
 export function setup() {
-  textSize(2 * HALF_SIZE);
-  createCanvas(100, MAX_Y + 300);
+  textSize(2 * WORLD.HALF_SIZE);
+  createCanvas(100, WORLD.MAX_Y + 300);
 }
 
 export function doSprings(springs, boxes) {
@@ -91,7 +80,12 @@ function renderOneSpring(spring, i, j) {
   stroke("white");
   strokeWeight(2);
   const ij = Math.sign(j.y - i.y);
-  line(SPRING_X, i.y, SPRING_X, i.y + spring.restingLen * ij);
+  line(
+    RENDER_CONFIG.SPRING_X,
+    i.y,
+    RENDER_CONFIG.SPRING_X,
+    i.y + spring.restingLen * ij,
+  );
 
   const actualLen = Math.abs(i.y - j.y);
   let tensionColor;
@@ -105,9 +99,9 @@ function renderOneSpring(spring, i, j) {
   stroke(tensionColor);
   strokeWeight(2);
   line(
-    SPRING_X + SPRING_TENSION_OFFSET,
+    RENDER_CONFIG.SPRING_X + RENDER_CONFIG.SPRING_TENSION_OFFSET,
     i.y,
-    SPRING_X + SPRING_TENSION_OFFSET,
+    RENDER_CONFIG.SPRING_X + RENDER_CONFIG.SPRING_TENSION_OFFSET,
     j.y,
   );
 }
@@ -133,11 +127,11 @@ export function boundLowerAndUpperY(box, lower, upper) {
 }
 
 function doBounds(box) {
-  return boundLowerAndUpperY(box, MIN_Y, MAX_Y);
+  return boundLowerAndUpperY(box, WORLD.MIN_Y, WORLD.MAX_Y);
 }
 
 export function doCollide(elapsed, i, j, boxes, rods) {
-  const distance = Math.abs(i.y - j.y) - 2 * HALF_SIZE;
+  const distance = Math.abs(i.y - j.y) - 2 * WORLD.HALF_SIZE;
   const collide = distance < 0;
 
   if (collide) {
@@ -272,7 +266,7 @@ function renderRods(rods, boxes) {
     const i = getBoxByName(boxes, rod.one);
     const j = getBoxByName(boxes, rod.two);
     const ij = Math.sign(j.y - i.y);
-    line(ROD_X, i.y, ROD_X, i.y + rod.len * ij);
+    line(RENDER_CONFIG.ROD_X, i.y, RENDER_CONFIG.ROD_X, i.y + rod.len * ij);
   }
 }
 
@@ -282,9 +276,17 @@ function renderBox(boxes) {
     stroke("#000");
     strokeWeight(1);
     fill(box.color);
-    rect(100 / 2 - HALF_SIZE, y - HALF_SIZE, HALF_SIZE * 2 - 2);
+    rect(
+      100 / 2 - WORLD.HALF_SIZE,
+      y - WORLD.HALF_SIZE,
+      WORLD.HALF_SIZE * 2 - 2,
+    );
     fill("white");
-    text(`${box.m} ${box.name}`, 100 / 2 + 2 * HALF_SIZE, y + HALF_SIZE - 2);
+    text(
+      `${box.m} ${box.name}`,
+      100 / 2 + 2 * WORLD.HALF_SIZE,
+      y + WORLD.HALF_SIZE - 2,
+    );
   }
 }
 
@@ -384,15 +386,27 @@ function StatsSmoothed(getStats) {
   };
 }
 
+// Global object for rendering configuration
+const RENDER_CONFIG = {
+  SPRING_X: 20,
+  SPRING_TENSION_OFFSET: 4,
+  ROD_X: 35,
+  LINE_HEIGHT: 15,
+  STAT_TOP_LEFT: {
+    x: 4,
+    y: 600,
+  },
+};
+
 // Function to render the calculated stats
-let _nextLineY = STAT_TOP_LEFT.y;
+let _nextLineY = RENDER_CONFIG.STAT_TOP_LEFT.y;
 
 function resetStatNextLineY() {
-  _nextLineY = STAT_TOP_LEFT.y;
+  _nextLineY = RENDER_CONFIG.STAT_TOP_LEFT.y;
 }
 
 function getNextLineY() {
-  return (_nextLineY += LINE_HEIGHT);
+  return (_nextLineY += RENDER_CONFIG.LINE_HEIGHT);
 }
 
 const getStatsSmoothed = StatsSmoothed(getStats);
@@ -401,7 +415,7 @@ function renderStats(boxes, springs) {
 
   resetStatNextLineY();
   stroke("blue");
-  line(0, STAT_TOP_LEFT.y, 100, STAT_TOP_LEFT.y);
+  line(0, RENDER_CONFIG.STAT_TOP_LEFT.y, 100, RENDER_CONFIG.STAT_TOP_LEFT.y);
 
   noStroke();
   fill("white");
@@ -411,7 +425,7 @@ function renderStats(boxes, springs) {
     fill(boxStat.color);
     text(
       `${boxStat.name}=${boxStat.velocity.toFixed(2)}`,
-      STAT_TOP_LEFT.x,
+      RENDER_CONFIG.STAT_TOP_LEFT.x,
       getNextLineY(),
     );
   }
@@ -419,30 +433,31 @@ function renderStats(boxes, springs) {
   for (const springStat of stats.springs) {
     text(
       `${springStat.name}=${springStat.elasticEnergy.toFixed(2)}`,
-      STAT_TOP_LEFT.x,
+      RENDER_CONFIG.STAT_TOP_LEFT.x,
       getNextLineY(),
     );
   }
 
   text(
     `\u03a3\u00bdmv\u00b2=${stats.totalKineticEnergy.toFixed(2)}`,
-    STAT_TOP_LEFT.x,
+    RENDER_CONFIG.STAT_TOP_LEFT.x,
     getNextLineY(),
   );
   text(
     `\u03a3\u00bdkd\u00b2=${stats.totalElasticEnergy.toFixed(2)}`,
-    STAT_TOP_LEFT.x,
+    RENDER_CONFIG.STAT_TOP_LEFT.x,
     getNextLineY(),
   );
   text(
     `\u03a3E=${stats.totalEnergy.toFixed(2)}`,
-    STAT_TOP_LEFT.x,
+    RENDER_CONFIG.STAT_TOP_LEFT.x,
     getNextLineY(),
   );
 }
 
 // Function to run one step of the simulation
-function runSimulationStep(world) {
+function runSimulationStep(world, simConfig) {
+  const { dt, SUB_STEPS } = simConfig;
   let subBoxes = [];
   for (let i = 0; i < world.boxes.length; i++) {
     subBoxes.push(toSubVerlet(world.boxes[i], SUB_STEPS));
@@ -478,13 +493,17 @@ function runSimulationStep(world) {
   }
 }
 
+const SIM_CONFIG = {
+  dt: 1,
+  SUB_STEPS: 320,
+};
+
 export function draw() {
   background("#444");
+  runSimulationStep(WORLD, SIM_CONFIG);
 
-  runSimulationStep(world);
-
-  renderBox(world.boxes);
-  renderSprings(world.springs, world.boxes);
-  renderRods(world.rods, world.boxes);
-  renderStats(world.boxes, world.springs);
+  renderBox(WORLD.boxes);
+  renderSprings(WORLD.springs, WORLD.boxes);
+  renderRods(WORLD.rods, WORLD.boxes);
+  renderStats(WORLD.boxes, WORLD.springs);
 }
