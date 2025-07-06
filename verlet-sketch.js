@@ -58,7 +58,7 @@ function getBoxByName(boxes, name) {
 }
 
 export function setup() {
-  textSize(2 * WORLD.boxes[0].halfSize);
+  textSize(12);
   createCanvas(100, WORLD.MAX_Y + 300);
 }
 
