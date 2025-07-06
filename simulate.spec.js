@@ -19,15 +19,26 @@ const createWorld = (boxes, springs = [], rods = []) => {
 
 const runStepsAndAssert = (world, config, assertions) => {
   let initialTotalEnergy;
+  const worldHistory = [];
   for (let step = 0; step < 20000; step++) {
+    worldHistory.push({ ...world });
     runSimulationStep(world, config);
     const stats = getStats(world.boxes, world.springs);
     if (step === 0) {
       initialTotalEnergy = stats.totalEnergy;
     }
-    // General assertion: total energy stays the same
-    expect(stats.totalEnergy).toBeCloseTo(initialTotalEnergy, 2);
-    assertions(world, stats);
+    try {
+      // General assertion: total energy stays the same
+      expect(stats.totalEnergy).toBeCloseTo(initialTotalEnergy, 2);
+      assertions(world, stats);
+    } catch (error) {
+      const currentWorld = { ...world };
+      const prevStep = step - 10;
+      const worldAtNMinus10 = prevStep >= 0 ? worldHistory[prevStep] : null;
+      console.log("Current WORLD object:", currentWorld);
+      console.log("WORLD object at N-10 simulation step:", worldAtNMinus10);
+      throw error;
+    }
   }
 };
 
