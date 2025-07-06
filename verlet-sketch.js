@@ -1,5 +1,5 @@
 // World object to hold simulation data
-const WORLD = {
+let WORLD = {
   MIN_Y: 0,
   MAX_Y: 600,
   boxes: [
@@ -40,6 +40,16 @@ const WORLD = {
     },
   ],
 };
+
+export function reloadWorld(boxes, springs = [], rods = []) {
+  WORLD = {
+    MIN_Y: 0,
+    MAX_Y: 600,
+    boxes: boxes.map((box) => ({ ...box, size: box.halfSize * 2 })),
+    springs,
+    rods,
+  };
+}
 
 WORLD.boxes.forEach((box) => (box.size = box.halfSize * 2));
 

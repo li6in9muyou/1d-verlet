@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <script src="./vendor/p5.js"></script>
+    <script src="./vendor/p5.sound.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <meta charset="utf-8" />
+  </head>
+  <body>
+    <main></main>
+    <script src="verlet-sketch.js" type="module"></script>
+    <script type="module">
+      import { setup, draw, reloadWorld } from "./verlet-sketch.js";
+      window.setup = setup;
+      window.draw = draw;
+      window.reloadWorld = reloadWorld;
+      window.boxRed = function boxRed(initialSpeed = 0) {
+        const y = 300; // Current position
+        const prevY = y - initialSpeed; // Calculate previous position based on speed
+        return {
+          color: "red",
+          prevY,
+          y,
+          acc: 0,
+          m: 20,
+          name: "red",
+          halfSize: 6,
+        };
+      };
+    </script>
+  </body>
+</html>
