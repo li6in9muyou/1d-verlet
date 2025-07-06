@@ -150,8 +150,8 @@ describe("End-to-End Tests for runSimulationStep", () => {
       },
       {
         color: "red",
-        prevY: 100,
-        y: 100,
+        prevY: 112,
+        y: 112,
         acc: 0,
         m: 10,
         name: "c",
@@ -159,8 +159,8 @@ describe("End-to-End Tests for runSimulationStep", () => {
       },
       {
         color: "green",
-        prevY: 100,
-        y: 100,
+        prevY: 124,
+        y: 124,
         acc: 0,
         m: 10,
         name: "d",
@@ -168,8 +168,8 @@ describe("End-to-End Tests for runSimulationStep", () => {
       },
       {
         color: "blue",
-        prevY: 100,
-        y: 100,
+        prevY: 136,
+        y: 136,
         acc: 0,
         m: 10,
         name: "e",
@@ -179,14 +179,38 @@ describe("End-to-End Tests for runSimulationStep", () => {
     const world = createWorld(boxes);
 
     const assertions = (world, stats) => {
-      let stillBoxes = 0;
+      let stillBoxes = [];
+      let movingBoxes = [];
+
+      // Separate boxes into still and moving groups
       for (const box of world.boxes) {
         const v = box.y - box.prevY;
-        if (v === 0) {
-          stillBoxes++;
+        if (Math.abs(v) < 0.001) {
+          // Consider very small velocities as stationary
+          stillBoxes.push(box);
+        } else {
+          movingBoxes.push(box);
         }
       }
-      expect(stillBoxes).toBe(4);
+
+      // Assert exactly 4 boxes are still
+      expect(stillBoxes.length).toBe(4);
+
+      // Assert exactly 1 boxes are moving
+      expect(movingBoxes.length).toBe(1);
+
+      // Sort still boxes by position
+      stillBoxes.sort((a, b) => a.y - b.y);
+
+      // Check distances between consecutive still boxes
+      for (let i = 0; i < stillBoxes.length - 1; i++) {
+        const boxA = stillBoxes[i];
+        const boxB = stillBoxes[i + 1];
+        const expectedDistance = boxA.halfSize + boxB.halfSize;
+        const actualDistance = Math.abs(boxB.y - boxA.y);
+
+        expect(actualDistance).toBeCloseTo(expectedDistance, 1);
+      }
     };
 
     runStepsAndAssert(world, SIM_CONFIG, assertions);
