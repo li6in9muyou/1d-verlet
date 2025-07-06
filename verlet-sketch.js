@@ -148,27 +148,86 @@ function doBounds(ctx, box) {
   });
 }
 
-export function doCollide(elapsed, i, j) {
+export function doCollide(elapsed, i, j, boxes) {
   const distance = Math.abs(i.y - j.y) - 2 * HALF_SIZE;
   const collide = distance < 0;
 
   if (collide) {
+    // 1. 构建i和j的连接组
+    const iConnect = new Set([i.name]);
+    const jConnect = new Set([j.name]);
+
+    // 递归查找所有通过杆连接的物体
+    function findConnected(boxName, set) {
+      rods.forEach((rod) => {
+        if (rod.one === boxName && !set.has(rod.two)) {
+          set.add(rod.two);
+          findConnected(rod.two, set);
+        }
+        if (rod.two === boxName && !set.has(rod.one)) {
+          set.add(rod.one);
+          findConnected(rod.one, set);
+        }
+      });
+    }
+
+    findConnected(i.name, iConnect);
+    findConnected(j.name, jConnect);
+
+    // 2. 计算连接组的总质量
+    const iParty = {
+      m: [...iConnect].reduce(
+        (sum, name) => sum + getBoxByName(boxes, name).m,
+        0,
+      ),
+    };
+    const jParty = {
+      m: [...jConnect].reduce(
+        (sum, name) => sum + getBoxByName(boxes, name).m,
+        0,
+      ),
+    };
+
+    // 3. 计算碰撞后的速度
     const iV = (i.y - i.prevY) / elapsed;
     const jV = (j.y - j.prevY) / elapsed;
-    const iNextV = (iV * (i.m - j.m) + 2 * j.m * jV) / (i.m + j.m);
-    const jNextV = (jV * (j.m - i.m) + 2 * i.m * iV) / (i.m + j.m);
+    const iNextV =
+      (iV * (iParty.m - jParty.m) + 2 * jParty.m * jV) / (iParty.m + jParty.m);
+    const jNextV =
+      (jV * (jParty.m - iParty.m) + 2 * iParty.m * iV) / (iParty.m + jParty.m);
 
+    // 4. 计算重叠量和位置调整
     const overlap = -distance;
-    const totalMass = i.m + j.m;
-    const iPush = (overlap * j.m) / totalMass;
-    const jPush = (overlap * i.m) / totalMass;
+    const totalMass = iParty.m + jParty.m;
+    const iPush = (overlap * jParty.m) / totalMass;
+    const jPush = (overlap * iParty.m) / totalMass;
 
     const jToI = Math.sign(i.y - j.y);
-    i.y += iPush * jToI;
-    j.y -= jPush * jToI;
 
-    i.prevY = i.y - iNextV * elapsed;
-    j.prevY = j.y - jNextV * elapsed;
+    // 5. 调整连接组中所有物体的位置
+    [...iConnect].forEach((name) => {
+      const box = getBoxByName(boxes, name);
+      box.y += iPush * jToI;
+    });
+
+    [...jConnect].forEach((name) => {
+      const box = getBoxByName(boxes, name);
+      box.y -= jPush * jToI;
+    });
+
+    // 6. 调整连接组中所有物体的速度
+    const iFinalV = iNextV * elapsed;
+    const jFinalV = jNextV * elapsed;
+
+    [...iConnect].forEach((name) => {
+      const box = getBoxByName(boxes, name);
+      box.prevY = box.y - iFinalV;
+    });
+
+    [...jConnect].forEach((name) => {
+      const box = getBoxByName(boxes, name);
+      box.prevY = box.y - jFinalV;
+    });
   }
 }
 
