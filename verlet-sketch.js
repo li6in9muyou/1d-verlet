@@ -10,38 +10,54 @@ const SUB_STEPS = 320;
 
 let boxes = [
   {
+    color: "#f0f",
+    prevY: 50,
+    y: 50,
+    acc: 0,
+    m: 10,
+    name: "d",
+  },
+  {
     color: "#0ff",
-    prevY: 105,
+    prevY: 100,
     y: 100,
     acc: 0,
-    m: 20,
+    m: 10,
     name: "c",
   },
   {
     color: "red",
-    prevY: 300 - HALF_SIZE,
-    y: 300 - HALF_SIZE,
+    prevY: 300,
+    y: 295,
     acc: 0,
     m: 20,
     name: "b",
   },
-  {
-    color: "green",
-    prevY: 600 - HALF_SIZE,
-    y: 600 - HALF_SIZE,
-    acc: 0,
-    m: 10000,
-    name: "a",
-  },
+  // {
+  //   color: "green",
+  //   prevY: 600 - HALF_SIZE,
+  //   y: 600 - HALF_SIZE,
+  //   acc: 0,
+  //   m: 10000,
+  //   name: "a",
+  // },
 ];
 boxes.forEach((box) => (box.size = HALF_SIZE * 2));
 
 const springs = [
+  // {
+  //   one: "a",
+  //   two: "b",
+  //   k: 5 * 1e-5,
+  //   restingLen: 300,
+  // },
+];
+
+const rods = [
   {
-    one: "a",
-    two: "b",
-    k: 5 * 1e-5,
-    restingLen: 300,
+    one: "c",
+    two: "d",
+    len: 50,
   },
 ];
 
