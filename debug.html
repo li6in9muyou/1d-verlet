@@ -10,23 +10,24 @@
     <main></main>
     <script src="verlet-sketch.js" type="module"></script>
     <script type="module">
-      import { setup, draw, reloadWorld } from "./verlet-sketch.js";
+      import { setup, draw, } from "./verlet-sketch.js";
+      import { createBox, updateWorld, setWorld } from "./utils.js";
+      import W from "./interesting-worlds.js";
+
       window.setup = setup;
       window.draw = draw;
-      window.reloadWorld = reloadWorld;
-      window.boxRed = function boxRed(initialSpeed = 0) {
-        const y = 300; // Current position
-        const prevY = y - initialSpeed; // Calculate previous position based on speed
-        return {
-          color: "red",
-          prevY,
-          y,
-          acc: 0,
-          m: 20,
-          name: "red",
-          halfSize: 6,
-        };
-      };
+      window.updateWorld = updateWorld;
+      window.setWorld = setWorld;
+      window.createBox = createBox;
+      window.W = W;
+
+      setWorld({
+        MIN_Y: 0,
+        MAX_Y: 600,
+        boxes: [],
+        springs: [],
+        rods: [],
+      });
     </script>
   </body>
 </html>
