@@ -148,7 +148,7 @@ function doBounds(ctx, box) {
   });
 }
 
-export function doCollide(elapsed, i, j, boxes) {
+export function doCollide(elapsed, i, j, boxes, rods) {
   const distance = Math.abs(i.y - j.y) - 2 * HALF_SIZE;
   const collide = distance < 0;
 
@@ -287,7 +287,7 @@ export function draw() {
 
     for (let i = 0; i < subBoxes.length; i++) {
       for (let j = i + 1; j < subBoxes.length; j++) {
-        doCollide(dt / SUB_STEPS, subBoxes[i], subBoxes[j]);
+        doCollide(dt / SUB_STEPS, subBoxes[i], subBoxes[j], subBoxes, rods);
       }
     }
     doRods(dt / SUB_STEPS, rods, subBoxes);
