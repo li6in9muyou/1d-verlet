@@ -153,6 +153,27 @@ export function doCollide(elapsed, i, j, boxes) {
   const collide = distance < 0;
 
   if (collide) {
+    if (undefined === boxes) {
+      const iV = (i.y - i.prevY) / elapsed;
+      const jV = (j.y - j.prevY) / elapsed;
+      const iNextV = (iV * (i.m - j.m) + 2 * j.m * jV) / (i.m + j.m);
+      const jNextV = (jV * (j.m - i.m) + 2 * i.m * iV) / (i.m + j.m);
+
+      const overlap = -distance;
+      const totalMass = i.m + j.m;
+      const iPush = (overlap * j.m) / totalMass;
+      const jPush = (overlap * i.m) / totalMass;
+
+      const jToI = Math.sign(i.y - j.y);
+      i.y += iPush * jToI;
+      j.y -= jPush * jToI;
+
+      i.prevY = i.y - iNextV * elapsed;
+      j.prevY = j.y - jNextV * elapsed;
+
+      return;
+    }
+
     // 1. 构建i和j的连接组
     const iConnect = new Set([i.name]);
     const jConnect = new Set([j.name]);
