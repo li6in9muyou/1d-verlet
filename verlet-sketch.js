@@ -285,7 +285,8 @@ function renderBox(boxes) {
     strokeWeight(1);
     fill(box.color);
     rect(100 / 2 - HALF_SIZE, y - HALF_SIZE, HALF_SIZE * 2 - 2);
-    text(box.m, 100 / 2 + 2 * HALF_SIZE, y + HALF_SIZE - 2);
+    fill("white");
+    text(`${box.m} ${box.name}`, 100 / 2 + 2 * HALF_SIZE, y + HALF_SIZE - 2);
   }
 }
 
