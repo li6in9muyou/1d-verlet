@@ -1,8 +1,8 @@
 import { createBox } from "./utils.js";
 
 export const makeSimpleHarmonicMotion = (k) => ({
-  boxes: [createBox(0, 200, "#1b8"), createBox(0, 300, "#ec6")],
-  springs: [{ one: "1b8", two: "ec6", k: k, restingLen: 110 }],
+  boxes: [createBox(10, 200, "#f00"), createBox(-10, 300, "#0f0")],
+  springs: [{ one: "f00", two: "0f0", k: k, restingLen: 100 }],
   rods: [],
 });
 
