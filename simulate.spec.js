@@ -178,6 +178,15 @@ describe("End-to-End Tests for runSimulationStep", () => {
       // Assert exactly 1 boxes are moving
       expect(movingBoxes.length).toBe(1);
 
+      // After separating boxes into still and moving groups:
+      const fixedBoxes = ["b", "c", "d"];
+      fixedBoxes.forEach((name) => {
+        const box = world.boxes.find((b) => b.name === name);
+        expect(box).toBeDefined();
+        const v = box.y - box.prevY;
+        expect(Math.abs(v)).toBeLessThan(0.001); // Speed must be near zero
+      });
+
       // Sort still boxes by position
       stillBoxes.sort((a, b) => a.y - b.y);
 
