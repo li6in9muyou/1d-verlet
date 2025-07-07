@@ -2,7 +2,8 @@ import { describe, test, expect } from "vitest";
 import { runSimulationStep, getStats } from "./verlet-sketch";
 import {
   makeSpringWithoutCollide,
-  makeSimpleHarmonicMotion,
+  makeSpringWithCollide,
+  makeTwoBouncingBoxes,
 } from "./interesting-worlds";
 
 const SIM_CONFIG = {
@@ -205,14 +206,29 @@ describe("End-to-End Tests for runSimulationStep", () => {
     { stiffness: 1e-2, name: "1e-2" },
     { stiffness: 1e-3, name: "1e-3" },
     { stiffness: 1e-4, name: "1e-4" },
-  ])(
-    "simple harmonic motion stiffness=$stiffness",
-    ({ stiffness: amplitude }) => {
-      const world = makeSimpleHarmonicMotion(amplitude);
-      const assertions = () => {};
-      runStepsAndAssert(world, SIM_CONFIG, assertions);
-    },
-  );
+  ])("spring without collide stiffness=$stiffness", ({ stiffness }) => {
+    const world = makeSpringWithoutCollide(stiffness);
+    const assertions = () => {};
+    runStepsAndAssert(world, SIM_CONFIG, assertions);
+  });
+
+  test.each([
+    { v: 100 },
+    { v: 50 },
+    { v: 20 },
+    { v: 10 },
+    { v: 5 },
+    { v: 2 },
+    { v: 1 },
+    { v: 1e-1 },
+    { v: 1e-2 },
+    { v: 1e-3 },
+    { v: 1e-4 },
+  ])("two bouncing boxes initV=$v", ({ v }) => {
+    const world = makeTwoBouncingBoxes(v);
+    const assertions = () => {};
+    runStepsAndAssert(world, SIM_CONFIG, assertions);
+  });
 
   test.each([
     { stiffness: 100, name: "100" },
@@ -224,8 +240,8 @@ describe("End-to-End Tests for runSimulationStep", () => {
     { stiffness: 1e-2, name: "1e-2" },
     { stiffness: 1e-3, name: "1e-3" },
     { stiffness: 1e-4, name: "1e-4" },
-  ])("spring without collide stiffness=$stiffness", ({ stiffness }) => {
-    const world = makeSpringWithoutCollide(stiffness);
+  ])("spring with collid stiffness=$stiffness", ({ stiffness: amplitude }) => {
+    const world = makeSpringWithCollide(amplitude);
     const assertions = () => {};
     runStepsAndAssert(world, SIM_CONFIG, assertions);
   });
