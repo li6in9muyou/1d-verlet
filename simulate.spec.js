@@ -26,7 +26,7 @@ const runStepsAndAssert = (world, config, assertions) => {
   let initialTotalEnergy;
   const worldHistory = [];
   for (let step = 0; step < 20000; step++) {
-    worldHistory.push({ ...world });
+    worldHistory.push(JSON.parse(JSON.stringify(world)));
     runSimulationStep(world, config);
     const stats = getStats(world.boxes, world.springs);
     if (step === 0) {
@@ -37,11 +37,10 @@ const runStepsAndAssert = (world, config, assertions) => {
       expect(stats.totalEnergy).toBeCloseTo(initialTotalEnergy, 0);
       assertions(world, stats);
     } catch (error) {
-      const currentWorld = { ...world };
       const prevStep = step - 10;
       const worldAtNMinus10 = prevStep >= 0 ? worldHistory[prevStep] : null;
       console.log("Failed at iteration: ", step + 1);
-      console.log("Current WORLD object:", currentWorld);
+      console.log("Current WORLD object:", world);
       console.log("WORLD object at N-10 simulation step:", worldAtNMinus10);
       throw error;
     }
