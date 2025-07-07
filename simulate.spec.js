@@ -184,7 +184,7 @@ describe("End-to-End Tests for runSimulationStep", () => {
         const box = world.boxes.find((b) => b.name === name);
         expect(box).toBeDefined();
         const v = box.y - box.prevY;
-        expect(Math.abs(v)).toBeLessThan(0.001); // Speed must be near zero
+        expect(Math.abs(v)).toBeCloseTo(0); // Speed must be near zero
       });
 
       // Sort still boxes by position
