@@ -10,8 +10,13 @@
     <main></main>
     <script src="verlet-sketch.js" type="module"></script>
     <script type="module">
-      import { setup, draw, } from "./verlet-sketch.js";
-      import { createBox, updateWorld, setWorld } from "./utils.js";
+      import { setup, draw } from "./verlet-sketch.js";
+      import {
+        createBox,
+        updateWorld,
+        setWorld,
+        describeBox,
+      } from "./utils.js";
       import W from "./interesting-worlds.js";
 
       window.setup = setup;
@@ -20,6 +25,7 @@
       window.setWorld = setWorld;
       window.createBox = createBox;
       window.W = W;
+      window.describeBox = describeBox;
 
       setWorld({
         MIN_Y: 0,

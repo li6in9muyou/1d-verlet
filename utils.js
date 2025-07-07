@@ -40,3 +40,15 @@ export function setWorld(w) {
 export function getWorld() {
   return WORLD;
 }
+
+export function describeBox(boxes) {
+  const bb = boxes ?? WORLD.boxes;
+  bb.forEach((box) => {
+    const v = box.y - box.prevY;
+    console.log(
+      `libq describe/${box.name}`,
+      `going ${Math.sign(v) > 0 ? "down" : "up"}`,
+      Math.abs(v.toFixed(4)),
+    );
+  });
+}
