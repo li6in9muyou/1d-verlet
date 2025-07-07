@@ -470,13 +470,17 @@ export function runSimulationStep(world, simConfig) {
 
     for (let i = 0; i < subBoxes.length; i++) {
       for (let j = i + 1; j < subBoxes.length; j++) {
-        doCollide(
-          dt / SUB_STEPS,
-          subBoxes[i],
-          subBoxes[j],
-          subBoxes,
-          world.rods,
-        );
+        if (world.rods.size > 0) {
+          doCollide(
+            dt / SUB_STEPS,
+            subBoxes[i],
+            subBoxes[j],
+            subBoxes,
+            world.rods,
+          );
+        } else {
+          doCollide(dt / SUB_STEPS, subBoxes[i], subBoxes[j]);
+        }
       }
     }
     doRods(dt / SUB_STEPS, world.rods, subBoxes);
