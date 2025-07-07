@@ -20,6 +20,7 @@ export function createBox(speed = 0, y = 300, _color = undefined) {
     m: 20,
     name,
     halfSize: 6,
+    size: 12,
   };
 }
 
