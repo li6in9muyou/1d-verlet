@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { Box, afterHittingWall, afterMoving } from "./ii-verlet";
+import { yv, getV, afterHittingWall, afterMoving, getV } from "./ii-verlet";
 
 describe("afterMove", () => {
   const START_Y = 300;
@@ -75,11 +75,12 @@ describe("afterHittingWall", () => {
       const s = afterHittingWall({
         MIN_Y: 10,
         MAX_Y: 100,
-        boxes: [new Box(y, v)],
+        boxes: [yv(y, v)],
+        sizes: [12],
       });
 
       expect(s.boxes[0].y).toBeCloseTo(exp.y, 0);
-      expect(s.boxes[0].v).toBeCloseTo(exp.v, 0);
+      expect(getV(s.boxes[0])).toBeCloseTo(exp.v, 0);
     },
   );
 });

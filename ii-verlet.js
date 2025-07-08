@@ -1,23 +1,21 @@
-export class Box {
-  constructor(y, v, acc = 0, size = 12) {
-    this.y = y;
-    this.prevY = this.y - v;
-    this.acc = acc;
-    this.size = size;
-  }
-  static yPrevY(box, y, prevY) {
-    return new Box(y, y - prevY, box.acc, box.size);
-  }
-  get v() {
-    return this.y - this.prevY;
-  }
+export function getV(box) {
+  return box.y - box.prevY;
+}
+
+export function yv(y, v, acc = 0) {
+  return {
+    y,
+    prevY: y - v,
+    acc,
+  };
 }
 
 let WORLD = {
   MIN_Y: 20,
   MAX_Y: 600,
   dt: 1,
-  boxes: [new Box(301, 1, 1, 12)],
+  boxes: [yv(300, 1, 1)],
+  sizes: [12],
   colors: ["red"],
   names: ["a"],
   masses: [10],
@@ -26,27 +24,30 @@ let WORLD = {
 export function afterMoving(state) {
   const dt = state.dt;
   const nextBoxes = state.boxes.map((box) => {
-    const y = 2 * box.y - box.prevY + box.acc * dt * dt;
-    return Box.yPrevY(box, y, box.y);
+    return {
+      ...box,
+      prevY: box.y,
+      y: 2 * box.y - box.prevY + box.acc * dt * dt,
+    };
   });
 
   return { ...state, boxes: nextBoxes };
 }
 
 export function afterHittingWall(state) {
-  const nextBoxes = state.boxes.map((box) => {
-    const halfSize = box.size / 2;
+  const nextBoxes = state.boxes.map((box, idx) => {
+    const halfSize = state.sizes[idx] / 2;
     if (box.y > state.MAX_Y - halfSize) {
       const yOverBound = box.y - (state.MAX_Y - halfSize);
       const nextY = state.MAX_Y - halfSize - yOverBound;
       const nextV = -Math.abs(box.y - box.prevY);
-      return new Box(nextY, nextV, box.acc, box.size);
+      return yv(nextY, nextV, box.acc);
     }
     if (box.y < state.MIN_Y + halfSize) {
       const yOverBound = state.MIN_Y + halfSize - box.y;
       const nextY = state.MIN_Y + halfSize + yOverBound;
       const nextV = Math.abs(box.y - box.prevY);
-      return new Box(nextY, nextV, box.acc, box.size);
+      return yv(nextY, nextV, box.acc);
     }
     return box;
   });
