@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { afterMove } from "./ii-verlet";
+import { afterMoving } from "./ii-verlet";
 
 describe("afterMove", () => {
   const START_Y = 300;
@@ -32,7 +32,7 @@ describe("afterMove", () => {
       };
 
       for (let i = 0; i < steps; i++) {
-        s = afterMove(s);
+        s = afterMoving(s);
       }
 
       const expectedY = START_Y + START_V * T + 0.5 * acc * T * T;

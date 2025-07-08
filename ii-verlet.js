@@ -13,12 +13,12 @@ let WORLD = {
 function afterStep(state) {
   const nextState = { ...state };
 
-  nextState.boxes = afterMove(state);
+  nextState.boxes = afterMoving(state);
 
   return nextState;
 }
 
-export function afterMove(state) {
+export function afterMoving(state) {
   const dt = state.dt;
   const nextBoxes = state.boxes.map((box) => {
     return {
