@@ -1,13 +1,19 @@
+export class Box {
+  constructor(y, v, acc = 0, size = 12) {
+    this.y = y;
+    this.prevY = this.y - v;
+    this.acc = acc;
+    this.size = size;
+  }
+  get v() {
+    return this.y - this.prevY;
+  }
+}
+
 let WORLD = {
   MIN_POS: 0,
-  MAX_POS: 600,
-  boxes: [
-    {
-      prevY: 300,
-      y: 301,
-      acc: 1,
-    },
-  ],
+  MAX_Y: 600,
+  boxes: [new Box(301, 1, 1, 12)],
 };
 
 function afterStep(state) {
@@ -31,6 +37,27 @@ export function afterMoving(state) {
   return { ...state, boxes: nextBoxes };
 }
 
+export function afterHittingWall(state) {
+  const nextBoxes = state.boxes.map((box) => {
+    const halfSize = box.size / 2;
+    if (box.y > state.MAX_Y - halfSize) {
+      const yOverBound = box.y - (state.MAX_Y - halfSize);
+      const nextY = state.MAX_Y - halfSize - yOverBound;
+      const nextV = -Math.abs(box.y - box.prevY);
+      return new Box(nextY, nextV);
+    }
+    if (box.y < state.MIN_Y + halfSize) {
+      const yOverBound = state.MIN_Y + halfSize - box.y;
+      const nextY = state.MIN_Y + halfSize + yOverBound;
+      const nextV = Math.abs(box.y - box.prevY);
+      return new Box(nextY, nextV);
+    }
+    return box;
+  });
+
+  return { ...state, boxes: nextBoxes };
+}
+
 export function draw() {
   background("#111");
 
@@ -39,5 +66,5 @@ export function draw() {
 
 export function setup() {
   textSize(12);
-  createCanvas(100, WORLD.MAX_POS + 300);
+  createCanvas(100, WORLD.MAX_Y + 300);
 }
