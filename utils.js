@@ -48,6 +48,7 @@ export function describeBox(boxes) {
     const v = box.y - box.prevY;
     console.log(
       `libq describe/${box.name}`,
+      `y=${box.y}`,
       `going ${Math.sign(v) > 0 ? "down" : "up"}`,
       Math.abs(v.toFixed(4)),
     );

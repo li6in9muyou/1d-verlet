@@ -136,6 +136,9 @@ export function doCollide(elapsed, i, j, boxes, rods) {
   const distance = Math.abs(i.y - j.y) - i.halfSize - j.halfSize;
   const collide = distance < 0;
 
+  if (!collide) {
+    return false;
+  }
   if (collide) {
     if (undefined === boxes) {
       const iV = (i.y - i.prevY) / elapsed;
@@ -155,7 +158,7 @@ export function doCollide(elapsed, i, j, boxes, rods) {
       i.prevY = i.y - iNextV * elapsed;
       j.prevY = j.y - jNextV * elapsed;
 
-      return;
+      return true;
     }
 
     // 1. 构建i和j的连接组
@@ -233,6 +236,8 @@ export function doCollide(elapsed, i, j, boxes, rods) {
       const box = getBoxByName(boxes, name);
       box.prevY = box.y - jFinalV;
     });
+
+    return true;
   }
 }
 
