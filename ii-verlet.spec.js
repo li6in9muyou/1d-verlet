@@ -1,5 +1,6 @@
 import { describe, test, expect } from "vitest";
-import { yv, getV, afterHittingWall, afterMoving, getV } from "./ii-verlet";
+import { afterHittingWall, afterMoving, getV } from "./ii-verlet";
+import { yv, getV } from "./ii-utils";
 
 describe("afterMove", () => {
   const START_Y = 300;

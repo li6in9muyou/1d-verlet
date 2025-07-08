@@ -48,7 +48,8 @@ export function afterHittingWall(state) {
 function drawBoxes(w) {
   for (const idx in w.boxes) {
     const box = w.boxes[idx];
-    const halfSize = box.size / 2;
+    const size = w.sizes[idx];
+    const halfSize = size / 2;
     const name = w.names[idx];
     const color = w.colors[idx];
     const m = w.masses[idx];
