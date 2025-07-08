@@ -5,8 +5,8 @@ export class Box {
     this.acc = acc;
     this.size = size;
   }
-  static yPrevY(y, prevY) {
-    return new Box(y, y - prevY);
+  static yPrevY(box, y, prevY) {
+    return new Box(y, y - prevY, box.acc, box.size);
   }
   get v() {
     return this.y - this.prevY;
@@ -26,7 +26,8 @@ let WORLD = {
 export function afterMoving(state) {
   const dt = state.dt;
   const nextBoxes = state.boxes.map((box) => {
-    return Box.yPrevY(2 * box.y - box.prevY + box.acc * dt * dt, box.y);
+    const y = 2 * box.y - box.prevY + box.acc * dt * dt;
+    return Box.yPrevY(box, y, box.y);
   });
 
   return { ...state, boxes: nextBoxes };
@@ -39,13 +40,13 @@ export function afterHittingWall(state) {
       const yOverBound = box.y - (state.MAX_Y - halfSize);
       const nextY = state.MAX_Y - halfSize - yOverBound;
       const nextV = -Math.abs(box.y - box.prevY);
-      return new Box(nextY, nextV);
+      return new Box(nextY, nextV, box.acc, box.size);
     }
     if (box.y < state.MIN_Y + halfSize) {
       const yOverBound = state.MIN_Y + halfSize - box.y;
       const nextY = state.MIN_Y + halfSize + yOverBound;
       const nextV = Math.abs(box.y - box.prevY);
-      return new Box(nextY, nextV);
+      return new Box(nextY, nextV, box.acc, box.size);
     }
     return box;
   });
