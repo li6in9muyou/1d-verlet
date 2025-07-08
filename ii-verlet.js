@@ -5,33 +5,28 @@ export class Box {
     this.acc = acc;
     this.size = size;
   }
+  static yPrevY(y, prevY) {
+    return new Box(y, y - prevY);
+  }
   get v() {
     return this.y - this.prevY;
   }
 }
 
 let WORLD = {
-  MIN_POS: 0,
+  MIN_Y: 20,
   MAX_Y: 600,
+  dt: 1,
   boxes: [new Box(301, 1, 1, 12)],
+  colors: ["red"],
+  names: ["a"],
+  masses: [10],
 };
-
-function afterStep(state) {
-  const nextState = { ...state };
-
-  nextState.boxes = afterMoving(state);
-
-  return nextState;
-}
 
 export function afterMoving(state) {
   const dt = state.dt;
   const nextBoxes = state.boxes.map((box) => {
-    return {
-      ...box,
-      prevY: box.y,
-      y: 2 * box.y - box.prevY + box.acc * dt * dt,
-    };
+    return Box.yPrevY(2 * box.y - box.prevY + box.acc * dt * dt, box.y);
   });
 
   return { ...state, boxes: nextBoxes };
@@ -58,10 +53,40 @@ export function afterHittingWall(state) {
   return { ...state, boxes: nextBoxes };
 }
 
+function drawBoxes(w) {
+  for (const idx in w.boxes) {
+    const box = w.boxes[idx];
+    const halfSize = box.size / 2;
+    const name = w.names[idx];
+    const color = w.colors[idx];
+    const m = w.masses[idx];
+    const y = box.y;
+
+    stroke("#000");
+    strokeWeight(1);
+    fill(color);
+    rect(100 / 2 - 6 - 1, y - halfSize - 1, 12 + 2, 2 * halfSize + 2);
+    fill("white");
+    text(`${m} ${name}`, 100 / 2 + 2 * 6, y + 6 - 2);
+  }
+}
+
+function drawWalls(w) {
+  stroke("#00b");
+  strokeWeight(10);
+  line(0, w.MIN_Y - 5, 100, w.MIN_Y - 5);
+  line(0, w.MAX_Y + 5, 100, w.MAX_Y + 5);
+}
+
 export function draw() {
   background("#111");
 
-  WORLD = afterStep(WORLD);
+  WORLD = { ...WORLD };
+  WORLD = afterMoving(WORLD);
+  WORLD = afterHittingWall(WORLD);
+
+  drawBoxes(WORLD);
+  drawWalls(WORLD);
 }
 
 export function setup() {
