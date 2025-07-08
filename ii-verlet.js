@@ -3,8 +3,8 @@ import { yv } from "./ii-utils.js";
 let WORLD = {
   MIN_Y: 20,
   MAX_Y: 600,
-  dt: 1,
-  boxes: [yv(300, 1, 1)],
+  dt: 1 / 3000,
+  boxes: [yv(300, 1 / 3000, 1)],
   sizes: [12],
   colors: ["red"],
   names: ["a"],
@@ -74,9 +74,12 @@ function drawWalls(w) {
 export function draw() {
   background("#111");
 
-  WORLD = { ...WORLD };
-  WORLD = afterMoving(WORLD);
-  WORLD = afterHittingWall(WORLD);
+  const steps = 1 / WORLD.dt;
+  for (let i = 0; i < steps; i++) {
+    WORLD = { ...WORLD };
+    WORLD = afterMoving(WORLD);
+    WORLD = afterHittingWall(WORLD);
+  }
 
   drawBoxes(WORLD);
   drawWalls(WORLD);
