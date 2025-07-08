@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <script src="./vendor/p5.js"></script>
+    <script src="./vendor/p5.sound.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <meta charset="utf-8" />
+  </head>
+  <body>
+    <main></main>
+    <script src="ii-verlet.js" type="module"></script>
+    <script type="module">
+      import { setup, draw } from "./ii-verlet.js";
+      window.setup = setup;
+      window.draw = draw;
+    </script>
+  </body>
+</html>
