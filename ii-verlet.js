@@ -1,14 +1,4 @@
-export function getV(box) {
-  return box.y - box.prevY;
-}
-
-export function yv(y, v, acc = 0) {
-  return {
-    y,
-    prevY: y - v,
-    acc,
-  };
-}
+import { yv } from "./ii-utils.js";
 
 let WORLD = {
   MIN_Y: 20,
