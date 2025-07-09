@@ -68,6 +68,46 @@ describe("afterHittingWall", () => {
         y: 89,
       },
     },
+    {
+      v: -10,
+      y: 94,
+      expected: {
+        v: -10,
+        y: 94,
+      },
+    },
+    {
+      v: -10,
+      y: 6,
+      expected: {
+        v: 10,
+        y: 26,
+      },
+    },
+    {
+      v: -10,
+      y: 16,
+      expected: {
+        v: -10,
+        y: 16,
+      },
+    },
+    {
+      v: 10,
+      y: 94,
+      expected: {
+        v: 10,
+        y: 94,
+      },
+    },
+    {
+      v: 10,
+      y: 104,
+      expected: {
+        v: -10,
+        y: 84,
+      },
+    },
   ];
 
   test.each(testCases)(
