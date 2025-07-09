@@ -1,5 +1,10 @@
 import { describe, test, expect } from "vitest";
-import { afterHittingWall, afterMoving, getV } from "./ii-verlet";
+import {
+  afterCrashing,
+  afterHittingWall,
+  afterMoving,
+  getV,
+} from "./ii-verlet";
 import { yv, getV } from "./ii-utils";
 
 describe("afterMove", () => {
@@ -124,4 +129,64 @@ describe("afterHittingWall", () => {
       expect(getV(s.boxes[0])).toBeCloseTo(exp.v, 0);
     },
   );
+});
+
+describe("afterCrashing", () => {
+  const testCases = [
+    {
+      what: "head-on, different y",
+      pair: [yv(100, 10), yv(106, -10)],
+      expected: [
+        { y: 100 - 3, v: -10 },
+        { y: 106 + 3, v: 10 },
+      ],
+    },
+    {
+      what: "head-on, same y",
+      pair: [yv(100, 10), yv(100, -10)],
+      expected: [
+        { y: 100 - 6, v: -10 },
+        { y: 100 + 6, v: 10 },
+      ],
+    },
+    {
+      what: "rear-end crashing",
+      pair: [yv(100, 5), yv(95, 10)],
+      expected: [
+        { y: 100 + 7 / 3, v: 10 },
+        { y: 95 - 2 * (7 / 3), v: 5 },
+      ],
+    },
+    {
+      what: "just touching",
+      pair: [yv(112, 10), yv(100, 10)],
+      expected: [
+        { y: 112, v: 10 },
+        { y: 100, v: 10 },
+      ],
+    },
+    {
+      what: "no crashing",
+      pair: [yv(120, 10), yv(100, 10)],
+      expected: [
+        { y: 120, v: 10 },
+        { y: 100, v: 10 },
+      ],
+    },
+  ];
+
+  test.each(testCases)("$what", ({ pair, expected: exp }) => {
+    const s = afterCrashing({
+      MIN_Y: 10,
+      MAX_Y: 100,
+      boxes: [...pair],
+      sizes: [12, 12],
+      masses: [10, 10],
+    });
+
+    expect(s.boxes[0].y).toBeCloseTo(exp[0].y, 0);
+    expect(getV(s.boxes[0])).toBeCloseTo(exp[0].v, 0);
+    expect(s.boxes[1].y).toBeCloseTo(exp[1].y, 0);
+    expect(getV(s.boxes[1])).toBeCloseTo(exp[1].v, 0);
+  });
 });
