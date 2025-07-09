@@ -4,11 +4,11 @@ let WORLD = {
   MIN_Y: 20,
   MAX_Y: 600,
   dt: 1 / 3000,
-  boxes: [yv(300, 1 / 3000, 1)],
-  sizes: [12],
-  colors: ["red"],
-  names: ["a"],
-  masses: [10],
+  boxes: [yv(300, -1 / 3000, 0), yv(200, 30 / 3000, 0)],
+  sizes: [12, 12],
+  colors: ["red", "green"],
+  names: ["a", "b"],
+  masses: [10, 1],
 };
 
 export function afterCrashing(state) {
@@ -132,6 +132,7 @@ export function draw() {
     WORLD = { ...WORLD };
     WORLD = afterMoving(WORLD);
     WORLD = afterHittingWall(WORLD);
+    WORLD = afterCrashing(WORLD);
   }
 
   drawBoxes(WORLD);
