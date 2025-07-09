@@ -22,42 +22,30 @@ export function afterCrashing(state) {
       const iSize = state.sizes[ii];
       const jSize = state.sizes[jj];
       const overlap = Math.abs(i.y - j.y) - iSize / 2 - jSize / 2;
-      console.log("libq crashing/overlap", overlap, i.y, j.y, iSize, jSize);
       if (overlap >= 0) {
-        console.log(`libq crashing/skip ${ii} vs ${jj}`);
         continue;
       }
 
       const overlapSize = -overlap;
-      console.log("libq crashing/overlapsize", overlapSize);
 
       const iv = getV(i);
       const jv = getV(j);
-      console.log("libq crashing/vold", iv, jv);
       const im = state.masses[ii];
       const jm = state.masses[jj];
       const ivNext = (iv * (im - jm) + 2 * jm * jv) / (im + jm);
       const jvNext = (jv * (jm - im) + 2 * im * iv) / (im + jm);
-      console.log("libq crashing/vnew", ivNext, jvNext);
 
       const iPushRatio = Math.abs(iv) / (Math.abs(iv) + Math.abs(jv));
       const jPushRatio = Math.abs(jv) / (Math.abs(iv) + Math.abs(jv));
       const iPush = iPushRatio * overlapSize;
       const jPush = jPushRatio * overlapSize;
-      console.log("libq crashing/ijpush", iPush, jPush);
 
       const ji = Math.sign(i.y - iv / 1e8 - (j.y - jv / 1e8));
       const iDeltaY = ji * iPush;
       const jDeltaY = -ji * jPush;
-      console.log("libq crashing/ijdeltay", iDeltaY, jDeltaY);
 
       nextBoxes[ii] = yv(i.y + iDeltaY, ivNext);
       nextBoxes[jj] = yv(j.y + jDeltaY, jvNext);
-      console.log(
-        "libq crashing/ijafter",
-        getYV(nextBoxes[ii]),
-        getYV(nextBoxes[jj]),
-      );
     }
   }
 
