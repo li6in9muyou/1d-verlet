@@ -1,14 +1,16 @@
-import { getV, getYV, yv } from "./ii-utils.js";
+import { getV, yv } from "./ii-utils.js";
 
 let WORLD = {
+  MAX_X: 140,
   MIN_Y: 20,
   MAX_Y: 600,
   dt: 1 / 3000,
-  boxes: [yv(300, -1 / 3000, 0), yv(200, 30 / 3000, 0)],
+  boxes: [yv(600 - 6, -1 / 3000, 0), yv(200 - 6, 2 / 3000, 0)],
   sizes: [12, 12],
   colors: ["red", "green"],
   names: ["a", "b"],
-  masses: [10, 1],
+  masses: [1000, 1],
+  statNextLineY: 0,
 };
 
 export function afterCrashing(state) {
@@ -99,17 +101,92 @@ function drawBoxes(w) {
     stroke("#000");
     strokeWeight(1);
     fill(color);
-    rect(100 / 2 - 6 - 1, y - halfSize - 1, 12 + 2, 2 * halfSize + 2);
+    rect(w.MAX_X / 2 - 6 - 1, y - halfSize - 1, 12 + 2, 2 * halfSize + 2);
     fill("white");
-    text(`${m} ${name}`, 100 / 2 + 2 * 6, y + 6 - 2);
+    text(`${m} ${name}`, w.MAX_X / 2 + 2 * 6, y + 6 - 2);
   }
 }
 
 function drawWalls(w) {
   stroke("#00b");
   strokeWeight(10);
-  line(0, w.MIN_Y - 5, 100, w.MIN_Y - 5);
-  line(0, w.MAX_Y + 5, 100, w.MAX_Y + 5);
+  line(0, w.MIN_Y - 5, w.MAX_X, w.MIN_Y - 5);
+  line(0, w.MAX_Y + 5, w.MAX_X, w.MAX_Y + 5);
+}
+
+function getStats(w) {
+  const boxes = w.boxes;
+  const springs = [];
+  const stats = {
+    boxes: [],
+    springs: [],
+    totalKineticEnergy: 0,
+    totalElasticEnergy: 0,
+    totalEnergy: 0,
+  };
+
+  for (const [idx, box] of boxes.entries()) {
+    const v = (box.y - box.prevY) / w.dt;
+    const m = w.masses[idx];
+    const ke = 0.5 * m * v * v;
+    stats.boxes.push({
+      name: w.names[idx],
+      velocity: v,
+      kineticEnergy: ke,
+      color: w.colors[idx],
+      y: box.y,
+    });
+    stats.totalKineticEnergy += ke;
+  }
+
+  for (const spring of springs) {
+    const i = getBoxByName(boxes, spring.one);
+    const j = getBoxByName(boxes, spring.two);
+
+    const actualLen = Math.abs(i.y - j.y);
+    const displacement = actualLen - spring.restingLen;
+    const force = spring.k * displacement;
+    const elasticEnergy = 0.5 * spring.k * displacement * displacement;
+
+    stats.springs.push({
+      name: `${spring.one}-${spring.two}`,
+      force: force,
+      elasticEnergy: elasticEnergy,
+    });
+    stats.totalElasticEnergy += elasticEnergy;
+  }
+
+  stats.totalEnergy = stats.totalKineticEnergy + stats.totalElasticEnergy;
+
+  return stats;
+}
+
+function drawStats(w) {
+  const stats = getStats(w);
+
+  noStroke();
+  fill("white");
+
+  textSize(14);
+  const LINE_HEIGHT = 15;
+  let yOffset = w.MAX_Y + 10;
+  function textln(s) {
+    text(s, 4, (yOffset += LINE_HEIGHT));
+  }
+
+  stats.boxes.sort((i, j) => i.y - j.y);
+  for (const boxStat of stats.boxes) {
+    fill(boxStat.color);
+    textln(`${boxStat.name}=${boxStat.velocity.toFixed(2)}\n`);
+  }
+  for (const springStat of stats.springs) {
+    textln(`${springStat.name}=${springStat.elasticEnergy.toFixed(2)}`);
+  }
+
+  fill("white");
+  textln(`\u03a3\u00bdmv\u00b2=${stats.totalKineticEnergy.toFixed(2)}\n`);
+  textln(`\u03a3\u00bdkd\u00b2=${stats.totalElasticEnergy.toFixed(2)}\n`);
+  textln(`\u03a3E=${stats.totalEnergy.toFixed(2)}\n`);
 }
 
 export function draw() {
@@ -125,9 +202,10 @@ export function draw() {
 
   drawBoxes(WORLD);
   drawWalls(WORLD);
+  drawStats(WORLD);
 }
 
 export function setup() {
   textSize(12);
-  createCanvas(100, WORLD.MAX_Y + 300);
+  createCanvas(WORLD.MAX_X, WORLD.MAX_Y + 300);
 }
