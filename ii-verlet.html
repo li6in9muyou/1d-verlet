@@ -5,14 +5,50 @@
     <script src="./vendor/p5.sound.min.js"></script>
     <link rel="stylesheet" type="text/css" href="style.css" />
     <meta charset="utf-8" />
+    <style>
+      .controls {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 140px;
+        display: flex;
+        justify-content: space-between;
+      }
+    </style>
   </head>
   <body>
     <main></main>
+    <section class="controls">
+      <button id="prev">prev</button>
+      <button id="pause">pause</button>
+      <button id="next">next</button>
+    </section>
     <script src="ii-verlet.js" type="module"></script>
     <script type="module">
       import { setup, draw } from "./ii-verlet.js";
       window.setup = setup;
       window.draw = draw;
+
+      document.getElementById("prev").addEventListener("click", () => {
+        console.info("libq prev button is not implemented");
+      });
+      document.getElementById("pause").addEventListener("click", () => {
+        if (!window.state.paused) {
+          window.state.pauseAfterFrameCnt = 0;
+        } else {
+          window.state.pauseAfterFrameCnt = Number.MAX_SAFE_INTEGER;
+        }
+        window.state.paused = !window.state.paused;
+      });
+      document.getElementById("next").addEventListener("click", () => {
+        window.state.pauseAfterFrameCnt = 1;
+        window.state.paused = true;
+      });
+
+      window.state = {
+        paused: false,
+        pauseAfterFrameCnt: Number.MAX_SAFE_INTEGER,
+      };
     </script>
   </body>
 </html>

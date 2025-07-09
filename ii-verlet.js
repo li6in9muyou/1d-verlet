@@ -1,6 +1,7 @@
 import { getV, yv } from "./ii-utils.js";
 
 let WORLD = {
+  frameCnt: 0,
   MAX_X: 140,
   MIN_Y: 20,
   MAX_Y: 600,
@@ -174,6 +175,7 @@ function drawStats(w) {
     text(s, 4, (yOffset += LINE_HEIGHT));
   }
 
+  textln(`frameCount=${w.frameCnt}`);
   stats.boxes.sort((i, j) => i.y - j.y);
   for (const boxStat of stats.boxes) {
     fill(boxStat.color);
@@ -192,12 +194,17 @@ function drawStats(w) {
 export function draw() {
   background("#111");
 
-  const steps = 1 / WORLD.dt;
-  for (let i = 0; i < steps; i++) {
-    WORLD = { ...WORLD };
-    WORLD = afterMoving(WORLD);
-    WORLD = afterHittingWall(WORLD);
-    WORLD = afterCrashing(WORLD);
+  if (window.state.pauseAfterFrameCnt > 0) {
+    WORLD.frameCnt++;
+    window.state.pauseAfterFrameCnt--;
+
+    const steps = 1 / WORLD.dt;
+    for (let i = 0; i < steps; i++) {
+      WORLD = { ...WORLD };
+      WORLD = afterMoving(WORLD);
+      WORLD = afterHittingWall(WORLD);
+      WORLD = afterCrashing(WORLD);
+    }
   }
 
   drawBoxes(WORLD);
