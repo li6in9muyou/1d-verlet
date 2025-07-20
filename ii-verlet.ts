@@ -1,6 +1,7 @@
 import { getV, yv } from "./ii-utils.ts";
+import { World } from "./types.ts";
 
-let WORLD = {
+let WORLD: World = {
   frameCnt: 0,
   MAX_X: 140,
   MIN_Y: 20,
