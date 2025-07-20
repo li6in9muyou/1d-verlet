@@ -1,11 +1,11 @@
-import { describe, test, expect } from "vitest";
 import {
   afterCrashing,
   afterHittingWall,
   afterMoving,
   getV,
 } from "./ii-verlet";
-import { yv, getV } from "./ii-utils";
+import { describe, expect, test } from "vitest";
+import { getV, yv } from "./ii-utils";
 
 describe("afterMove", () => {
   const START_Y = 300;
