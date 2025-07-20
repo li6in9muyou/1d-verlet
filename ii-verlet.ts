@@ -1,7 +1,8 @@
-import { getV, yv } from "./ii-utils.ts";
-import { World } from "./types.ts";
+import { Dynamics, DynamicsWorld, RenderWorld, World } from "./types";
+import { getV, yv } from "./ii-utils";
 
 let WORLD: World = {
+  springs: [],
   frameCnt: 0,
   MAX_X: 140,
   MIN_Y: 20,
@@ -15,7 +16,7 @@ let WORLD: World = {
   statNextLineY: 0,
 };
 
-export function afterCrashing(state) {
+export function afterCrashing(state: World): World {
   const nextBoxes = [...state.boxes];
 
   for (let ii = 0; ii < state.boxes.length; ii += 1) {
@@ -56,7 +57,7 @@ export function afterCrashing(state) {
   return { ...state, boxes: nextBoxes };
 }
 
-export function afterMoving(state) {
+export function afterMoving(state: World): World {
   const dt = state.dt;
   const nextBoxes = state.boxes.map((box) => {
     return {
@@ -69,7 +70,7 @@ export function afterMoving(state) {
   return { ...state, boxes: nextBoxes };
 }
 
-export function afterHittingWall(state) {
+export function afterHittingWall(state: World): World {
   const nextBoxes = state.boxes.map((box, idx) => {
     const halfSize = state.sizes[idx] / 2;
     if (box.y > state.MAX_Y - halfSize) {
@@ -90,7 +91,7 @@ export function afterHittingWall(state) {
   return { ...state, boxes: nextBoxes };
 }
 
-function drawBoxes(w) {
+function drawBoxes(w: RenderWorld & DynamicsWorld) {
   for (const idx in w.boxes) {
     const box = w.boxes[idx];
     const size = w.sizes[idx];
@@ -109,14 +110,26 @@ function drawBoxes(w) {
   }
 }
 
-function drawWalls(w) {
+function drawWalls(w: DynamicsWorld) {
   stroke("#00b");
   strokeWeight(10);
   line(0, w.MIN_Y - 5, w.MAX_X, w.MIN_Y - 5);
   line(0, w.MAX_Y + 5, w.MAX_X, w.MAX_Y + 5);
 }
 
-function getStats(w) {
+function getStats(w: World): {
+  boxes: {
+    name: string;
+    velocity: number;
+    kineticEnergy: number;
+    color: string;
+    y: number;
+  }[];
+  springs: DynamicsWorld["springs"];
+  totalKineticEnergy: number;
+  totalElasticEnergy: number;
+  totalEnergy: number;
+} {
   const boxes = w.boxes;
   const springs = [];
   const stats = {
@@ -141,6 +154,15 @@ function getStats(w) {
     stats.totalKineticEnergy += ke;
   }
 
+  function getBoxByName(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    boxes: DynamicsWorld["boxes"],
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    name: RenderWorld["names"][number],
+  ): Dynamics | null {
+    throw "not implemented";
+  }
+
   for (const spring of springs) {
     const i = getBoxByName(boxes, spring.one);
     const j = getBoxByName(boxes, spring.two);
@@ -163,7 +185,7 @@ function getStats(w) {
   return stats;
 }
 
-function drawStats(w) {
+function drawStats(w: World) {
   const stats = getStats(w);
 
   noStroke();
@@ -172,7 +194,7 @@ function drawStats(w) {
   textSize(14);
   const LINE_HEIGHT = 15;
   let yOffset = w.MAX_Y + 10;
-  function textln(s) {
+  function textln(s: string) {
     text(s, 4, (yOffset += LINE_HEIGHT));
   }
 

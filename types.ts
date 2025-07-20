@@ -20,6 +20,14 @@ export type DynamicsWorld = {
   boxes: Dynamics[];
   sizes: number[];
   masses: number[];
+  springs: Spring[];
+};
+
+export type Spring = {
+  one: string;
+  two: string;
+  k: number;
+  restingLen: number;
 };
 
 export type SimWorld = {
