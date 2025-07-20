@@ -17,7 +17,8 @@
     "url": "https://github.com/li6in9muyou/1d-verlet/issues"
   },
   "homepage": "https://github.com/li6in9muyou/1d-verlet#readme",
-  "dependencies": {
+  "devDependencies": {
+    "vite": "^7.0.5",
     "vitest": "^3.2.4"
   }
 }
