@@ -1,4 +1,4 @@
-import { getV, yv } from "./ii-utils.js";
+import { getV, yv } from "./ii-utils.ts";
 
 let WORLD = {
   frameCnt: 0,
