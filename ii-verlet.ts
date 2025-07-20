@@ -1,3 +1,4 @@
+import "./node_modules/@types/p5/global";
 import { Dynamics, DynamicsWorld, RenderWorld, World } from "./types";
 import { getV, yv } from "./ii-utils";
 

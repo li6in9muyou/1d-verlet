@@ -19,6 +19,7 @@
   "homepage": "https://github.com/li6in9muyou/1d-verlet#readme",
   "devDependencies": {
     "@eslint/js": "^9.31.0",
+    "@types/p5": "^1.7.6",
     "eslint": "^9.31.0",
     "globals": "^16.3.0",
     "typescript": "^5.8.3",
