@@ -4,7 +4,8 @@
   "description": "It's 1 dimensional because 2d is too hard",
   "main": "index.html",
   "scripts": {
-    "test": "vitest"
+    "test": "vitest",
+    "dev": "vite"
   },
   "repository": {
     "type": "git",
