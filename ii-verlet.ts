@@ -19,10 +19,17 @@ let WORLD: World = {
 export class SimCtrl {
   private paused: boolean;
   private pauseAfterFrameCnt: number;
+  private worldHistory: unknown[];
+  private prevStepIndex: number;
+  private _shouldPrevStep: number;
+  private static MAX_HISTORY_CNT = 200;
 
   constructor() {
     this.paused = false;
     this.pauseAfterFrameCnt = Number.MAX_SAFE_INTEGER;
+    this.worldHistory = [];
+    this.prevStepIndex = 0;
+    this._shouldPrevStep = false;
   }
 
   togglePlayPause() {
@@ -52,8 +59,43 @@ export class SimCtrl {
     return this.pauseAfterFrameCnt > 0;
   }
 
-  onStep() {
+  getPrevStep() {
+    return this._shouldPrevStep;
+  }
+  setPrevStep() {
+    this._shouldPrevStep = true;
+  }
+  clearPrevStep() {
+    this._shouldPrevStep = false;
+  }
+
+  onStep(world: unknown) {
+    const historyChanged =
+      this.worldHistory.length > 0 &&
+      this.worldHistory[this.worldHistory.length - 1] !== world;
+
+    if (historyChanged) {
+      this.prevStepIndex = 0;
+    }
+
+    this.worldHistory.push(world);
+    if (this.worldHistory.length > SimCtrl.MAX_HISTORY_CNT) {
+      this.worldHistory.shift();
+    }
+
     this.pauseAfterFrameCnt--;
+  }
+
+  prevStep(): unknown | undefined {
+    this.pause();
+    this.clearPrevStep();
+
+    const targetIndex = this.worldHistory.length - 1 - this.prevStepIndex;
+
+    this.prevStepIndex++;
+    this.prevStepIndex %= this.worldHistory.length;
+
+    return this.worldHistory[targetIndex];
   }
 }
 
@@ -265,7 +307,7 @@ export function draw() {
 
   if (simCtrl.shouldStep()) {
     WORLD.frameCnt++;
-    simCtrl.onStep();
+    simCtrl.onStep(WORLD);
 
     const steps = 1 / WORLD.dt;
     for (let i = 0; i < steps; i++) {
@@ -274,6 +316,10 @@ export function draw() {
       WORLD = afterHittingWall(WORLD);
       WORLD = afterCrashing(WORLD);
     }
+  }
+
+  if (simCtrl.getPrevStep()) {
+    WORLD = simCtrl.prevStep();
   }
 
   drawBoxes(WORLD);

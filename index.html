@@ -30,7 +30,7 @@
       window.draw = draw;
 
       document.getElementById("prev").addEventListener("click", () => {
-        console.info("libq prev button is not implemented");
+        simCtrl.setPrevStep();
       });
       document.getElementById("pause").addEventListener("click", () => {
         simCtrl.togglePlayPause();
