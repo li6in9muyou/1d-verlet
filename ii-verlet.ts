@@ -16,6 +16,49 @@ let WORLD: World = {
   statNextLineY: 0,
 };
 
+export class SimCtrl {
+  private paused: boolean;
+  private pauseAfterFrameCnt: number;
+
+  constructor() {
+    this.paused = false;
+    this.pauseAfterFrameCnt = Number.MAX_SAFE_INTEGER;
+  }
+
+  togglePlayPause() {
+    if (!this.paused) {
+      this.pause();
+    } else {
+      this.play();
+    }
+  }
+
+  private play() {
+    this.paused = false;
+    this.pauseAfterFrameCnt = Number.MAX_SAFE_INTEGER;
+  }
+
+  private pause() {
+    this.paused = true;
+    this.pauseAfterFrameCnt = 0;
+  }
+
+  nextStep() {
+    this.paused = true;
+    this.pauseAfterFrameCnt = 1;
+  }
+
+  shouldStep() {
+    return this.pauseAfterFrameCnt > 0;
+  }
+
+  onStep() {
+    this.pauseAfterFrameCnt--;
+  }
+}
+
+export const simCtrl = new SimCtrl();
+
 export function afterCrashing(state: World): World {
   const nextBoxes = [...state.boxes];
 
@@ -220,9 +263,9 @@ function drawStats(w: World) {
 export function draw() {
   background("#111");
 
-  if (window.state.pauseAfterFrameCnt > 0) {
+  if (simCtrl.shouldStep()) {
     WORLD.frameCnt++;
-    window.state.pauseAfterFrameCnt--;
+    simCtrl.onStep();
 
     const steps = 1 / WORLD.dt;
     for (let i = 0; i < steps; i++) {

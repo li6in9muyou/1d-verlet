@@ -25,7 +25,7 @@
     </section>
     <script src="ii-verlet.ts" type="module"></script>
     <script type="module">
-      import { setup, draw } from "./ii-verlet.ts";
+      import { setup, draw, simCtrl } from "./ii-verlet.ts";
       window.setup = setup;
       window.draw = draw;
 
@@ -33,22 +33,11 @@
         console.info("libq prev button is not implemented");
       });
       document.getElementById("pause").addEventListener("click", () => {
-        if (!window.state.paused) {
-          window.state.pauseAfterFrameCnt = 0;
-        } else {
-          window.state.pauseAfterFrameCnt = Number.MAX_SAFE_INTEGER;
-        }
-        window.state.paused = !window.state.paused;
+        simCtrl.togglePlayPause();
       });
       document.getElementById("next").addEventListener("click", () => {
-        window.state.pauseAfterFrameCnt = 1;
-        window.state.paused = true;
+        simCtrl.nextStep();
       });
-
-      window.state = {
-        paused: false,
-        pauseAfterFrameCnt: Number.MAX_SAFE_INTEGER,
-      };
     </script>
   </body>
 </html>
