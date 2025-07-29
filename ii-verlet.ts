@@ -125,7 +125,10 @@ function getStats(w: World): {
     color: string;
     y: number;
   }[];
-  springs: DynamicsWorld["springs"];
+  springs: ({
+    name: string;
+    elasticEnergy: number;
+  } & DynamicsWorld["springs"][number])[];
   totalKineticEnergy: number;
   totalElasticEnergy: number;
   totalEnergy: number;
