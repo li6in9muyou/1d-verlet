@@ -14,46 +14,30 @@ let WORLD: World = {
   names: ["a", "b"],
   masses: [1000, 1],
   statNextLineY: 0,
+  ctrl: {
+    events: [],
+    playing: true,
+  },
 };
 
 export class SimCtrl {
-  private paused: boolean;
-  private pauseAfterFrameCnt: number;
-
-  constructor() {
-    this.paused = false;
-    this.pauseAfterFrameCnt = Number.MAX_SAFE_INTEGER;
-  }
-
-  togglePlayPause() {
-    if (!this.paused) {
-      this.pause();
-    } else {
-      this.play();
+  afterHandlingEvents(w: World): World {
+    for (const e of w.ctrl.events) {
+      switch (e.name) {
+        case "toggle":
+          return {
+            ...w,
+            ctrl: {
+              ...w.ctrl,
+              events: w.ctrl.events.slice(1),
+              playing: !w.ctrl.playing,
+            },
+          };
+        default:
+          throw `simctrl: unknown event ${e.name} ctrl=${JSON.stringify(w.ctrl)}`;
+      }
     }
-  }
-
-  private play() {
-    this.paused = false;
-    this.pauseAfterFrameCnt = Number.MAX_SAFE_INTEGER;
-  }
-
-  private pause() {
-    this.paused = true;
-    this.pauseAfterFrameCnt = 0;
-  }
-
-  nextStep() {
-    this.paused = true;
-    this.pauseAfterFrameCnt = 1;
-  }
-
-  shouldStep() {
-    return this.pauseAfterFrameCnt > 0;
-  }
-
-  onStep() {
-    this.pauseAfterFrameCnt--;
+    return w;
   }
 }
 
@@ -263,9 +247,10 @@ function drawStats(w: World) {
 export function draw() {
   background("#111");
 
-  if (simCtrl.shouldStep()) {
+  WORLD = simCtrl.afterHandlingEvents(WORLD);
+
+  if (WORLD.ctrl.playing) {
     WORLD.frameCnt++;
-    simCtrl.onStep();
 
     const steps = 1 / WORLD.dt;
     for (let i = 0; i < steps; i++) {
@@ -284,4 +269,8 @@ export function draw() {
 export function setup() {
   textSize(12);
   createCanvas(WORLD.MAX_X, WORLD.MAX_Y + 300);
+}
+
+export function emitEvent(ev) {
+  WORLD.ctrl.events.push(ev);
 }

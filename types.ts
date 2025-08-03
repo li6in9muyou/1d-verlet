@@ -4,7 +4,7 @@ export type Dynamics = {
   acc: number;
 };
 
-export type World = DynamicsWorld & RenderWorld & SimWorld;
+export type World = DynamicsWorld & RenderWorld & SimWorld & ControlState;
 
 export type RenderWorld = {
   frameCnt: number;
@@ -32,4 +32,11 @@ export type Spring = {
 
 export type SimWorld = {
   dt: number;
+};
+
+export type ControlState = {
+  ctrl: {
+    events: { name: string }[];
+    playing: boolean;
+  };
 };

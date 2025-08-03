@@ -25,7 +25,7 @@
     </section>
     <script src="ii-verlet.ts" type="module"></script>
     <script type="module">
-      import { setup, draw, simCtrl } from "./ii-verlet.ts";
+      import { setup, draw, emitEvent } from "./ii-verlet.ts";
       window.setup = setup;
       window.draw = draw;
 
@@ -33,10 +33,10 @@
         console.info("libq prev button is not implemented");
       });
       document.getElementById("pause").addEventListener("click", () => {
-        simCtrl.togglePlayPause();
+        emitEvent({ name: "toggle" });
       });
       document.getElementById("next").addEventListener("click", () => {
-        simCtrl.nextStep();
+        console.info("libq next button is not implemented");
       });
     </script>
   </body>
