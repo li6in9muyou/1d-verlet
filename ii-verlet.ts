@@ -19,7 +19,7 @@ let WORLD: World = {
 export class SimCtrl<T> {
   private paused: boolean;
   private pauseAfterFrameCnt: number;
-  private cursor = 0;
+  private cursorInSaved = 0;
   private lowSaved = 0;
   private highSaved = 0;
   private saved: T[] = [];
@@ -52,7 +52,6 @@ export class SimCtrl<T> {
   }
 
   nextStep() {
-    console.log("libq nextstep");
     this.paused = true;
     this.pauseAfterFrameCnt = 1;
 
@@ -60,13 +59,13 @@ export class SimCtrl<T> {
   }
 
   requestPrevStep() {
-    console.log("libq prevstep");
     this.pause();
 
-    this.cursor -= 1;
-    if (this.cursor < this.lowSaved) {
-      this.cursor = this.highSaved - 1;
+    this.cursorInSaved -= 1;
+    if (this.cursorInSaved < 0) {
+      this.cursorInSaved = SimCtrl.MAX_SAVED - 1;
     }
+    this.saved.pop();
 
     this._requestPrevStep = true;
   }
@@ -74,7 +73,9 @@ export class SimCtrl<T> {
     return this._requestPrevStep;
   }
   getState(): T {
-    return this.saved[this.cursor - this.lowSaved];
+    const ans = this.saved[this.cursorInSaved];
+    console.log("libq getstate", this.cursorInSaved, this.saved, "return", ans);
+    return ans;
   }
 
   shouldStep() {
@@ -84,20 +85,29 @@ export class SimCtrl<T> {
   onStep(state: T) {
     this.pauseAfterFrameCnt--;
 
-    this.cursor += 1;
-    if (this.cursor < this.highSaved) {
-      const savedIdx = this.cursor - this.lowSaved;
-      this.saved[savedIdx] = state;
-      console.log("libq onstep/save", state, savedIdx, this.saved);
-    } else {
+    this.cursorInSaved += 1;
+    if (this.cursorInSaved >= SimCtrl.MAX_SAVED - 1) {
+      this.cursorInSaved = SimCtrl.MAX_SAVED - 1;
+    }
+
+    console.log(
+      "libq saved",
+      this.lowSaved,
+      this.highSaved,
+      "cursor",
+      this.cursorInSaved,
+    );
+    if (this.cursorInSaved >= SimCtrl.MAX_SAVED - 1) {
+      console.log("libq saved/push", state);
       this.saved.push(state);
       this.highSaved += 1;
-
       if (this.saved.length > SimCtrl.MAX_SAVED) {
         this.saved.shift();
         this.lowSaved += 1;
       }
-      console.log("libq onstep/push", state, this.saved);
+    } else {
+      console.log("libq saved/update", state);
+      this.saved[this.cursorInSaved] = state;
     }
   }
 }
