@@ -16,9 +16,15 @@ let WORLD: World = {
   statNextLineY: 0,
 };
 
-export class SimCtrl {
+export class SimCtrl<T> {
   private paused: boolean;
   private pauseAfterFrameCnt: number;
+  private cursor = 0;
+  private lowSaved = 0;
+  private highSaved = 0;
+  private saved: T[] = [];
+  private _requestPrevStep = false;
+  private static MAX_SAVED = 3;
 
   constructor() {
     this.paused = false;
@@ -36,6 +42,8 @@ export class SimCtrl {
   private play() {
     this.paused = false;
     this.pauseAfterFrameCnt = Number.MAX_SAFE_INTEGER;
+
+    this._requestPrevStep = false;
   }
 
   private pause() {
@@ -44,20 +52,57 @@ export class SimCtrl {
   }
 
   nextStep() {
+    console.log("libq nextstep");
     this.paused = true;
     this.pauseAfterFrameCnt = 1;
+
+    this._requestPrevStep = false;
+  }
+
+  requestPrevStep() {
+    console.log("libq prevstep");
+    this.pause();
+
+    this.cursor -= 1;
+    if (this.cursor < this.lowSaved) {
+      this.cursor = this.highSaved - 1;
+    }
+
+    this._requestPrevStep = true;
+  }
+  shouldSetState() {
+    return this._requestPrevStep;
+  }
+  getState(): T {
+    return this.saved[this.cursor - this.lowSaved];
   }
 
   shouldStep() {
     return this.pauseAfterFrameCnt > 0;
   }
 
-  onStep() {
+  onStep(state: T) {
     this.pauseAfterFrameCnt--;
+
+    this.cursor += 1;
+    if (this.cursor < this.highSaved) {
+      const savedIdx = this.cursor - this.lowSaved;
+      this.saved[savedIdx] = state;
+      console.log("libq onstep/save", state, savedIdx, this.saved);
+    } else {
+      this.saved.push(state);
+      this.highSaved += 1;
+
+      if (this.saved.length > SimCtrl.MAX_SAVED) {
+        this.saved.shift();
+        this.lowSaved += 1;
+      }
+      console.log("libq onstep/push", state, this.saved);
+    }
   }
 }
 
-export const simCtrl = new SimCtrl();
+export const simCtrl = new SimCtrl<World>();
 
 export function afterCrashing(state: World): World {
   const nextBoxes = [...state.boxes];
@@ -265,7 +310,7 @@ export function draw() {
 
   if (simCtrl.shouldStep()) {
     WORLD.frameCnt++;
-    simCtrl.onStep();
+    simCtrl.onStep(WORLD);
 
     const steps = 1 / WORLD.dt;
     for (let i = 0; i < steps; i++) {
@@ -274,6 +319,10 @@ export function draw() {
       WORLD = afterHittingWall(WORLD);
       WORLD = afterCrashing(WORLD);
     }
+  }
+
+  if (simCtrl.shouldSetState()) {
+    WORLD = simCtrl.getState();
   }
 
   drawBoxes(WORLD);
