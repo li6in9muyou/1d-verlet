@@ -1,15 +1,10 @@
-import { beforeEach, describe, expect, test } from "vitest";
-import { SimCtrl } from "./simctrl";
+import { afterDrawing, afterHandlingEvents } from "./simctrl";
+import { describe, expect, test } from "vitest";
 
 describe("simctrl", () => {
-  let s;
-  beforeEach(() => {
-    s = new SimCtrl();
-  });
-
   test("basic stuff", () => {
     expect(
-      s.afterHandlingEvents({
+      afterHandlingEvents({
         ctrl: {
           events: [{ name: "toggle" }],
           playing: false,
@@ -18,7 +13,7 @@ describe("simctrl", () => {
     ).toBe(true);
 
     expect(
-      s.afterHandlingEvents({
+      afterHandlingEvents({
         ctrl: {
           events: [{ name: "toggle" }],
           playing: true,
@@ -27,7 +22,7 @@ describe("simctrl", () => {
     ).toBe(false);
 
     expect(
-      s.afterHandlingEvents({
+      afterHandlingEvents({
         ctrl: {
           events: [{ name: "toggle" }],
           playing: true,
@@ -37,7 +32,7 @@ describe("simctrl", () => {
   });
 
   test("should parse next-frame event", () => {
-    const after = s.afterHandlingEvents({
+    const after = afterHandlingEvents({
       ctrl: {
         events: [{ name: "next-frame" }],
         playing: false,
@@ -48,7 +43,7 @@ describe("simctrl", () => {
   });
 
   test("should resume playing after toggle", () => {
-    const after = s.afterHandlingEvents({
+    const after = afterHandlingEvents({
       ctrl: {
         events: [{ name: "toggle" }],
         playing: false,
@@ -60,7 +55,7 @@ describe("simctrl", () => {
   });
 
   test("should stop playing if stopAfterFrames < 0", () => {
-    const after = s.afterDrawing({
+    const after = afterDrawing({
       ctrl: {
         events: [],
         playing: true,
@@ -73,7 +68,7 @@ describe("simctrl", () => {
   });
 
   test("should update w.ctrl in afterDrawing", () => {
-    const after = s.afterDrawing({
+    const after = afterDrawing({
       ctrl: {
         events: ["do not modify events"],
         playing: true,

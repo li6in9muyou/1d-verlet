@@ -3,7 +3,6 @@ import {
   afterHittingWall,
   afterMoving,
 } from "./ii-verlet";
-import { SimCtrl } from "./simctrl";
 import { beforeEach, describe, expect, test } from "vitest";
 import { getV, yv } from "./ii-utils";
 
@@ -188,67 +187,5 @@ describe("afterCrashing", () => {
     expect(getV(s.boxes[0])).toBeCloseTo(exp[0].v, 0);
     expect(s.boxes[1].y).toBeCloseTo(exp[1].y, 0);
     expect(getV(s.boxes[1])).toBeCloseTo(exp[1].v, 0);
-  });
-});
-
-describe("SimCtrl", () => {
-  let simCtrl;
-
-  beforeEach(() => {
-    simCtrl = new SimCtrl();
-  });
-
-  test("initial state should be playing", () => {
-    expect(simCtrl.shouldStep()).toBe(true);
-    expect(simCtrl.paused).toBe(false);
-    expect(simCtrl.pauseAfterFrameCnt).toBe(Number.MAX_SAFE_INTEGER);
-  });
-
-  test("togglePlayPause should pause when playing", () => {
-    simCtrl.togglePlayPause();
-    expect(simCtrl.paused).toBe(true);
-    expect(simCtrl.pauseAfterFrameCnt).toBe(0);
-    expect(simCtrl.shouldStep()).toBe(false);
-  });
-
-  test("togglePlayPause should play when paused", () => {
-    simCtrl.togglePlayPause();
-    simCtrl.togglePlayPause();
-    expect(simCtrl.paused).toBe(false);
-    expect(simCtrl.pauseAfterFrameCnt).toBe(Number.MAX_SAFE_INTEGER);
-    expect(simCtrl.shouldStep()).toBe(true);
-  });
-
-  test("nextStep should set pauseAfterFrameCnt to 1 and pause", () => {
-    simCtrl.nextStep();
-    expect(simCtrl.paused).toBe(true);
-    expect(simCtrl.pauseAfterFrameCnt).toBe(1);
-    expect(simCtrl.shouldStep()).toBe(true);
-  });
-
-  test("onStep should decrement pauseAfterFrameCnt", () => {
-    simCtrl.nextStep();
-    simCtrl.onStep();
-    expect(simCtrl.pauseAfterFrameCnt).toBe(0);
-    expect(simCtrl.shouldStep()).toBe(false);
-  });
-
-  test("onStep should handle MAX_SAFE_INTEGER correctly", () => {
-    const initial = simCtrl.pauseAfterFrameCnt;
-    simCtrl.onStep();
-    expect(simCtrl.pauseAfterFrameCnt).toBe(initial - 1);
-    expect(simCtrl.shouldStep()).toBe(true);
-  });
-
-  test("shouldStep returns false when pauseAfterFrameCnt is 0", () => {
-    simCtrl.togglePlayPause();
-    expect(simCtrl.shouldStep()).toBe(false);
-  });
-
-  test("shouldStep returns true when pauseAfterFrameCnt is greater than 0", () => {
-    simCtrl.nextStep();
-    expect(simCtrl.shouldStep()).toBe(true);
-    simCtrl.onStep();
-    expect(simCtrl.shouldStep()).toBe(false);
   });
 });

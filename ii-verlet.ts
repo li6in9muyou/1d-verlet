@@ -1,6 +1,6 @@
 import { Dynamics, DynamicsWorld, RenderWorld, World } from "./types";
+import { afterDrawing, afterHandlingEvents } from "./simctrl";
 import { getV, yv } from "./ii-utils";
-import { SimCtrl } from "./simctrl";
 
 let WORLD: World = {
   springs: [],
@@ -21,8 +21,6 @@ let WORLD: World = {
     stopAfterFrames: Number.MAX_SAFE_INTEGER,
   },
 };
-
-export const simCtrl = new SimCtrl();
 
 export function afterCrashing(state: World): World {
   const nextBoxes = [...state.boxes];
@@ -228,7 +226,7 @@ function drawStats(w: World) {
 export function draw() {
   background("#111");
 
-  WORLD = simCtrl.afterHandlingEvents(WORLD);
+  WORLD = afterHandlingEvents(WORLD);
 
   if (WORLD.ctrl.playing) {
     WORLD.frameCnt++;
@@ -241,7 +239,7 @@ export function draw() {
       WORLD = afterCrashing(WORLD);
     }
 
-    WORLD = simCtrl.afterDrawing(WORLD);
+    WORLD = afterDrawing(WORLD);
   }
 
   drawBoxes(WORLD);
