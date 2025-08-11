@@ -25,5 +25,14 @@ describe("simctrl", () => {
         },
       }).ctrl.playing,
     ).toBe(false);
+
+    expect(
+      s.afterHandlingEvents({
+        ctrl: {
+          events: [{ name: "toggle" }],
+          playing: true,
+        },
+      }).ctrl.events,
+    ).toStrictEqual([]);
   });
 });
