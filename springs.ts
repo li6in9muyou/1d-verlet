@@ -6,6 +6,8 @@ export function afterApplyingForce(w: World): World {
   const boxes = ww.boxes;
   const masses = ww.masses;
 
+  boxes.forEach((box) => (box.acc = 0));
+
   springs.forEach((spring) => {
     const i = boxes[spring.one];
     const j = boxes[spring.two];
