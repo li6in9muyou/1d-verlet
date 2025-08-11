@@ -68,16 +68,28 @@ describe("simctrl", () => {
   });
 
   test("should update w.ctrl in afterDrawing", () => {
-    const after = afterDrawing({
-      ctrl: {
+    assertSimCtrl(
+      afterDrawing,
+      {
         events: ["do not modify events"],
         playing: true,
         stopAfterFrames: 10,
       },
+      {
+        events: ["do not modify events"],
+        playing: true,
+        stopAfterFrames: 9,
+      },
+    );
+  });
+
+  function assertSimCtrl(fn, input, expected) {
+    const after = fn({
+      ctrl: input,
     }).ctrl;
 
-    expect(after.events).toStrictEqual(["do not modify events"]);
-    expect(after.playing).toBe(true);
-    expect(after.stopAfterFrames).toBe(9);
-  });
+    for (const [k, v] of Object.entries(expected)) {
+      expect(after[k]).toStrictEqual(v);
+    }
+  }
 });
