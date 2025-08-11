@@ -1,5 +1,6 @@
 import { Dynamics, DynamicsWorld, RenderWorld, World } from "./types";
 import { getV, yv } from "./ii-utils";
+import { SimCtrl } from "./simctrl";
 
 let WORLD: World = {
   springs: [],
@@ -19,27 +20,6 @@ let WORLD: World = {
     playing: true,
   },
 };
-
-export class SimCtrl {
-  afterHandlingEvents(w: World): World {
-    for (const e of w.ctrl.events) {
-      switch (e.name) {
-        case "toggle":
-          return {
-            ...w,
-            ctrl: {
-              ...w.ctrl,
-              events: w.ctrl.events.slice(1),
-              playing: !w.ctrl.playing,
-            },
-          };
-        default:
-          throw `simctrl: unknown event ${e.name} ctrl=${JSON.stringify(w.ctrl)}`;
-      }
-    }
-    return w;
-  }
-}
 
 export const simCtrl = new SimCtrl();
 

@@ -2,8 +2,8 @@ import {
   afterCrashing,
   afterHittingWall,
   afterMoving,
-  SimCtrl,
 } from "./ii-verlet";
+import { SimCtrl } from "./simctrl";
 import { beforeEach, describe, expect, test } from "vitest";
 import { getV, yv } from "./ii-utils";
 

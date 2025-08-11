@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { SimCtrl } from "./ii-verlet";
+import { SimCtrl } from "./simctrl";
 
 describe("simctrl", () => {
   let s;
