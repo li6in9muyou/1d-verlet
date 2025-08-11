@@ -3,68 +3,84 @@ import { describe, expect, test } from "vitest";
 
 describe("simctrl", () => {
   test("basic stuff", () => {
-    expect(
-      afterHandlingEvents({
-        ctrl: {
-          events: [{ name: "toggle" }],
-          playing: false,
-        },
-      }).ctrl.playing,
-    ).toBe(true);
+    assertSimCtrl(
+      afterHandlingEvents,
+      {
+        events: [{ name: "toggle" }],
+        playing: false,
+      },
+      {
+        playing: true,
+        events: [],
+      },
+    );
 
-    expect(
-      afterHandlingEvents({
-        ctrl: {
-          events: [{ name: "toggle" }],
-          playing: true,
-        },
-      }).ctrl.playing,
-    ).toBe(false);
+    assertSimCtrl(
+      afterHandlingEvents,
+      {
+        events: [{ name: "toggle" }],
+        playing: true,
+      },
+      {
+        playing: false,
+        events: [],
+      },
+    );
 
-    expect(
-      afterHandlingEvents({
-        ctrl: {
-          events: [{ name: "toggle" }],
-          playing: true,
-        },
-      }).ctrl.events,
-    ).toStrictEqual([]);
+    assertSimCtrl(
+      afterHandlingEvents,
+      {
+        events: [{ name: "toggle" }],
+        playing: true,
+      },
+      {
+        events: [],
+      },
+    );
   });
 
   test("should parse next-frame event", () => {
-    const after = afterHandlingEvents({
-      ctrl: {
+    assertSimCtrl(
+      afterHandlingEvents,
+      {
         events: [{ name: "next-frame" }],
         playing: false,
       },
-    }).ctrl;
-    expect(after.playing).toBe(true);
-    expect(after.stopAfterFrames).toBe(1);
+      {
+        playing: true,
+        stopAfterFrames: 1,
+      },
+    );
   });
 
   test("should resume playing after toggle", () => {
-    const after = afterHandlingEvents({
-      ctrl: {
+    assertSimCtrl(
+      afterHandlingEvents,
+      {
         events: [{ name: "toggle" }],
         playing: false,
         stopAfterFrames: 0,
       },
-    }).ctrl;
-    expect(after.playing).toBe(true);
-    expect(after.stopAfterFrames).toBe(Number.MAX_SAFE_INTEGER);
+      {
+        playing: true,
+        stopAfterFrames: Number.MAX_SAFE_INTEGER,
+      },
+    );
   });
 
   test("should stop playing if stopAfterFrames < 0", () => {
-    const after = afterDrawing({
-      ctrl: {
+    assertSimCtrl(
+      afterDrawing,
+      {
         events: [],
         playing: true,
         stopAfterFrames: 0,
       },
-    }).ctrl;
-
-    expect(after.playing).toBe(false);
-    expect(after.stopAfterFrames).toBe(-1);
+      {
+        playing: false,
+        stopAfterFrames: -1,
+      },
+    );
   });
 
   test("should update w.ctrl in afterDrawing", () => {
