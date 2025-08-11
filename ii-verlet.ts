@@ -224,7 +224,9 @@ function drawStats(w: World) {
   textln(`\u03a3E=${stats.totalEnergy.toFixed(2)}\n`);
 }
 
-function drawFrameTime(ft: number, w: { MAX_Y: number }) {
+const frameTimeWindow = [];
+function drawFrameTime(ftWindow: number[], w: { MAX_Y: number }) {
+  const ft = ftWindow.reduce((a, b) => a + b, 0) / ftWindow.length;
   textSize(14);
   text(`frameTime=${ft.toFixed(2)}ms`, 4, w.MAX_Y + 10 + 15);
 }
@@ -255,7 +257,11 @@ export function draw() {
   drawStats(WORLD);
 
   const frameTime = performance.now() - frameStart;
-  drawFrameTime(frameTime, WORLD);
+  frameTimeWindow.push(frameTime);
+  if (frameTimeWindow.length > 60) {
+    frameTimeWindow.shift();
+  }
+  drawFrameTime(frameTimeWindow, WORLD);
 }
 
 export function setup() {
