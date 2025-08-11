@@ -1,10 +1,4 @@
-import {
-  CtrlEvents,
-  Dynamics,
-  DynamicsWorld,
-  RenderWorld,
-  World,
-} from "./types";
+import { Dynamics, DynamicsWorld, RenderWorld, World } from "./types";
 import { afterDrawing, afterHandlingEvents } from "./simctrl";
 import { getV, yv } from "./ii-utils";
 
