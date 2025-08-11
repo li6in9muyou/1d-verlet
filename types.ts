@@ -38,5 +38,6 @@ export type ControlState = {
   ctrl: {
     events: { name: string }[];
     playing: boolean;
+    stopAfterFrames: number;
   };
 };

@@ -11,6 +11,17 @@ export class SimCtrl {
               ...w.ctrl,
               events: w.ctrl.events.slice(1),
               playing: !w.ctrl.playing,
+              stopAfterFrames: Number.MAX_SAFE_INTEGER,
+            },
+          };
+        case "next-frame":
+          return {
+            ...w,
+            ctrl: {
+              ...w.ctrl,
+              events: w.ctrl.events.slice(1),
+              playing: true,
+              stopAfterFrames: 1,
             },
           };
         default:
@@ -18,5 +29,16 @@ export class SimCtrl {
       }
     }
     return w;
+  }
+
+  afterDrawing(w: World): World {
+    return {
+      ...w,
+      ctrl: {
+        ...w.ctrl,
+        playing: w.ctrl.playing && w.ctrl.stopAfterFrames - 1 > 0,
+        stopAfterFrames: w.ctrl.stopAfterFrames - 1,
+      },
+    };
   }
 }

@@ -18,6 +18,7 @@ let WORLD: World = {
   ctrl: {
     events: [],
     playing: true,
+    stopAfterFrames: Number.MAX_SAFE_INTEGER,
   },
 };
 
@@ -239,6 +240,8 @@ export function draw() {
       WORLD = afterHittingWall(WORLD);
       WORLD = afterCrashing(WORLD);
     }
+
+    WORLD = simCtrl.afterDrawing(WORLD);
   }
 
   drawBoxes(WORLD);
