@@ -213,6 +213,7 @@ function drawStats(w: World) {
     text(s, 4, (yOffset += LINE_HEIGHT));
   }
 
+  textln("");
   textln(`frameCount=${w.frameCnt}`);
   stats.boxes.sort((i, j) => i.y - j.y);
   for (const boxStat of stats.boxes) {
@@ -229,7 +230,14 @@ function drawStats(w: World) {
   textln(`\u03a3E=${stats.totalEnergy.toFixed(2)}\n`);
 }
 
+function drawFrameTime(ft: number, w: { MAX_Y: number }) {
+  textSize(14);
+  text(`frameTime=${ft.toFixed(2)}ms`, 4, w.MAX_Y + 10 + 15);
+}
+
 export function draw() {
+  const frameStart = performance.now();
+
   background("#111");
 
   WORLD = afterHandlingEvents(WORLD);
@@ -251,6 +259,9 @@ export function draw() {
   drawBoxes(WORLD);
   drawWalls(WORLD);
   drawStats(WORLD);
+
+  const frameTime = performance.now() - frameStart;
+  drawFrameTime(frameTime, WORLD);
 }
 
 export function setup() {
