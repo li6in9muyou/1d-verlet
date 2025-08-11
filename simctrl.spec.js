@@ -99,6 +99,88 @@ describe("simctrl", () => {
     );
   });
 
+  test("should reset cursor after toggle", () => {
+    assertSimCtrl(
+      afterHandlingEvents,
+      {
+        events: [{ name: "toggle" }],
+        history: { cursor: -2 },
+      },
+      {
+        events: [],
+        history: { cursor: 0 },
+      },
+    );
+  });
+
+  test("should wrap cursor", () => {
+    const after = afterHandlingEvents({
+      x: 42,
+
+      ctrl: {
+        events: [{ name: "prev-frame" }],
+        playing: false,
+        stopAfterFrames: 10,
+        history: { cursor: -2, states: [{ x: 40 }, { x: 41 }] },
+      },
+    });
+
+    expect(after.ctrl.history.cursor).toStrictEqual(-1);
+  });
+
+  test("should bound the number of states", () => {
+    assertSimCtrl(
+      afterDrawing,
+      {
+        history: { MAX_STATES: 2, states: [{ x: 39 }, { x: 40 }, { x: 41 }] },
+      },
+      { history: { MAX_STATES: 2, states: [{ x: 41 }, {}] } },
+    );
+  });
+
+  test("should go back", () => {
+    const after = afterHandlingEvents({
+      x: 42,
+
+      ctrl: {
+        events: [{ name: "prev-frame" }],
+        playing: false,
+        stopAfterFrames: 10,
+        history: { cursor: 0, states: [{ x: 40 }, { x: 41 }] },
+      },
+    });
+
+    expect(after.ctrl.history.cursor).toStrictEqual(-1);
+  });
+
+  test("should stop playing after prev-frame", () => {
+    const after = afterHandlingEvents({
+      x: 42,
+
+      ctrl: {
+        events: [{ name: "prev-frame" }],
+        playing: true,
+        stopAfterFrames: 10,
+        history: { states: [{ x: 41 }] },
+      },
+    });
+
+    expect(after.ctrl.playing).toStrictEqual(false);
+  });
+
+  test("should save states", () => {
+    const after = afterDrawing({
+      x: 42,
+      ctrl: {
+        playing: true,
+        stopAfterFrames: 10,
+        history: { states: [] },
+      },
+    });
+
+    expect(after.ctrl.history.states).toStrictEqual([{ x: 42 }]);
+  });
+
   function assertSimCtrl(fn, input, expected) {
     const after = fn({
       ctrl: input,

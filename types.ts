@@ -34,12 +34,20 @@ export type SimWorld = {
   dt: number;
 };
 
-export type CtrlEvents = { name: "toggle" } | { name: "next-frame" };
+export type CtrlEvents =
+  | { name: "toggle" }
+  | { name: "next-frame" }
+  | { name: "prev-frame" };
 
 export type ControlState = {
   ctrl: {
     events: CtrlEvents[];
     playing: boolean;
     stopAfterFrames: number;
+    history: {
+      get MAX_STATES(): number;
+      cursor: number;
+      states: (DynamicsWorld & RenderWorld & SimWorld)[];
+    };
   };
 };

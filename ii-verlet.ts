@@ -16,6 +16,7 @@ let WORLD: World = {
   masses: [1000, 1],
   statNextLineY: 0,
   ctrl: {
+    history: { MAX_STATES: 50, cursor: 0, states: [] },
     events: [],
     playing: true,
     stopAfterFrames: Number.MAX_SAFE_INTEGER,
