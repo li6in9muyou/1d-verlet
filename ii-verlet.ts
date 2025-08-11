@@ -1,10 +1,10 @@
-import { Dynamics, DynamicsWorld, RenderWorld, World } from "./types";
+import { DynamicsWorld, RenderWorld, World } from "./types";
 import { afterDrawing, afterHandlingEvents } from "./simctrl";
 import { getV, yv } from "./ii-utils";
 import { afterApplyingForce } from "./springs";
 
 let WORLD: World = {
-  springs: [{ one: 0, two: 1, k: 3e-9, restingLen: 400 }],
+  springs: [{ one: 0, two: 1, k: 3e-2, restingLen: 400 }],
   frameCnt: 0,
   MAX_X: 140,
   MIN_Y: 20,
@@ -138,10 +138,13 @@ function drawSprings(w: RenderWorld & DynamicsWorld) {
   for (const spring of springs) {
     const i = boxes[spring.one];
     const j = boxes[spring.two];
+    if (spring.two === -1) {
+      drawOneSpring(spring, i, { y: w.MIN_Y }, w);
+      continue;
+    }
     drawOneSpring(spring, i, j, w);
   }
 }
-
 
 function drawBoxes(w: RenderWorld & DynamicsWorld) {
   for (const idx in w.boxes) {
@@ -173,6 +176,7 @@ function getStats(w: World): {
   boxes: {
     name: string;
     velocity: number;
+    acc: number;
     kineticEnergy: number;
     color: string;
     y: number;
@@ -186,7 +190,7 @@ function getStats(w: World): {
   totalEnergy: number;
 } {
   const boxes = w.boxes;
-  const springs = [];
+  const springs = w.springs;
   const stats = {
     boxes: [],
     springs: [],
@@ -205,27 +209,27 @@ function getStats(w: World): {
       kineticEnergy: ke,
       color: w.colors[idx],
       y: box.y,
+      acc: box.acc,
     });
     stats.totalKineticEnergy += ke;
   }
 
-  function getBoxByName(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    boxes: DynamicsWorld["boxes"],
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    name: RenderWorld["names"][number],
-  ): Dynamics | null {
-    throw "not implemented";
-  }
-
   for (const spring of springs) {
-    const i = getBoxByName(boxes, spring.one);
-    const j = getBoxByName(boxes, spring.two);
+    const i = boxes[spring.one];
+    const j = boxes[spring.two];
 
-    const actualLen = Math.abs(i.y - j.y);
-    const displacement = actualLen - spring.restingLen;
-    const force = spring.k * displacement;
-    const elasticEnergy = 0.5 * spring.k * displacement * displacement;
+    let force, elasticEnergy;
+    if (spring.two === -1) {
+      const actualLen = Math.abs(i.y - w.MIN_Y);
+      const displacement = actualLen - spring.restingLen;
+      force = spring.k * displacement;
+      elasticEnergy = 0.5 * spring.k * displacement * displacement;
+    } else {
+      const actualLen = Math.abs(i.y - j.y);
+      const displacement = actualLen - spring.restingLen;
+      force = spring.k * displacement;
+      elasticEnergy = 0.5 * spring.k * displacement * displacement;
+    }
 
     stats.springs.push({
       name: `${spring.one}-${spring.two}`,
@@ -258,7 +262,8 @@ function drawStats(w: World) {
   stats.boxes.sort((i, j) => i.y - j.y);
   for (const boxStat of stats.boxes) {
     fill(boxStat.color);
-    textln(`${boxStat.name}=${boxStat.velocity.toFixed(2)}\n`);
+    textln(`${boxStat.name}.v=${boxStat.velocity.toFixed(2)}`);
+    textln(`${boxStat.name}.acc=${boxStat.acc.toFixed(2)}`);
   }
   for (const springStat of stats.springs) {
     textln(`${springStat.name}=${springStat.elasticEnergy.toFixed(2)}`);
