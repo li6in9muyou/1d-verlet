@@ -1,19 +1,22 @@
 import { Dynamics, DynamicsWorld, RenderWorld, World } from "./types";
 import { afterDrawing, afterHandlingEvents } from "./simctrl";
 import { getV, yv } from "./ii-utils";
+import { afterApplyingForce } from "./springs";
 
 let WORLD: World = {
-  springs: [],
+  springs: [{ one: 0, two: 1, k: 3e-9, restingLen: 400 }],
   frameCnt: 0,
   MAX_X: 140,
   MIN_Y: 20,
   MAX_Y: 600,
+  SPRING_X: 20,
+  SPRING_TENSION_OFFSET: 4,
   dt: 1 / 3000,
   boxes: [yv(600 - 6, -1 / 3000, 0), yv(200 - 6, 2 / 3000, 0)],
   sizes: [12, 12],
   colors: ["red", "green"],
   names: ["a", "b"],
-  masses: [1000, 1],
+  masses: [10, 10],
   statNextLineY: 0,
   ctrl: {
     history: { MAX_STATES: 50, cursor: 0, states: [] },
@@ -97,6 +100,48 @@ export function afterHittingWall(state: World): World {
 
   return { ...state, boxes: nextBoxes };
 }
+
+function drawOneSpring(spring, i, j, RENDER_CONFIG) {
+  stroke("white");
+  strokeWeight(2);
+  const ij = Math.sign(j.y - i.y);
+  line(
+    RENDER_CONFIG.SPRING_X,
+    i.y,
+    RENDER_CONFIG.SPRING_X,
+    i.y + spring.restingLen * ij,
+  );
+
+  const actualLen = Math.abs(i.y - j.y);
+  let tensionColor: string;
+  if (actualLen < spring.restingLen) {
+    tensionColor = "red";
+  } else if (actualLen > spring.restingLen) {
+    tensionColor = "yellow";
+  } else {
+    tensionColor = "white";
+  }
+  stroke(tensionColor);
+  strokeWeight(2);
+  line(
+    RENDER_CONFIG.SPRING_X + RENDER_CONFIG.SPRING_TENSION_OFFSET,
+    i.y,
+    RENDER_CONFIG.SPRING_X + RENDER_CONFIG.SPRING_TENSION_OFFSET,
+    j.y,
+  );
+}
+
+function drawSprings(w: RenderWorld & DynamicsWorld) {
+  const springs = w.springs;
+  const boxes = w.boxes;
+
+  for (const spring of springs) {
+    const i = boxes[spring.one];
+    const j = boxes[spring.two];
+    drawOneSpring(spring, i, j, w);
+  }
+}
+
 
 function drawBoxes(w: RenderWorld & DynamicsWorld) {
   for (const idx in w.boxes) {
@@ -248,6 +293,7 @@ export function draw() {
       WORLD = afterMoving(WORLD);
       WORLD = afterHittingWall(WORLD);
       WORLD = afterCrashing(WORLD);
+      WORLD = afterApplyingForce(WORLD);
     }
 
     WORLD = afterDrawing(WORLD);
@@ -255,6 +301,7 @@ export function draw() {
 
   drawBoxes(WORLD);
   drawWalls(WORLD);
+  drawSprings(WORLD);
   drawStats(WORLD);
 
   const frameTime = performance.now() - frameStart;

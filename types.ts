@@ -11,6 +11,8 @@ export type RenderWorld = {
   colors: string[];
   names: string[];
   statNextLineY: number;
+  SPRING_X: 20;
+  SPRING_TENSION_OFFSET: 4;
 };
 
 export type DynamicsWorld = {
@@ -24,8 +26,8 @@ export type DynamicsWorld = {
 };
 
 export type Spring = {
-  one: string;
-  two: string;
+  one: number;
+  two: number;
   k: number;
   restingLen: number;
 };
