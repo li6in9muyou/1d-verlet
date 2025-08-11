@@ -3,7 +3,7 @@ import {
   afterHittingWall,
   afterMoving,
 } from "./ii-verlet";
-import { beforeEach, describe, expect, test } from "vitest";
+import { describe, expect, test } from "vitest";
 import { getV, yv } from "./ii-utils";
 
 describe("afterMove", () => {
