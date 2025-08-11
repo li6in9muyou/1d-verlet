@@ -1,4 +1,10 @@
-import { Dynamics, DynamicsWorld, RenderWorld, World } from "./types";
+import {
+  CtrlEvents,
+  Dynamics,
+  DynamicsWorld,
+  RenderWorld,
+  World,
+} from "./types";
 import { afterDrawing, afterHandlingEvents } from "./simctrl";
 import { getV, yv } from "./ii-utils";
 
@@ -252,6 +258,6 @@ export function setup() {
   createCanvas(WORLD.MAX_X, WORLD.MAX_Y + 300);
 }
 
-export function emitEvent(ev) {
+export function emitEvent(ev: World["ctrl"]["events"][number]) {
   WORLD.ctrl.events.push(ev);
 }

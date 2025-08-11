@@ -24,7 +24,7 @@ export function afterHandlingEvents(w: World): World {
           },
         };
       default:
-        throw `simctrl: unknown event ${e.name} ctrl=${JSON.stringify(w.ctrl)}`;
+        throw `simctrl: unknown event ${(e as { name: string }).name} ctrl=${JSON.stringify(w.ctrl)}`;
     }
   }
   return w;

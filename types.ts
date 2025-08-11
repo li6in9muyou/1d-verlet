@@ -34,9 +34,11 @@ export type SimWorld = {
   dt: number;
 };
 
+export type CtrlEvents = { name: "toggle" } | { name: "next-frame" };
+
 export type ControlState = {
   ctrl: {
-    events: { name: string }[];
+    events: CtrlEvents[];
     playing: boolean;
     stopAfterFrames: number;
   };
