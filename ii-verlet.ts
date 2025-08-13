@@ -1,7 +1,6 @@
 import { DynamicsWorld, RenderWorld, Spring, World } from "./types";
 import {
   MAX_Y_ANCHOR,
-  MIN_Y_ANCHOR,
   afterApplyingForce,
   getAnchorName,
   getSpringEndpointY,
@@ -10,12 +9,8 @@ import { afterDrawing, afterHandlingEvents } from "./simctrl";
 import { getV, yv } from "./ii-utils";
 
 let WORLD: World = {
-  springs: [
-    { one: 1, two: 0, k: 4, restingLen: 100 },
-    { one: MIN_Y_ANCHOR, two: 0, k: 40, restingLen: 80 },
-    { one: 2, two: MAX_Y_ANCHOR, k: 1, restingLen: 80 },
-  ],
-  gravityAcc: 0.1001344,
+  springs: [{ one: 0, two: MAX_Y_ANCHOR, k: 10, restingLen: 80 }],
+  gravityAcc: 0,
   dragCoeff: 0,
   frameCnt: 0,
   MAX_X: 140,
@@ -25,16 +20,11 @@ let WORLD: World = {
   SPRING_TENSION_OFFSET: 3,
   SPRING_MARGIN_X: -7,
   dt: 1 / 3000,
-  boxes: [
-    yv(100, 0, 0),
-    yv(200, 0, 0),
-    yv(600 - 80, 0, 0),
-    yv(600 - 80 - 60, 0, 0),
-  ],
-  sizes: [24, 24, 12, 12, 24],
+  boxes: [yv(600 - 80, 0, 0), yv(600 - 80 - 60, 10 / 3000, 0)],
+  sizes: [24, 300, 12, 12, 24],
   colors: ["red", "green", "#0ff", "#ff0", "#f0f"],
   names: ["a", "b", "c", "d", "e"],
-  masses: [3000, 3000, 50, 50, 100],
+  masses: [3000, 3000, 50, 1500, 100],
   statNextLineY: 0,
   ctrl: {
     history: { MAX_STATES: 50, cursor: 0, states: [] },
