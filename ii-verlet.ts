@@ -4,7 +4,10 @@ import { getV, yv } from "./ii-utils";
 import { afterApplyingForce } from "./springs";
 
 let WORLD: World = {
-  springs: [{ one: 0, two: 1, k: 3e-2, restingLen: 400 }],
+  springs: [
+    { one: 2, two: 3, k: 3, restingLen: 50 },
+    { one: 0, two: 1, k: 3e-2, restingLen: 200 },
+  ],
   frameCnt: 0,
   MAX_X: 140,
   MIN_Y: 20,
@@ -12,11 +15,17 @@ let WORLD: World = {
   SPRING_X: 20,
   SPRING_TENSION_OFFSET: 4,
   dt: 1 / 3000,
-  boxes: [yv(600 - 6, -1 / 3000, 0), yv(200 - 6, 2 / 3000, 0)],
-  sizes: [12, 12],
-  colors: ["red", "green"],
-  names: ["a", "b"],
-  masses: [10, 10],
+  boxes: [
+    yv(600 - 6, -1 / 3000, 0),
+    yv(400 - 6, 2 / 3000, 0),
+    yv(250, 0, 0),
+    yv(200, -9 / 3000, 0),
+    yv(500, 0, 0),
+  ],
+  sizes: [24, 24, 12, 12 / 5, 24],
+  colors: ["red", "green", "#0ff", "#ff0", "#f0f"],
+  names: ["a", "b", "c", "d", "e"],
+  masses: [100, 100, 50, 10, 100],
   statNextLineY: 0,
   ctrl: {
     history: { MAX_STATES: 50, cursor: 0, states: [] },
