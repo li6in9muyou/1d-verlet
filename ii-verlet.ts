@@ -22,7 +22,7 @@ let WORLD: World = {
   sizes: [24, 24, 12, 12 / 5, 24],
   colors: ["red", "green", "#0ff", "#ff0", "#f0f"],
   names: ["a", "b", "c", "d", "e"],
-  masses: [100, 100, 50, 10, 100],
+  masses: [3000, 100, 50, 10, 100],
   statNextLineY: 0,
   ctrl: {
     history: { MAX_STATES: 50, cursor: 0, states: [] },
