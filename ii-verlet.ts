@@ -176,23 +176,7 @@ function drawWalls(w: DynamicsWorld) {
   line(0, w.MAX_Y + 5, w.MAX_X, w.MAX_Y + 5);
 }
 
-function getStats(w: World): {
-  boxes: {
-    name: string;
-    velocity: number;
-    acc: number;
-    kineticEnergy: number;
-    color: string;
-    y: number;
-  }[];
-  springs: ({
-    name: string;
-    elasticEnergy: number;
-  } & DynamicsWorld["springs"][number])[];
-  totalKineticEnergy: number;
-  totalElasticEnergy: number;
-  totalEnergy: number;
-} {
+function getStats(w: World) {
   const boxes = w.boxes;
   const springs = w.springs;
   const stats = {
