@@ -1,4 +1,5 @@
 import { Spring, World } from "./types";
+import { getV } from "./ii-utils";
 
 export const MIN_Y_ANCHOR = -2;
 export const MAX_Y_ANCHOR = -1;
@@ -44,6 +45,19 @@ export function afterApplyingForce(w: World): World {
     boxes[boxIdx].acc += iForce / masses[boxIdx];
     return;
   });
+
+  if (w.gravityAcc > 0) {
+    boxes.forEach((box) => (box.acc += w.gravityAcc));
+  }
+
+  if (w.dragCoeff > 0) {
+    boxes.forEach((box, idx) => {
+      const v = getV(box) / w.dt;
+      const d = -Math.sign(v);
+      const drag = w.dragCoeff * v * v;
+      box.acc += (d * drag) / masses[idx];
+    });
+  }
 
   return ww;
 }

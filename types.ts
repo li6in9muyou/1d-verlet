@@ -16,6 +16,8 @@ export type RenderWorld = {
 };
 
 export type DynamicsWorld = {
+  dragCoeff: number;
+  gravityAcc: number;
   MAX_X: number;
   MIN_Y: number;
   MAX_Y: number;
