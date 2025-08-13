@@ -38,6 +38,10 @@
       document.getElementById("next").addEventListener("click", () => {
         emitEvent({ name: "next-frame" });
       });
+
+      if (new URLSearchParams(window.location.search).has("pause")) {
+        emitEvent({ name: "toggle" });
+      }
     </script>
   </body>
 </html>
