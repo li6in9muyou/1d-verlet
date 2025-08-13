@@ -8,7 +8,10 @@ import { afterDrawing, afterHandlingEvents } from "./simctrl";
 import { getV, yv } from "./ii-utils";
 
 let WORLD: World = {
-  springs: [{ one: MIN_Y_ANCHOR, two: 0, k: 3, restingLen: 280 }],
+  springs: [
+    { one: 1, two: 0, k: 4, restingLen: 100 },
+    { one: MIN_Y_ANCHOR, two: 0, k: 40, restingLen: 80 },
+  ],
   gravityAcc: 0.1001344,
   dragCoeff: 0,
   frameCnt: 0,
@@ -18,11 +21,11 @@ let WORLD: World = {
   SPRING_X: 20,
   SPRING_TENSION_OFFSET: 4,
   dt: 1 / 3000,
-  boxes: [yv(300, 0, 0)],
+  boxes: [yv(100, 0, 0), yv(200, 0, 0)],
   sizes: [24, 24, 12, 12 / 5, 24],
   colors: ["red", "green", "#0ff", "#ff0", "#f0f"],
   names: ["a", "b", "c", "d", "e"],
-  masses: [3000, 100, 50, 10, 100],
+  masses: [3000, 3000, 50, 10, 100],
   statNextLineY: 0,
   ctrl: {
     history: { MAX_STATES: 50, cursor: 0, states: [] },
