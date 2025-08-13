@@ -1,4 +1,26 @@
-import { World } from "./types";
+import { Spring, World } from "./types";
+
+export const MIN_Y_ANCHOR = -2;
+export const MAX_Y_ANCHOR = -1;
+
+export function isSpringNotMoving(spring: Spring) {
+  return spring.one < 0 !== spring.two < 0;
+}
+
+export function getSpringEndpointY(
+  w: { boxes: World["boxes"]; MIN_Y: number; MAX_Y: number },
+  spring: Spring,
+): [number, number] {
+  if (!isSpringNotMoving(spring)) {
+    return [w.boxes[spring.one].y, w.boxes[spring.two].y];
+  }
+
+  const whichIsAnchor = spring.one < 0 ? spring.one : spring.two;
+  const anchorY = whichIsAnchor === MIN_Y_ANCHOR ? w.MIN_Y : w.MAX_Y;
+  const boxIdx = spring.one < 0 ? spring.two : spring.one;
+  const i = w.boxes[boxIdx];
+  return [i.y, anchorY];
+}
 
 export function afterApplyingForce(w: World): World {
   const ww = { ...w };
@@ -9,33 +31,18 @@ export function afterApplyingForce(w: World): World {
   boxes.forEach((box) => (box.acc = 0));
 
   springs.forEach((spring) => {
-    if (spring.two === -1) {
-      const i = boxes[spring.one];
-
-      const ji = i.y - w.MIN_Y;
-      const actualLen = Math.abs(ji);
-      const displacement = actualLen - spring.restingLen;
-
-      const force = spring.k * displacement;
-      const iForce = -force * Math.sign(ji);
-
-      i.acc += iForce / masses[spring.one];
-      return;
-    }
-
-    const i = boxes[spring.one];
-    const j = boxes[spring.two];
-
-    const ji = i.y - j.y;
+    const [boxY, anchorY] = getSpringEndpointY(w, spring);
+    const ji = boxY - anchorY;
     const actualLen = Math.abs(ji);
+
     const displacement = actualLen - spring.restingLen;
 
     const force = spring.k * displacement;
     const iForce = -force * Math.sign(ji);
-    const jForce = -iForce;
 
-    i.acc += iForce / masses[spring.one];
-    j.acc += jForce / masses[spring.two];
+    const boxIdx = spring.one < 0 ? spring.two : spring.one;
+    boxes[boxIdx].acc += iForce / masses[boxIdx];
+    return;
   });
 
   return ww;

@@ -1,7 +1,11 @@
-import { DynamicsWorld, RenderWorld, World } from "./types";
+import { DynamicsWorld, RenderWorld, Spring, World } from "./types";
+import {
+  MIN_Y_ANCHOR,
+  afterApplyingForce,
+  getSpringEndpointY,
+} from "./springs";
 import { afterDrawing, afterHandlingEvents } from "./simctrl";
 import { getV, yv } from "./ii-utils";
-import { afterApplyingForce } from "./springs";
 
 let WORLD: World = {
   springs: [{ one: MIN_Y_ANCHOR, two: 0, k: 3, restingLen: 280 }],
@@ -101,18 +105,23 @@ export function afterHittingWall(state: World): World {
   return { ...state, boxes: nextBoxes };
 }
 
-function drawOneSpring(spring, i, j, RENDER_CONFIG) {
+function drawOneSpring(
+  spring: Spring,
+  i: number,
+  j: number,
+  RENDER_CONFIG: { SPRING_X: number; SPRING_TENSION_OFFSET: number },
+) {
   stroke("white");
   strokeWeight(2);
-  const ij = Math.sign(j.y - i.y);
+  const ij = Math.sign(j - i);
   line(
     RENDER_CONFIG.SPRING_X,
-    i.y,
+    i,
     RENDER_CONFIG.SPRING_X,
-    i.y + spring.restingLen * ij,
+    i + spring.restingLen * ij,
   );
 
-  const actualLen = Math.abs(i.y - j.y);
+  const actualLen = Math.abs(i - j);
   let tensionColor: string;
   if (actualLen < spring.restingLen) {
     tensionColor = "red";
@@ -125,24 +134,17 @@ function drawOneSpring(spring, i, j, RENDER_CONFIG) {
   strokeWeight(2);
   line(
     RENDER_CONFIG.SPRING_X + RENDER_CONFIG.SPRING_TENSION_OFFSET,
-    i.y,
+    i,
     RENDER_CONFIG.SPRING_X + RENDER_CONFIG.SPRING_TENSION_OFFSET,
-    j.y,
+    j,
   );
 }
 
 function drawSprings(w: RenderWorld & DynamicsWorld) {
   const springs = w.springs;
-  const boxes = w.boxes;
-
   for (const spring of springs) {
-    const i = boxes[spring.one];
-    const j = boxes[spring.two];
-    if (spring.two === -1) {
-      drawOneSpring(spring, i, { y: w.MIN_Y }, w);
-      continue;
-    }
-    drawOneSpring(spring, i, j, w);
+    const [ya, yb] = getSpringEndpointY(w, spring);
+    drawOneSpring(spring, ya, yb, w);
   }
 }
 
@@ -215,21 +217,11 @@ function getStats(w: World): {
   }
 
   for (const spring of springs) {
-    const i = boxes[spring.one];
-    const j = boxes[spring.two];
-
-    let force, elasticEnergy;
-    if (spring.two === -1) {
-      const actualLen = Math.abs(i.y - w.MIN_Y);
-      const displacement = actualLen - spring.restingLen;
-      force = spring.k * displacement;
-      elasticEnergy = 0.5 * spring.k * displacement * displacement;
-    } else {
-      const actualLen = Math.abs(i.y - j.y);
-      const displacement = actualLen - spring.restingLen;
-      force = spring.k * displacement;
-      elasticEnergy = 0.5 * spring.k * displacement * displacement;
-    }
+    const [ya, yb] = getSpringEndpointY(w, spring);
+    const actualLen = Math.abs(ya - yb);
+    const displacement = actualLen - spring.restingLen;
+    const force = spring.k * displacement;
+    const elasticEnergy = 0.5 * spring.k * displacement * displacement;
 
     stats.springs.push({
       name: `${spring.one}-${spring.two}`,
