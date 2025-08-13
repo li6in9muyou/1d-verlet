@@ -39,7 +39,8 @@
         emitEvent({ name: "next-frame" });
       });
 
-      if (new URLSearchParams(window.location.search).has("pause")) {
+      const override = new URLSearchParams(window.location.search);
+      if (override.has("pause")) {
         emitEvent({ name: "toggle" });
       }
     </script>
