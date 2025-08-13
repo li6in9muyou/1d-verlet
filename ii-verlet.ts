@@ -213,7 +213,7 @@ function getStats(w: World): {
       kineticEnergy: ke,
       color: w.colors[idx],
       y: box.y,
-      acc: box.acc,
+      acc: box.acc / w.dt,
     });
     stats.totalKineticEnergy += ke;
   }
