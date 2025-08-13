@@ -8,6 +8,15 @@ export function isSpringNotMoving(spring: Spring) {
   return spring.one < 0 !== spring.two < 0;
 }
 
+export function getAnchorName(anchor: number) {
+  if (anchor === MIN_Y_ANCHOR) {
+    return "ceil";
+  }
+  if (anchor === MAX_Y_ANCHOR) {
+    return "floor";
+  }
+}
+
 export function getSpringEndpointY(
   w: { boxes: World["boxes"]; MIN_Y: number; MAX_Y: number },
   spring: Spring,

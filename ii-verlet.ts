@@ -1,7 +1,9 @@
 import { DynamicsWorld, RenderWorld, Spring, World } from "./types";
 import {
+  MAX_Y_ANCHOR,
   MIN_Y_ANCHOR,
   afterApplyingForce,
+  getAnchorName,
   getSpringEndpointY,
 } from "./springs";
 import { afterDrawing, afterHandlingEvents } from "./simctrl";
@@ -152,6 +154,12 @@ function drawSprings(w: RenderWorld & DynamicsWorld) {
     line(x, ya, x, yb);
   }
 
+  springs.sort((a, b) => {
+    const [a1, a2] = getSpringEndpointY(w, a);
+    const [b1, b2] = getSpringEndpointY(w, b);
+    return -(b1 + b2 - a1 - a2);
+  });
+
   for (const spring of springs) {
     const [ya, yb] = getSpringEndpointY(w, spring);
     xOffset += w.SPRING_MARGIN_X;
@@ -221,8 +229,10 @@ function getStats(w: World) {
     const force = spring.k * displacement;
     const elasticEnergy = 0.5 * spring.k * displacement * displacement;
 
+    const nameOne = w.names[spring.one] ?? getAnchorName(spring.one);
+    const nameTwo = w.names[spring.two] ?? getAnchorName(spring.two);
     stats.springs.push({
-      name: `${spring.one}-${spring.two}`,
+      name: `${nameOne}-${nameTwo}`,
       force: force,
       elasticEnergy: elasticEnergy,
     });
@@ -258,11 +268,12 @@ function drawStats(w: World) {
     textln(`${boxStat.name}.v=${boxStat.velocity.toFixed(2)}`);
     textln(`${boxStat.name}.acc=${boxStat.acc.toFixed(2)}`);
   }
+
+  fill("white");
   for (const springStat of stats.springs) {
     textln(`${springStat.name}=${springStat.elasticEnergy.toFixed(2)}`);
   }
 
-  fill("white");
   textln(`\u03a3\u00bdmv\u00b2=${stats.totalKineticEnergy.toFixed(2)}\n`);
   textln(`\u03a3\u00bdkd\u00b2=${stats.totalElasticEnergy.toFixed(2)}\n`);
   textln(`\u03a3mgh=${stats.totalGraviPotential.toFixed(2)}\n`);
