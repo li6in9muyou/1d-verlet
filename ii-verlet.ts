@@ -185,12 +185,14 @@ function getStats(w: World) {
     totalKineticEnergy: 0,
     totalElasticEnergy: 0,
     totalEnergy: 0,
+    totalGraviPotential: 0,
   };
 
   for (const [idx, box] of boxes.entries()) {
     const v = (box.y - box.prevY) / w.dt;
     const m = w.masses[idx];
     const ke = 0.5 * m * v * v;
+    const gp = m * w.gravityAcc * -(box.y - w.MAX_Y);
     stats.boxes.push({
       name: w.names[idx],
       velocity: v,
@@ -200,6 +202,7 @@ function getStats(w: World) {
       acc: box.acc / w.dt,
     });
     stats.totalKineticEnergy += ke;
+    stats.totalGraviPotential += gp;
   }
 
   for (const spring of springs) {
@@ -217,7 +220,10 @@ function getStats(w: World) {
     stats.totalElasticEnergy += elasticEnergy;
   }
 
-  stats.totalEnergy = stats.totalKineticEnergy + stats.totalElasticEnergy;
+  stats.totalEnergy =
+    stats.totalGraviPotential +
+    stats.totalKineticEnergy +
+    stats.totalElasticEnergy;
 
   return stats;
 }
@@ -250,6 +256,7 @@ function drawStats(w: World) {
   fill("white");
   textln(`\u03a3\u00bdmv\u00b2=${stats.totalKineticEnergy.toFixed(2)}\n`);
   textln(`\u03a3\u00bdkd\u00b2=${stats.totalElasticEnergy.toFixed(2)}\n`);
+  textln(`\u03a3mgh=${stats.totalGraviPotential.toFixed(2)}\n`);
   textln(`\u03a3E=${stats.totalEnergy.toFixed(2)}\n`);
 }
 
