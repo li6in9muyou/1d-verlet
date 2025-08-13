@@ -18,8 +18,9 @@ let WORLD: World = {
   MAX_X: 140,
   MIN_Y: 20,
   MAX_Y: 600,
-  SPRING_X: 20,
-  SPRING_TENSION_OFFSET: 4,
+  SPRING_X: 140 / 2 - 6 - 1,
+  SPRING_TENSION_OFFSET: 3,
+  SPRING_MARGIN_X: -7,
   dt: 1 / 3000,
   boxes: [yv(100, 0, 0), yv(200, 0, 0)],
   sizes: [24, 24, 12, 12 / 5, 24],
@@ -115,16 +116,12 @@ function drawOneSpring(
   i: number,
   j: number,
   RENDER_CONFIG: { SPRING_X: number; SPRING_TENSION_OFFSET: number },
+  lineln: (ya: number, yb: number, tempOffset: number) => void,
 ) {
   stroke("white");
   strokeWeight(2);
   const ij = Math.sign(j - i);
-  line(
-    RENDER_CONFIG.SPRING_X,
-    i,
-    RENDER_CONFIG.SPRING_X,
-    i + spring.restingLen * ij,
-  );
+  lineln(i, i + spring.restingLen * ij, 0);
 
   const actualLen = Math.abs(i - j);
   let tensionColor: string;
@@ -137,19 +134,22 @@ function drawOneSpring(
   }
   stroke(tensionColor);
   strokeWeight(2);
-  line(
-    RENDER_CONFIG.SPRING_X + RENDER_CONFIG.SPRING_TENSION_OFFSET,
-    i,
-    RENDER_CONFIG.SPRING_X + RENDER_CONFIG.SPRING_TENSION_OFFSET,
-    j,
-  );
+  lineln(i, j, +RENDER_CONFIG.SPRING_TENSION_OFFSET);
 }
 
 function drawSprings(w: RenderWorld & DynamicsWorld) {
   const springs = w.springs;
+
+  let xOffset = w.SPRING_X;
+  function lineln(ya: number, yb: number, tempOffset: number) {
+    const x = xOffset + tempOffset;
+    line(x, ya, x, yb);
+  }
+
   for (const spring of springs) {
     const [ya, yb] = getSpringEndpointY(w, spring);
-    drawOneSpring(spring, ya, yb, w);
+    xOffset += w.SPRING_MARGIN_X;
+    drawOneSpring(spring, ya, yb, w, lineln);
   }
 }
 
