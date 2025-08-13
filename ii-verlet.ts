@@ -10,7 +10,7 @@ import { getV, yv } from "./ii-utils";
 let WORLD: World = {
   springs: [{ one: MIN_Y_ANCHOR, two: 0, k: 3, restingLen: 280 }],
   gravityAcc: 0.1001344,
-  dragCoeff: 5,
+  dragCoeff: 0,
   frameCnt: 0,
   MAX_X: 140,
   MIN_Y: 20,
