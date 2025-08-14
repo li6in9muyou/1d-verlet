@@ -304,11 +304,11 @@ function drawFrameTime(
 }
 
 export function draw() {
-  const frameStart = performance.now();
-
   background("#111");
 
   for (let i = 0; i < worlds.length; i++) {
+    const frameStart = performance.now();
+
     let WORLD = worlds[i];
 
     WORLD = afterHandlingEvents(WORLD);
