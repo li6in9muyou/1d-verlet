@@ -346,7 +346,7 @@ export function draw() {
 
 export function setup() {
   textSize(12);
-  createCanvas(500, 900);
+  createCanvas(windowWidth, windowHeight);
 }
 
 export function emitEvent() {
