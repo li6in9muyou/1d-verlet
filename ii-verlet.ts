@@ -11,6 +11,18 @@ import { WorldBuilder } from "./world-builder";
 
 const worlds = [
   new WorldBuilder()
+    .pos(20, 420, 100, 600)
+    .dynamics([
+      {
+        box: yv(6, 1 / 3000, 0),
+      },
+      {
+        box: yv(594, -1 / 3000, 0),
+      },
+    ])
+    .springs([{ one: 0, two: 1, k: 1e-2, restingLen: 100 }])
+    .build(),
+  new WorldBuilder()
     .pos(220, 310, 100, 400)
     .dynamics([
       {
