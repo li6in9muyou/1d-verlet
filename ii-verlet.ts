@@ -11,7 +11,24 @@ import { WorldBuilder } from "./world-builder";
 
 const worlds = [
   new WorldBuilder()
-    .pos(20, 0, 140, 580)
+    .pos(120, 310, 100, 200)
+    .dynamics([
+      {
+        box: yv(6, 1 / 3000, 0),
+      },
+      {
+        box: yv(44, -1 / 3000, 0),
+      },
+      {
+        box: yv(50, 1 / 3000, 0),
+      },
+      {
+        box: yv(194, -1 / 3000, 0),
+      },
+    ])
+    .build(),
+  new WorldBuilder()
+    .pos(20, 10, 140, 580)
     .dynamics([
       {
         box: yv(600 - 80, 0, 0),
@@ -31,7 +48,7 @@ const worlds = [
     .springs([{ one: 0, two: MAX_Y_ANCHOR, k: 10, restingLen: 80 }])
     .build(),
   new WorldBuilder()
-    .pos(20, 140, 140, 580)
+    .pos(20, 160, 140, 580)
     .dynamics([
       {
         box: yv(600 - 80, 0, 0),
@@ -200,10 +217,14 @@ function drawBoxes(w: RenderWorld & DynamicsWorld) {
 }
 
 function drawWalls(w: DynamicsWorld) {
-  stroke("#00b");
+  stroke("#333");
   strokeWeight(10);
   line(w.MIN_X, w.MIN_Y - 5, w.MAX_X, w.MIN_Y - 5);
   line(w.MIN_X, w.MAX_Y + 5, w.MAX_X, w.MAX_Y + 5);
+
+  strokeWeight(1);
+  line(w.MIN_X, w.MIN_Y, w.MIN_X, w.MAX_Y);
+  line(w.MAX_X, w.MIN_Y, w.MAX_X, w.MAX_Y);
 }
 
 function getStats(w: World) {
@@ -270,7 +291,7 @@ function drawStats(w: World) {
   const LINE_HEIGHT = 15;
   let yOffset = w.MAX_Y + 10;
   function textln(s: string) {
-    text(s, w.MIN_X + 4, (yOffset += LINE_HEIGHT));
+    text(s, w.MIN_X, (yOffset += LINE_HEIGHT));
   }
 
   textln("");
@@ -300,11 +321,12 @@ function drawFrameTime(
 ) {
   const ft = ftWindow.reduce((a, b) => a + b, 0) / ftWindow.length;
   textSize(14);
-  text(`frameTime=${ft.toFixed(2)}ms`, w.MIN_X + 4, w.MAX_Y + 10 + 15);
+  text(`frameTime=${ft.toFixed(2)}ms`, w.MIN_X, w.MAX_Y + 10 + 15);
 }
 
 export function draw() {
-  background("#111");
+  strokeCap(SQUARE);
+  background("#000");
 
   for (let i = 0; i < worlds.length; i++) {
     const frameStart = performance.now();
