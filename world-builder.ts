@@ -56,11 +56,22 @@ export class WorldBuilder {
         .toString(16)
         .padStart(6, "0");
 
+    const generateName = (index: number): string => {
+      let result = "";
+      let n = index + 1;
+      while (n > 0) {
+        const remainder = (n - 1) % 26;
+        result = alphabet[remainder] + result;
+        n = Math.floor((n - 1) / 26);
+      }
+      return result;
+    };
+
     this.dynamicsData = dynamicsArray.map((item, index) => ({
       box: item.box,
       color: item.color ?? getRandomColor(),
       mass: item.mass ?? 100,
-      name: item.name ?? alphabet[index % alphabet.length],
+      name: item.name ?? generateName(index),
       size: item.size ?? 12,
     }));
     return this;
