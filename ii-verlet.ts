@@ -11,19 +11,31 @@ import { WorldBuilder } from "./world-builder";
 
 const worlds = [
   new WorldBuilder()
-    .pos(120, 310, 100, 200)
+    .pos(220, 310, 100, 400)
     .dynamics([
       {
         box: yv(6, 1 / 3000, 0),
       },
       {
-        box: yv(44, -1 / 3000, 0),
+        box: yv(94, -1 / 3000, 0),
       },
       {
-        box: yv(50, 1 / 3000, 0),
+        box: yv(106, 1 / 3000, 0),
       },
       {
         box: yv(194, -1 / 3000, 0),
+      },
+      {
+        box: yv(206, 1 / 3000, 0),
+      },
+      {
+        box: yv(294, -1 / 3000, 0),
+      },
+      {
+        box: yv(306, 1 / 3000, 0),
+      },
+      {
+        box: yv(394, -1 / 3000, 0),
       },
     ])
     .build(),
@@ -31,15 +43,15 @@ const worlds = [
     .pos(20, 10, 140, 580)
     .dynamics([
       {
-        box: yv(600 - 80, 0, 0),
+        box: yv(500, 0, 0),
         size: 24,
         color: "red",
         name: "a",
         mass: 3000,
       },
       {
-        box: yv(600 - 80 - 60, 10 / 3000, 0),
-        size: 100,
+        box: yv(500 - 12 - 50, 10 / 3000, 0),
+        size: 300,
         color: "green",
         name: "b",
         mass: 3000,
@@ -48,21 +60,21 @@ const worlds = [
     .springs([{ one: 0, two: MAX_Y_ANCHOR, k: 10, restingLen: 80 }])
     .build(),
   new WorldBuilder()
-    .pos(20, 160, 140, 580)
+    .pos(40, 160, 140, 580)
     .dynamics([
       {
-        box: yv(600 - 80, 0, 0),
+        box: yv(500, 0, 0),
         size: 24,
         color: "red",
         name: "a",
         mass: 3000,
       },
       {
-        box: yv(600 - 80 - 60, 10 / 3000, 0),
+        box: yv(500 - 12 - 150, 10 / 3000, 0),
         size: 300,
         color: "green",
         name: "b",
-        mass: 3000,
+        mass: 1500,
       },
     ])
     .springs([{ one: 0, two: MAX_Y_ANCHOR, k: 10, restingLen: 80 }])
