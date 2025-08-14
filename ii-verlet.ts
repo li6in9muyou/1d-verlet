@@ -9,20 +9,48 @@ import { afterDrawing, afterHandlingEvents } from "./simctrl";
 import { getV, yv } from "./ii-utils";
 import { WorldBuilder } from "./world-builder";
 
-let WORLD = new WorldBuilder()
-  .pos(20, 140, 140, 580)
-  .dynamics([
-    { box: yv(600 - 80, 0, 0), size: 24, color: "red", name: "a", mass: 3000 },
-    {
-      box: yv(600 - 80 - 60, 10 / 3000, 0),
-      size: 300,
-      color: "green",
-      name: "b",
-      mass: 3000,
-    },
-  ])
-  .springs([{ one: 0, two: MAX_Y_ANCHOR, k: 10, restingLen: 80 }])
-  .build();
+const worlds = [
+  new WorldBuilder()
+    .pos(20, 0, 140, 580)
+    .dynamics([
+      {
+        box: yv(600 - 80, 0, 0),
+        size: 24,
+        color: "red",
+        name: "a",
+        mass: 3000,
+      },
+      {
+        box: yv(600 - 80 - 60, 10 / 3000, 0),
+        size: 100,
+        color: "green",
+        name: "b",
+        mass: 3000,
+      },
+    ])
+    .springs([{ one: 0, two: MAX_Y_ANCHOR, k: 10, restingLen: 80 }])
+    .build(),
+  new WorldBuilder()
+    .pos(20, 140, 140, 580)
+    .dynamics([
+      {
+        box: yv(600 - 80, 0, 0),
+        size: 24,
+        color: "red",
+        name: "a",
+        mass: 3000,
+      },
+      {
+        box: yv(600 - 80 - 60, 10 / 3000, 0),
+        size: 300,
+        color: "green",
+        name: "b",
+        mass: 3000,
+      },
+    ])
+    .springs([{ one: 0, two: MAX_Y_ANCHOR, k: 10, restingLen: 80 }])
+    .build(),
+];
 
 export function afterCrashing(state: World): World {
   const nextBoxes = [...state.boxes];
@@ -277,41 +305,47 @@ export function draw() {
 
   background("#111");
 
-  WORLD = afterHandlingEvents(WORLD);
+  for (let i = 0; i < worlds.length; i++) {
+    let WORLD = worlds[i];
 
-  if (WORLD.ctrl.playing) {
-    WORLD.frameCnt++;
+    WORLD = afterHandlingEvents(WORLD);
 
-    const steps = 1 / WORLD.dt;
-    for (let i = 0; i < steps; i++) {
-      WORLD = { ...WORLD };
-      WORLD = afterMoving(WORLD);
-      WORLD = afterHittingWall(WORLD);
-      WORLD = afterCrashing(WORLD);
-      WORLD = afterApplyingForce(WORLD);
+    if (WORLD.ctrl.playing) {
+      WORLD.frameCnt++;
+
+      const steps = 1 / WORLD.dt;
+      for (let i = 0; i < steps; i++) {
+        WORLD = { ...WORLD };
+        WORLD = afterMoving(WORLD);
+        WORLD = afterHittingWall(WORLD);
+        WORLD = afterCrashing(WORLD);
+        WORLD = afterApplyingForce(WORLD);
+      }
+
+      WORLD = afterDrawing(WORLD);
     }
 
-    WORLD = afterDrawing(WORLD);
-  }
+    drawBoxes(WORLD);
+    drawWalls(WORLD);
+    drawSprings(WORLD);
+    drawStats(WORLD);
 
-  drawBoxes(WORLD);
-  drawWalls(WORLD);
-  drawSprings(WORLD);
-  drawStats(WORLD);
+    const frameTime = performance.now() - frameStart;
+    frameTimeWindow.push(frameTime);
+    if (frameTimeWindow.length > 60) {
+      frameTimeWindow.shift();
+    }
+    drawFrameTime(frameTimeWindow, WORLD);
 
-  const frameTime = performance.now() - frameStart;
-  frameTimeWindow.push(frameTime);
-  if (frameTimeWindow.length > 60) {
-    frameTimeWindow.shift();
+    worlds[i] = WORLD;
   }
-  drawFrameTime(frameTimeWindow, WORLD);
 }
 
 export function setup() {
   textSize(12);
-  createCanvas(500, WORLD.MAX_Y + 300);
+  createCanvas(500, 900);
 }
 
-export function emitEvent(ev: World["ctrl"]["events"][number]) {
-  WORLD.ctrl.events.push(ev);
+export function emitEvent() {
+  // WORLD.ctrl.events.push(ev);
 }
