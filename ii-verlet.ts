@@ -265,6 +265,7 @@ function drawFrameTimeAndFrameCnt(ftWindow: number[], w: World) {
 }
 
 export function draw() {
+  textFont("monospace");
   strokeCap(SQUARE);
   background("#000");
 
