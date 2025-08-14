@@ -68,6 +68,11 @@ function generateBouncingDynamics(h: number, count: number) {
   return dynamicsArray;
 }
 
+export const bouncing2 = new WorldBuilder()
+  .pos(20, 640, 100, 900)
+  .dynamics(generateBouncingDynamics(900, 2))
+  .build();
+
 export const bouncing = new WorldBuilder()
   .pos(20, 310, 100, 900)
   .dynamics(generateBouncingDynamics(900, 64))

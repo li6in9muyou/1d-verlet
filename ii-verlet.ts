@@ -8,7 +8,14 @@ import {
 import { afterDrawing, afterHandlingEvents } from "./simctrl";
 import { getV, yv } from "./ii-utils";
 
-const worlds = [iw.spring1, iw.spring2, iw.bouncing, iw.bug2, iw.bug1];
+const worlds = [
+  iw.spring1,
+  iw.spring2,
+  iw.bouncing,
+  iw.bug2,
+  iw.bug1,
+  iw.bouncing2,
+];
 
 export function afterCrashing(state: World): World {
   const nextBoxes = [...state.boxes];
