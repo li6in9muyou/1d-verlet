@@ -349,6 +349,6 @@ export function setup() {
   createCanvas(windowWidth, windowHeight);
 }
 
-export function emitEvent() {
-  // WORLD.ctrl.events.push(ev);
+export function emitEvent(ev: World["ctrl"]["events"][number]) {
+  worlds.forEach((WORLD) => WORLD.ctrl.events.push(ev));
 }
