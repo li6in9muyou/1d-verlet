@@ -44,29 +44,33 @@ function generateBouncingDynamics(h: number, count: number) {
 
   dynamicsArray.push({
     box: yv(6, speedSign * v, 0),
+    mass: 1,
   });
 
   let currPairStart = 12;
   for (let i = 0; i < pairCnt; i++) {
     dynamicsArray.push({
       box: yv(currPairStart + gapH + 6, (speedSign *= -1) * v, 0),
+      mass: 1,
     });
     dynamicsArray.push({
       box: yv(currPairStart + gapH + 18, (speedSign *= -1) * v, 0),
+      mass: 1,
     });
     currPairStart += gapH + 12 + 12;
   }
 
   dynamicsArray.push({
     box: yv(h - 6, speedSign * v, 0),
+    mass: 1,
   });
 
   return dynamicsArray;
 }
 
 export const bouncing = new WorldBuilder()
-  .pos(20, 310, 100, 800)
-  .dynamics(generateBouncingDynamics(800, 48))
+  .pos(20, 310, 100, 900)
+  .dynamics(generateBouncingDynamics(900, 64))
   .build();
 
 export const bug2 = new WorldBuilder()
