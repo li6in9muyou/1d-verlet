@@ -1,6 +1,7 @@
 import { CtrlEvents, Dynamics, Spring, World, WorldWithoutCtrl } from "./types";
 import { MAX_Y_ANCHOR, MIN_Y_ANCHOR } from "./springs";
 import { cloneDeep } from "lodash";
+import { namedCssColors } from "./named-css-colors";
 
 interface DynamicItem {
   box: Dynamics;
@@ -50,11 +51,6 @@ export class WorldBuilder {
 
   public dynamics(dynamicsArray: DynamicItem[]): WorldBuilder {
     const alphabet = "abcdefghijklmnopqrstuvwxyz";
-    const getRandomColor = () =>
-      "#" +
-      Math.floor(Math.random() * 16777215)
-        .toString(16)
-        .padStart(6, "0");
 
     const generateName = (index: number): string => {
       let result = "";
@@ -69,7 +65,7 @@ export class WorldBuilder {
 
     this.dynamicsData = dynamicsArray.map((item, index) => ({
       box: item.box,
-      color: item.color ?? getRandomColor(),
+      color: item.color ?? namedCssColors[index % namedCssColors.length],
       mass: item.mass ?? 100,
       name: item.name ?? generateName(index),
       size: item.size ?? 12,
