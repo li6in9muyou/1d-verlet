@@ -59,6 +59,7 @@ export const bouncing = new WorldBuilder()
   .build();
 
 export const bug2 = new WorldBuilder()
+  .description("small amount of energy is GAINED")
   .pos(20, 10, 140, 580)
   .dynamics([
     {
@@ -80,6 +81,7 @@ export const bug2 = new WorldBuilder()
   .build();
 
 export const bug1 = new WorldBuilder()
+  .description("small amount of energy is LOST")
   .pos(40, 160, 140, 580)
   .dynamics([
     {
