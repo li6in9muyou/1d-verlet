@@ -6,6 +6,8 @@ export type Dynamics = {
 
 export type World = DynamicsWorld & RenderWorld & SimWorld & ControlState;
 
+export type WorldWithoutCtrl = DynamicsWorld & RenderWorld & SimWorld;
+
 export type RenderWorld = {
   frameCnt: number;
   colors: string[];
