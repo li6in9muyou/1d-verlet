@@ -187,10 +187,13 @@ function drawOneSpring(
   RENDER_CONFIG: { SPRING_X: number; SPRING_TENSION_OFFSET: number },
   lineln: (ya: number, yb: number, tempOffset: number) => void,
 ) {
+  const ij = Math.sign(j - i);
+
+  const mid = (i + j) / 2;
+  const halfLen = spring.restingLen / 2;
   stroke("white");
   strokeWeight(2);
-  const ij = Math.sign(j - i);
-  lineln(i, i + spring.restingLen * ij, 0);
+  lineln(mid - halfLen * ij, mid + halfLen * ij, 0);
 
   const actualLen = Math.abs(i - j);
   let tensionColor: string;
