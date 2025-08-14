@@ -13,10 +13,11 @@ let WORLD: World = {
   gravityAcc: 0,
   dragCoeff: 0,
   frameCnt: 0,
-  MAX_X: 140,
+  MIN_X: 140,
+  MAX_X: 280,
   MIN_Y: 20,
   MAX_Y: 600,
-  SPRING_X: 140 / 2 - 6 - 1,
+  SPRING_X: (140 + 280) / 2 - 6 - 1,
   SPRING_TENSION_OFFSET: 3,
   SPRING_MARGIN_X: -7,
   dt: 1 / 3000,
@@ -170,17 +171,22 @@ function drawBoxes(w: RenderWorld & DynamicsWorld) {
     stroke("#000");
     strokeWeight(1);
     fill(color);
-    rect(w.MAX_X / 2 - 6 - 1, y - halfSize - 1, 12 + 2, 2 * halfSize + 2);
+    rect(
+      (w.MIN_X + w.MAX_X) / 2 - 6 - 1,
+      y - halfSize - 1,
+      12 + 2,
+      2 * halfSize + 2,
+    );
     fill("white");
-    text(`${m} ${name}`, w.MAX_X / 2 + 2 * 6, y + 6 - 2);
+    text(`${m} ${name}`, (w.MIN_X + w.MAX_X) / 2 + 2 * 6, y + 6 - 2);
   }
 }
 
 function drawWalls(w: DynamicsWorld) {
   stroke("#00b");
   strokeWeight(10);
-  line(0, w.MIN_Y - 5, w.MAX_X, w.MIN_Y - 5);
-  line(0, w.MAX_Y + 5, w.MAX_X, w.MAX_Y + 5);
+  line(w.MIN_X, w.MIN_Y - 5, w.MAX_X, w.MIN_Y - 5);
+  line(w.MIN_X, w.MAX_Y + 5, w.MAX_X, w.MAX_Y + 5);
 }
 
 function getStats(w: World) {
@@ -314,7 +320,7 @@ export function draw() {
 
 export function setup() {
   textSize(12);
-  createCanvas(WORLD.MAX_X, WORLD.MAX_Y + 300);
+  createCanvas(500, WORLD.MAX_Y + 300);
 }
 
 export function emitEvent(ev: World["ctrl"]["events"][number]) {
