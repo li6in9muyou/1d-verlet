@@ -270,7 +270,7 @@ function drawStats(w: World) {
   const LINE_HEIGHT = 15;
   let yOffset = w.MAX_Y + 10;
   function textln(s: string) {
-    text(s, 4, (yOffset += LINE_HEIGHT));
+    text(s, w.MIN_X + 4, (yOffset += LINE_HEIGHT));
   }
 
   textln("");
@@ -294,10 +294,13 @@ function drawStats(w: World) {
 }
 
 const frameTimeWindow = [];
-function drawFrameTime(ftWindow: number[], w: { MAX_Y: number }) {
+function drawFrameTime(
+  ftWindow: number[],
+  w: { MIN_X: number; MAX_Y: number },
+) {
   const ft = ftWindow.reduce((a, b) => a + b, 0) / ftWindow.length;
   textSize(14);
-  text(`frameTime=${ft.toFixed(2)}ms`, 4, w.MAX_Y + 10 + 15);
+  text(`frameTime=${ft.toFixed(2)}ms`, w.MIN_X + 4, w.MAX_Y + 10 + 15);
 }
 
 export function draw() {
