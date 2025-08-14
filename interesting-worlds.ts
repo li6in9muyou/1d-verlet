@@ -28,34 +28,45 @@ export const spring2 = new WorldBuilder()
   .springs([{ one: 0, two: 1, k: 1e-2, restingLen: 100 }])
   .build();
 
+function generateBouncingDynamics(h: number, count: number) {
+  const pairCnt = (count - 2) / 2;
+  const gapCnt = pairCnt + 1;
+  const gapH = (h - count * 12) / gapCnt;
+
+  if (gapH <= 4) {
+    throw "count too big for this h";
+  }
+
+  let speedSign = 1;
+  const v = 1 / 3000;
+
+  const dynamicsArray = [];
+
+  dynamicsArray.push({
+    box: yv(6, speedSign * v, 0),
+  });
+
+  let currPairStart = 12;
+  for (let i = 0; i < pairCnt; i++) {
+    dynamicsArray.push({
+      box: yv(currPairStart + gapH + 6, (speedSign *= -1) * v, 0),
+    });
+    dynamicsArray.push({
+      box: yv(currPairStart + gapH + 18, (speedSign *= -1) * v, 0),
+    });
+    currPairStart += gapH + 12 + 12;
+  }
+
+  dynamicsArray.push({
+    box: yv(h - 6, speedSign * v, 0),
+  });
+
+  return dynamicsArray;
+}
+
 export const bouncing = new WorldBuilder()
-  .pos(220, 310, 100, 400)
-  .dynamics([
-    {
-      box: yv(6, 1 / 3000, 0),
-    },
-    {
-      box: yv(94, -1 / 3000, 0),
-    },
-    {
-      box: yv(106, 1 / 3000, 0),
-    },
-    {
-      box: yv(194, -1 / 3000, 0),
-    },
-    {
-      box: yv(206, 1 / 3000, 0),
-    },
-    {
-      box: yv(294, -1 / 3000, 0),
-    },
-    {
-      box: yv(306, 1 / 3000, 0),
-    },
-    {
-      box: yv(394, -1 / 3000, 0),
-    },
-  ])
+  .pos(20, 310, 100, 800)
+  .dynamics(generateBouncingDynamics(800, 48))
   .build();
 
 export const bug2 = new WorldBuilder()
