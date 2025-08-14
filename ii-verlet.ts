@@ -307,7 +307,6 @@ function drawStats(w: World) {
   }
 
   textln("");
-  textln(`frameCount=${w.frameCnt}`);
   stats.boxes.sort((i, j) => i.y - j.y);
   for (const boxStat of stats.boxes) {
     fill(boxStat.color);
@@ -327,13 +326,10 @@ function drawStats(w: World) {
 }
 
 const frameTimeWindow = [];
-function drawFrameTime(
-  ftWindow: number[],
-  w: { MIN_X: number; MAX_Y: number },
-) {
+function drawFrameTimeAndFrameCnt(ftWindow: number[], w: World) {
   const ft = ftWindow.reduce((a, b) => a + b, 0) / ftWindow.length;
   textSize(14);
-  text(`frameTime=${ft.toFixed(2)}ms`, w.MIN_X, w.MAX_Y + 10 + 15);
+  text(`${w.frameCnt}   ${ft.toFixed(2)}ms`, w.MIN_X, w.MAX_Y + 10 + 15);
 }
 
 export function draw() {
@@ -372,7 +368,7 @@ export function draw() {
     if (frameTimeWindow.length > 60) {
       frameTimeWindow.shift();
     }
-    drawFrameTime(frameTimeWindow, WORLD);
+    drawFrameTimeAndFrameCnt(frameTimeWindow, WORLD);
 
     worlds[i] = WORLD;
   }
