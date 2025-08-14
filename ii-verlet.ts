@@ -14,10 +14,10 @@ const worlds = [
     .pos(20, 420, 100, 600)
     .dynamics([
       {
-        box: yv(6, 1 / 3000, 0),
+        box: yv(9, 0, 0),
       },
       {
-        box: yv(594, -1 / 3000, 0),
+        box: yv(591, 0, 0),
       },
     ])
     .springs([{ one: 0, two: 1, k: 1e-2, restingLen: 100 }])

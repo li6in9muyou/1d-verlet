@@ -50,8 +50,12 @@ export function afterApplyingForce(w: World): World {
     const force = spring.k * displacement;
     const iForce = -force * Math.sign(ji);
 
-    const boxIdx = spring.one < 0 ? spring.two : spring.one;
-    boxes[boxIdx].acc += iForce / masses[boxIdx];
+    if (spring.one >= 0) {
+      boxes[spring.one].acc += iForce / masses[spring.one];
+    }
+    if (spring.two >= 0) {
+      boxes[spring.two].acc += -iForce / masses[spring.two];
+    }
     return;
   });
 
