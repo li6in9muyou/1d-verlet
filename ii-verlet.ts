@@ -296,11 +296,17 @@ export function draw() {
     drawStats(WORLD);
 
     const frameTime = performance.now() - frameStart;
-    frameTimeWindow.push(frameTime);
-    if (frameTimeWindow.length > 60) {
-      frameTimeWindow.shift();
+
+    if (frameTimeWindow[i] === undefined) {
+      frameTimeWindow.push([]);
     }
-    drawFrameTimeAndFrameCnt(frameTimeWindow, WORLD);
+    const thisWindow = frameTimeWindow[i];
+    thisWindow.push(frameTime);
+    if (thisWindow.length > 60) {
+      thisWindow.shift();
+    }
+
+    drawFrameTimeAndFrameCnt(thisWindow, WORLD);
 
     worlds[i] = WORLD;
   }
