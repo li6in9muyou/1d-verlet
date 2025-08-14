@@ -18,7 +18,7 @@ describe("WorldBuilder", () => {
       SPRING_TENSION_OFFSET: 3,
       SPRING_MARGIN_X: -7,
       dt: 1 / 3000,
-      boxes: [yv(600 - 80, 0, 0), yv(600 - 80 - 60, 10 / 3000, 0)],
+      boxes: [yv(600 - 80 + 20, 0, 0), yv(600 - 80 - 60 + 20, 10 / 3000, 0)],
       sizes: [24, 300],
       colors: ["red", "green"],
       names: ["a", "b"],
