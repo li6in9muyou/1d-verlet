@@ -9,6 +9,7 @@ export type World = DynamicsWorld & RenderWorld & SimWorld & ControlState;
 export type WorldWithoutCtrl = DynamicsWorld & RenderWorld & SimWorld;
 
 export type RenderWorld = {
+  description?: string;
   frameCnt: number;
   colors: string[];
   names: string[];

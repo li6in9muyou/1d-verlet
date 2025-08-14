@@ -71,6 +71,11 @@ export class WorldBuilder {
     return this;
   }
 
+  public description(description: string): WorldBuilder {
+    this.world.description = description;
+    return this;
+  }
+
   public build(): typeof this.world {
     this.world.springs.forEach((spring) => {
       const { one, two } = spring;
