@@ -91,7 +91,7 @@ export class WorldBuilder {
     });
 
     this.dynamicsData.forEach((item) => {
-      this.world.boxes.push(item.box);
+      this.world.boxes.push(getPosAdjustedBox(item.box, this.world.MIN_Y));
       this.world.colors.push(item.color);
       this.world.names.push(item.name);
       this.world.masses.push(item.mass);
@@ -100,4 +100,8 @@ export class WorldBuilder {
 
     return cloneDeep(this.world);
   }
+}
+
+function getPosAdjustedBox(box: Dynamics, minY: number): Dynamics {
+  return { ...box, y: box.y + minY, prevY: box.prevY + minY };
 }
