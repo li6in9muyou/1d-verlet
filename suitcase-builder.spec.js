@@ -10,15 +10,15 @@ describe("SuitcaseBuilder", () => {
       gravityAcc: 0,
       dragCoeff: 0,
       frameCnt: 0,
-      MIN_X: 140,
-      MAX_X: 280,
-      MIN_Y: 20,
-      MAX_Y: 600,
-      SPRING_X: (140 + 280) / 2 - 6 - 1,
+      MIN_X: 0,
+      MAX_X: 140,
+      MIN_Y: 0,
+      MAX_Y: 580,
+      SPRING_X: 140 / 2 - 6 - 1,
       SPRING_TENSION_OFFSET: 3,
       SPRING_MARGIN_X: -7,
       dt: 1 / 3000,
-      boxes: [yv(600 - 80 + 20, 0, 0), yv(600 - 80 - 60 + 20, 10 / 3000, 0)],
+      boxes: [yv(600 - 80, 0, 0), yv(600 - 80 - 60, 10 / 3000, 0)],
       sizes: [24, 300],
       colors: ["red", "green"],
       names: ["a", "b"],
@@ -33,7 +33,7 @@ describe("SuitcaseBuilder", () => {
     };
 
     const built = new SuitcaseBuilder()
-      .pos(20, 140, 140, 580)
+      .pos(NaN, NaN, 140, 580)
       .dynamics([
         {
           box: yv(600 - 80, 0, 0),
