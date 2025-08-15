@@ -40,11 +40,11 @@ export class WorldBuilder {
     masses: [],
   } as World;
 
-  public pos(top: number, left: number, w: number, h: number): WorldBuilder {
-    this.world.MAX_X = left + w;
-    this.world.MIN_X = left;
-    this.world.MIN_Y = top;
-    this.world.MAX_Y = top + h;
+  public pos(_: number, __: number, w: number, h: number): WorldBuilder {
+    this.world.MAX_X = 0 + w;
+    this.world.MIN_X = 0;
+    this.world.MIN_Y = 0;
+    this.world.MAX_Y = 0 + h;
     this.world.SPRING_X = (this.world.MIN_X + this.world.MAX_X) / 2 - 6 - 1;
     return this;
   }

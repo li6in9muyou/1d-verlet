@@ -6,7 +6,8 @@ import {
   getSpringEndpointY,
 } from "./springs";
 import { afterDrawing, afterHandlingEvents } from "./simctrl";
-import { getV, yv } from "./ii-utils";
+import { getV, transformWorld, yv } from "./ii-utils";
+import { leftToRight } from "./layout";
 
 const worlds = [
   iw.spring1,
@@ -16,6 +17,8 @@ const worlds = [
   iw.bug1,
   iw.bouncing2,
 ];
+const trans = leftToRight(worlds.map((wd) => ({ w: wd.MAX_X, h: wd.MAX_Y })));
+worlds.forEach((w: World, idx: number) => transformWorld(w, trans[idx]));
 
 export function afterCrashing(state: World): World {
   const nextBoxes = [...state.boxes];
