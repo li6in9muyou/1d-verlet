@@ -1,4 +1,3 @@
-import * as C from "./interesting-suitcases";
 import { DynamicsStuff, RenderStuff, Spring, Suitcase } from "./types";
 import {
   afterApplyingForce,
@@ -7,16 +6,10 @@ import {
 } from "./springs";
 import { afterDrawing, afterHandlingEvents } from "./simctrl";
 import { getV, transformSuitcase, yv } from "./ii-utils";
+import allSuitcases from "./interesting-suitcases";
 import { leftToRight } from "./layout";
 
-const suitcases = [
-  C.spring1,
-  C.spring2,
-  C.bouncing,
-  C.bug2,
-  C.bug1,
-  C.bouncing2,
-];
+const suitcases = allSuitcases;
 const trans = leftToRight(
   suitcases.map((wd) => ({ w: wd.MAX_X, h: wd.MAX_Y })),
 );
@@ -185,7 +178,7 @@ function drawWalls(w: DynamicsStuff) {
   line(w.MAX_X, w.MIN_Y, w.MAX_X, w.MAX_Y);
 }
 
-function getStats(w: Suitcase) {
+export function getStats(w: Suitcase) {
   const boxes = w.boxes;
   const springs = w.springs;
   const stats = {
@@ -292,16 +285,7 @@ export function draw() {
 
     if (SCASE.ctrl.playing) {
       SCASE.frameCnt++;
-
-      const steps = 1 / SCASE.dt;
-      for (let i = 0; i < steps; i++) {
-        SCASE = { ...SCASE };
-        SCASE = afterMoving(SCASE);
-        SCASE = afterHittingWall(SCASE);
-        SCASE = afterCrashing(SCASE);
-        SCASE = afterApplyingForce(SCASE);
-      }
-
+      SCASE = afterSimulate(SCASE);
       SCASE = afterDrawing(SCASE);
     }
 
@@ -334,4 +318,26 @@ export function setup() {
 
 export function emitEvent(ev: Suitcase["ctrl"]["events"][number]) {
   suitcases.forEach((SCASE) => SCASE.ctrl.events.push(ev));
+}
+
+function afterSimulate(SCASE: Suitcase) {
+  const steps = 1 / SCASE.dt;
+  for (let i = 0; i < steps; i++) {
+    SCASE = { ...SCASE };
+    SCASE = afterMoving(SCASE);
+    SCASE = afterHittingWall(SCASE);
+    SCASE = afterCrashing(SCASE);
+    SCASE = afterApplyingForce(SCASE);
+  }
+  return SCASE;
+}
+
+export function afterOfflineSimulate(
+  iterations: number,
+  SCASE: Suitcase,
+): Suitcase {
+  for (let i = 0; i < iterations; i++) {
+    SCASE = afterSimulate(SCASE);
+  }
+  return SCASE;
 }

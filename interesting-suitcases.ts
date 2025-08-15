@@ -121,3 +121,6 @@ export const bug1 = new SuitcaseBuilder()
   ])
   .springs([{ one: 0, two: MAX_Y_ANCHOR, k: 10, restingLen: 80 }])
   .build();
+
+const all = [spring1, spring2, bouncing, bug2, bug1, bouncing2];
+export default all;
