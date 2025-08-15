@@ -4,11 +4,11 @@ export type Dynamics = {
   acc: number;
 };
 
-export type World = DynamicsWorld & RenderWorld & SimWorld & ControlState;
+export type Suitcase = DynamicsStuff & RenderStuff & SimStuff & ControlState;
 
-export type WorldWithoutCtrl = DynamicsWorld & RenderWorld & SimWorld;
+export type SuitcaseWithoutCtrl = DynamicsStuff & RenderStuff & SimStuff;
 
-export type RenderWorld = {
+export type RenderStuff = {
   description?: string;
   frameCnt: number;
   colors: string[];
@@ -19,7 +19,7 @@ export type RenderWorld = {
   SPRING_MARGIN_X: number;
 };
 
-export type DynamicsWorld = {
+export type DynamicsStuff = {
   dragCoeff: number;
   gravityAcc: number;
   MIN_X: number;
@@ -39,7 +39,7 @@ export type Spring = {
   restingLen: number;
 };
 
-export type SimWorld = {
+export type SimStuff = {
   dt: number;
 };
 
@@ -56,7 +56,7 @@ export type ControlState = {
     history: {
       get MAX_STATES(): number;
       cursor: number;
-      states: (DynamicsWorld & RenderWorld & SimWorld)[];
+      states: (DynamicsStuff & RenderStuff & SimStuff)[];
     };
   };
 };

@@ -1,11 +1,11 @@
 import { describe, expect, test } from "vitest";
 import { MAX_Y_ANCHOR } from "./springs";
-import { WorldBuilder } from "./world-builder";
+import { SuitcaseBuilder } from "./suitcase-builder";
 import { yv } from "./ii-utils";
 
-describe("WorldBuilder", () => {
+describe("SuitcaseBuilder", () => {
   test("sanity", () => {
-    const expectedWorld = {
+    const expected = {
       springs: [{ one: 0, two: MAX_Y_ANCHOR, k: 10, restingLen: 80 }],
       gravityAcc: 0,
       dragCoeff: 0,
@@ -32,7 +32,7 @@ describe("WorldBuilder", () => {
       },
     };
 
-    const builtWorld = new WorldBuilder()
+    const built = new SuitcaseBuilder()
       .pos(20, 140, 140, 580)
       .dynamics([
         {
@@ -53,6 +53,6 @@ describe("WorldBuilder", () => {
       .springs([{ one: 0, two: MAX_Y_ANCHOR, k: 10, restingLen: 80 }])
       .build();
 
-    expect(builtWorld).toEqual(expectedWorld);
+    expect(built).toEqual(expected);
   });
 });

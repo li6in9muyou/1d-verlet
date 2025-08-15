@@ -1,4 +1,4 @@
-import { Spring, World } from "./types";
+import { Spring, Suitcase } from "./types";
 import { getV } from "./ii-utils";
 
 export const MIN_Y_ANCHOR = -2;
@@ -18,7 +18,7 @@ export function getAnchorName(anchor: number) {
 }
 
 export function getSpringEndpointY(
-  w: { boxes: World["boxes"]; MIN_Y: number; MAX_Y: number },
+  w: { boxes: Suitcase["boxes"]; MIN_Y: number; MAX_Y: number },
   spring: Spring,
 ): [number, number] {
   if (!isSpringNotMoving(spring)) {
@@ -32,7 +32,7 @@ export function getSpringEndpointY(
   return [i.y, anchorY];
 }
 
-export function afterApplyingForce(w: World): World {
+export function afterApplyingForce(w: Suitcase): Suitcase {
   const ww = { ...w };
   const springs = ww.springs;
   const boxes = ww.boxes;

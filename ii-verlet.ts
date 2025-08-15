@@ -1,26 +1,30 @@
-import * as iw from "./interesting-worlds";
-import { DynamicsWorld, RenderWorld, Spring, World } from "./types";
+import * as C from "./interesting-suitcases";
+import { DynamicsStuff, RenderStuff, Spring, Suitcase } from "./types";
 import {
   afterApplyingForce,
   getAnchorName,
   getSpringEndpointY,
 } from "./springs";
 import { afterDrawing, afterHandlingEvents } from "./simctrl";
-import { getV, transformWorld, yv } from "./ii-utils";
+import { getV, transformSuitcase, yv } from "./ii-utils";
 import { leftToRight } from "./layout";
 
-const worlds = [
-  iw.spring1,
-  iw.spring2,
-  iw.bouncing,
-  iw.bug2,
-  iw.bug1,
-  iw.bouncing2,
+const suitcases = [
+  C.spring1,
+  C.spring2,
+  C.bouncing,
+  C.bug2,
+  C.bug1,
+  C.bouncing2,
 ];
-const trans = leftToRight(worlds.map((wd) => ({ w: wd.MAX_X, h: wd.MAX_Y })));
-worlds.forEach((w: World, idx: number) => transformWorld(w, trans[idx]));
+const trans = leftToRight(
+  suitcases.map((wd) => ({ w: wd.MAX_X, h: wd.MAX_Y })),
+);
+suitcases.forEach((w: Suitcase, idx: number) =>
+  transformSuitcase(w, trans[idx]),
+);
 
-export function afterCrashing(state: World): World {
+export function afterCrashing(state: Suitcase): Suitcase {
   const nextBoxes = [...state.boxes];
 
   for (let ii = 0; ii < state.boxes.length; ii += 1) {
@@ -61,7 +65,7 @@ export function afterCrashing(state: World): World {
   return { ...state, boxes: nextBoxes };
 }
 
-export function afterMoving(state: World): World {
+export function afterMoving(state: Suitcase): Suitcase {
   const dt = state.dt;
   const nextBoxes = state.boxes.map((box) => {
     return {
@@ -74,7 +78,7 @@ export function afterMoving(state: World): World {
   return { ...state, boxes: nextBoxes };
 }
 
-export function afterHittingWall(state: World): World {
+export function afterHittingWall(state: Suitcase): Suitcase {
   const nextBoxes = state.boxes.map((box, idx) => {
     const halfSize = state.sizes[idx] / 2;
     if (box.y > state.MAX_Y - halfSize) {
@@ -124,7 +128,7 @@ function drawOneSpring(
   lineln(i, j, +RENDER_CONFIG.SPRING_TENSION_OFFSET);
 }
 
-function drawSprings(w: RenderWorld & DynamicsWorld) {
+function drawSprings(w: RenderStuff & DynamicsStuff) {
   const springs = w.springs;
 
   let xOffset = w.SPRING_X;
@@ -146,7 +150,7 @@ function drawSprings(w: RenderWorld & DynamicsWorld) {
   }
 }
 
-function drawBoxes(w: RenderWorld & DynamicsWorld) {
+function drawBoxes(w: RenderStuff & DynamicsStuff) {
   for (const idx in w.boxes) {
     const box = w.boxes[idx];
     const size = w.sizes[idx];
@@ -170,7 +174,7 @@ function drawBoxes(w: RenderWorld & DynamicsWorld) {
   }
 }
 
-function drawWalls(w: DynamicsWorld) {
+function drawWalls(w: DynamicsStuff) {
   stroke("#333");
   strokeWeight(10);
   line(w.MIN_X, w.MIN_Y - 5, w.MAX_X, w.MIN_Y - 5);
@@ -181,7 +185,7 @@ function drawWalls(w: DynamicsWorld) {
   line(w.MAX_X, w.MIN_Y, w.MAX_X, w.MAX_Y);
 }
 
-function getStats(w: World) {
+function getStats(w: Suitcase) {
   const boxes = w.boxes;
   const springs = w.springs;
   const stats = {
@@ -235,7 +239,7 @@ function getStats(w: World) {
   return stats;
 }
 
-function drawStats(w: World) {
+function drawStats(w: Suitcase) {
   const stats = getStats(w);
 
   noStroke();
@@ -268,7 +272,7 @@ function drawStats(w: World) {
 }
 
 const frameTimeWindow = [];
-function drawFrameTimeAndFrameCnt(ftWindow: number[], w: World) {
+function drawFrameTimeAndFrameCnt(ftWindow: number[], w: Suitcase) {
   const ft = ftWindow.reduce((a, b) => a + b, 0) / ftWindow.length;
   textSize(14);
   text(`${w.frameCnt}   ${ft.toFixed(2)}ms`, w.MIN_X, w.MAX_Y + 10 + 15);
@@ -279,32 +283,32 @@ export function draw() {
   strokeCap(SQUARE);
   background("#000");
 
-  for (let i = 0; i < worlds.length; i++) {
+  for (let i = 0; i < suitcases.length; i++) {
     const frameStart = performance.now();
 
-    let WORLD = worlds[i];
+    let SCASE = suitcases[i];
 
-    WORLD = afterHandlingEvents(WORLD);
+    SCASE = afterHandlingEvents(SCASE);
 
-    if (WORLD.ctrl.playing) {
-      WORLD.frameCnt++;
+    if (SCASE.ctrl.playing) {
+      SCASE.frameCnt++;
 
-      const steps = 1 / WORLD.dt;
+      const steps = 1 / SCASE.dt;
       for (let i = 0; i < steps; i++) {
-        WORLD = { ...WORLD };
-        WORLD = afterMoving(WORLD);
-        WORLD = afterHittingWall(WORLD);
-        WORLD = afterCrashing(WORLD);
-        WORLD = afterApplyingForce(WORLD);
+        SCASE = { ...SCASE };
+        SCASE = afterMoving(SCASE);
+        SCASE = afterHittingWall(SCASE);
+        SCASE = afterCrashing(SCASE);
+        SCASE = afterApplyingForce(SCASE);
       }
 
-      WORLD = afterDrawing(WORLD);
+      SCASE = afterDrawing(SCASE);
     }
 
-    drawBoxes(WORLD);
-    drawWalls(WORLD);
-    drawSprings(WORLD);
-    drawStats(WORLD);
+    drawBoxes(SCASE);
+    drawWalls(SCASE);
+    drawSprings(SCASE);
+    drawStats(SCASE);
 
     const frameTime = performance.now() - frameStart;
 
@@ -317,9 +321,9 @@ export function draw() {
       thisWindow.shift();
     }
 
-    drawFrameTimeAndFrameCnt(thisWindow, WORLD);
+    drawFrameTimeAndFrameCnt(thisWindow, SCASE);
 
-    worlds[i] = WORLD;
+    suitcases[i] = SCASE;
   }
 }
 
@@ -328,6 +332,6 @@ export function setup() {
   createCanvas(windowWidth, windowHeight);
 }
 
-export function emitEvent(ev: World["ctrl"]["events"][number]) {
-  worlds.forEach((WORLD) => WORLD.ctrl.events.push(ev));
+export function emitEvent(ev: Suitcase["ctrl"]["events"][number]) {
+  suitcases.forEach((SCASE) => SCASE.ctrl.events.push(ev));
 }

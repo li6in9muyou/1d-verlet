@@ -1,8 +1,8 @@
 import { MAX_Y_ANCHOR } from "./springs";
-import { WorldBuilder } from "./world-builder";
+import { SuitcaseBuilder } from "./suitcase-builder";
 import { yv } from "./ii-utils";
 
-export const spring1 = new WorldBuilder()
+export const spring1 = new SuitcaseBuilder()
   .pos(20, 530, 100, 600)
   .dynamics([
     {
@@ -15,7 +15,7 @@ export const spring1 = new WorldBuilder()
   .springs([{ one: 0, two: 1, k: 1e-2, restingLen: 299.5 }])
   .build();
 
-export const spring2 = new WorldBuilder()
+export const spring2 = new SuitcaseBuilder()
   .pos(20, 420, 100, 600)
   .dynamics([
     {
@@ -68,17 +68,17 @@ function generateBouncingDynamics(h: number, count: number) {
   return dynamicsArray;
 }
 
-export const bouncing2 = new WorldBuilder()
+export const bouncing2 = new SuitcaseBuilder()
   .pos(20, 640, 100, 900)
   .dynamics(generateBouncingDynamics(900, 2))
   .build();
 
-export const bouncing = new WorldBuilder()
+export const bouncing = new SuitcaseBuilder()
   .pos(20, 310, 100, 900)
   .dynamics(generateBouncingDynamics(900, 64))
   .build();
 
-export const bug2 = new WorldBuilder()
+export const bug2 = new SuitcaseBuilder()
   .description("small amount of energy is GAINED")
   .pos(20, 10, 140, 580)
   .dynamics([
@@ -100,7 +100,7 @@ export const bug2 = new WorldBuilder()
   .springs([{ one: 0, two: MAX_Y_ANCHOR, k: 10, restingLen: 80 }])
   .build();
 
-export const bug1 = new WorldBuilder()
+export const bug1 = new SuitcaseBuilder()
   .description("small amount of energy is LOST")
   .pos(40, 160, 140, 580)
   .dynamics([

@@ -1,4 +1,10 @@
-import { CtrlEvents, Dynamics, Spring, World, WorldWithoutCtrl } from "./types";
+import {
+  CtrlEvents,
+  Dynamics,
+  Spring,
+  Suitcase,
+  SuitcaseWithoutCtrl,
+} from "./types";
 import { MAX_Y_ANCHOR, MIN_Y_ANCHOR } from "./springs";
 import { cloneDeep } from "lodash";
 import { namedCssColors } from "./named-css-colors";
@@ -11,9 +17,9 @@ interface DynamicItem {
   size?: number;
 }
 
-export class WorldBuilder {
+export class SuitcaseBuilder {
   private dynamicsData: DynamicItem[] = [];
-  private world = {
+  private scase = {
     springs: [],
     gravityAcc: 0,
     dragCoeff: 0,
@@ -29,7 +35,11 @@ export class WorldBuilder {
     sizes: [] as number[],
     statNextLineY: 0,
     ctrl: {
-      history: { MAX_STATES: 50, cursor: 0, states: [] as WorldWithoutCtrl[] },
+      history: {
+        MAX_STATES: 50,
+        cursor: 0,
+        states: [] as SuitcaseWithoutCtrl[],
+      },
       events: [] as CtrlEvents[],
       playing: true,
       stopAfterFrames: Number.MAX_SAFE_INTEGER,
@@ -38,18 +48,18 @@ export class WorldBuilder {
     colors: [],
     names: [],
     masses: [],
-  } as World;
+  } as Suitcase;
 
-  public pos(_: number, __: number, w: number, h: number): WorldBuilder {
-    this.world.MAX_X = 0 + w;
-    this.world.MIN_X = 0;
-    this.world.MIN_Y = 0;
-    this.world.MAX_Y = 0 + h;
-    this.world.SPRING_X = (this.world.MIN_X + this.world.MAX_X) / 2 - 6 - 1;
+  public pos(_: number, __: number, w: number, h: number): SuitcaseBuilder {
+    this.scase.MAX_X = 0 + w;
+    this.scase.MIN_X = 0;
+    this.scase.MIN_Y = 0;
+    this.scase.MAX_Y = 0 + h;
+    this.scase.SPRING_X = (this.scase.MIN_X + this.scase.MAX_X) / 2 - 6 - 1;
     return this;
   }
 
-  public dynamics(dynamicsArray: DynamicItem[]): WorldBuilder {
+  public dynamics(dynamicsArray: DynamicItem[]): SuitcaseBuilder {
     const alphabet = "abcdefghijklmnopqrstuvwxyz";
 
     const generateName = (index: number): string => {
@@ -73,18 +83,18 @@ export class WorldBuilder {
     return this;
   }
 
-  public springs(springsArray: Spring[]): WorldBuilder {
-    this.world.springs = springsArray;
+  public springs(springsArray: Spring[]): SuitcaseBuilder {
+    this.scase.springs = springsArray;
     return this;
   }
 
-  public description(description: string): WorldBuilder {
-    this.world.description = description;
+  public description(description: string): SuitcaseBuilder {
+    this.scase.description = description;
     return this;
   }
 
-  public build(): typeof this.world {
-    this.world.springs.forEach((spring) => {
+  public build(): typeof this.scase {
+    this.scase.springs.forEach((spring) => {
       const { one, two } = spring;
       const okOne =
         one === MAX_Y_ANCHOR ||
@@ -103,14 +113,14 @@ export class WorldBuilder {
     });
 
     this.dynamicsData.forEach((item) => {
-      this.world.boxes.push(getPosAdjustedBox(item.box, this.world.MIN_Y));
-      this.world.colors.push(item.color);
-      this.world.names.push(item.name);
-      this.world.masses.push(item.mass);
-      this.world.sizes.push(item.size);
+      this.scase.boxes.push(getPosAdjustedBox(item.box, this.scase.MIN_Y));
+      this.scase.colors.push(item.color);
+      this.scase.names.push(item.name);
+      this.scase.masses.push(item.mass);
+      this.scase.sizes.push(item.size);
     });
 
-    return cloneDeep(this.world);
+    return cloneDeep(this.scase);
   }
 }
 

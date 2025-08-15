@@ -1,7 +1,7 @@
 import { cloneDeep, omit } from "lodash";
-import { World } from "./types";
+import { Suitcase } from "./types";
 
-export function afterHandlingEvents(w: World): World {
+export function afterHandlingEvents(w: Suitcase): Suitcase {
   for (const e of w.ctrl.events) {
     switch (e.name) {
       case "toggle": {
@@ -53,7 +53,7 @@ export function afterHandlingEvents(w: World): World {
   return w;
 }
 
-export function afterDrawing(w: World): World {
+export function afterDrawing(w: Suitcase): Suitcase {
   const ww = cloneDeep(w);
 
   ww.ctrl.playing = w.ctrl.playing && w.ctrl.stopAfterFrames - 1 > 0;
