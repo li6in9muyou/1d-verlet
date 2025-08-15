@@ -10,7 +10,14 @@ This list is ordered in decreasing order of importance.
 - [x] multiple sim instances
 - [x] save multiple suitcases
 - [x] draw multiple suitcases from left to right, and suitcases should not know its position on the canvas
-- [ ] offline simulation
+- [x] offline simulation
+- [ ] suitcase builder should use normal speed like 1 instead of 1 / 3000, where is 3000 come from?
+- [ ] remove `builder.pos`
+- [ ] type issues with `builder.dynamics`
+- [ ] other builder methods
+- [ ] easily control which suitcase is shown
 - [ ] stat numbers make no sense, plot them
+- [ ] speed up crashing detection with fancy algorithm
+- [ ] make it interactive
 - [ ] figure out how to fit more demos on the screen, handle scrolling by handle or let browser do it
 - [ ] toggle detail and overall stats

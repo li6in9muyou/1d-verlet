@@ -122,5 +122,62 @@ export const bug1 = new SuitcaseBuilder()
   .springs([{ one: 0, two: MAX_Y_ANCHOR, k: 10, restingLen: 80 }])
   .build();
 
-const all = [spring1, spring2, bouncing, bug2, bug1, bouncing2];
+export const crash = new SuitcaseBuilder()
+  .pos(NaN, NaN, 120, 500)
+  .dynamics(
+    new Array(6)
+      .fill(null)
+      .map((_, idx) => ({
+        box: yv(330 + idx * 30, -3 / 3000, 0),
+        mass: undefined,
+      }))
+      .concat({ box: yv(12, 3 / 3000, 0), mass: 600 }),
+  )
+  .springs(
+    new Array(5)
+      .fill(null)
+      .map((_, idx) => ({ k: 30, one: idx, two: idx + 1, restingLen: 30 })),
+  )
+  .build();
+
+export const newtonsCradle = new SuitcaseBuilder()
+  .pos(NaN, NaN, 120, 500)
+  .dynamics(
+    new Array(6)
+      .fill(null)
+      .map((_, idx) => ({
+        box: yv(100 + idx * 30, 0, 0),
+      }))
+      .concat({ box: yv(12, 3 / 3000, 0) }, { box: yv(250 + 12, 0 / 3000, 0) }),
+  )
+  .springs(
+    new Array(5)
+      .fill(null)
+      .map((_, idx) => ({ k: 30, one: idx, two: idx + 1, restingLen: 30 })),
+  )
+  .build();
+
+export const realNewtonsCradle = new SuitcaseBuilder()
+  .pos(NaN, NaN, 120, 500)
+  .dynamics(
+    new Array(4)
+      .fill(null)
+      .map((_, idx) => ({
+        box: yv(250 + idx * 12, 0, 0),
+      }))
+      .concat({ box: yv(12, 13 / 3000, 0) }),
+  )
+  .build();
+
+const all = [
+  crash,
+  newtonsCradle,
+  realNewtonsCradle,
+  spring1,
+  spring2,
+  bouncing,
+  bug2,
+  bug1,
+  bouncing2,
+];
 export default all;
