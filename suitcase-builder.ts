@@ -51,7 +51,7 @@ export class SuitcaseBuilder {
     masses: [],
   } as Suitcase;
 
-  public pos(_: number, __: number, w: number, h: number): SuitcaseBuilder {
+  public size(w: number, h: number): SuitcaseBuilder {
     this.scase.MAX_X = 0 + w;
     this.scase.MIN_X = 0;
     this.scase.MIN_Y = 0;

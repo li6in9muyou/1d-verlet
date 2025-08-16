@@ -33,7 +33,7 @@ describe("SuitcaseBuilder", () => {
     };
 
     const built = new SuitcaseBuilder()
-      .pos(NaN, NaN, 140, 580)
+      .size(140, 580)
       .dynamics([
         {
           box: yv(600 - 80, 0, 0),
@@ -43,7 +43,7 @@ describe("SuitcaseBuilder", () => {
           mass: 3000,
         },
         {
-          box: yv(600 - 80 - 60, 10 / 3000, 0),
+          box: yv(600 - 80 - 60, 10, 0),
           size: 300,
           color: "green",
           name: "b",

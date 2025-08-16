@@ -3,7 +3,7 @@ import { SuitcaseBuilder } from "./suitcase-builder";
 import { yv } from "./ii-utils";
 
 export const spring1 = new SuitcaseBuilder()
-  .pos(20, 530, 100, 600)
+  .size(100, 600)
   .dynamics([
     {
       box: yv(300 - 9, 0, 0),
@@ -16,7 +16,7 @@ export const spring1 = new SuitcaseBuilder()
   .build();
 
 export const spring2 = new SuitcaseBuilder()
-  .pos(20, 420, 100, 600)
+  .size(100, 600)
   .dynamics([
     {
       box: yv(9, 0, 0),
@@ -69,18 +69,18 @@ function generateBouncingDynamics(h: number, count: number) {
 }
 
 export const bouncing2 = new SuitcaseBuilder()
-  .pos(20, 640, 100, 900)
+  .size(100, 900)
   .dynamics(generateBouncingDynamics(900, 2))
   .build();
 
 export const bouncing = new SuitcaseBuilder()
-  .pos(20, 310, 100, 900)
+  .size(100, 900)
   .dynamics(generateBouncingDynamics(900, 64))
   .build();
 
 export const bug2 = new SuitcaseBuilder()
   .description("small amount of energy is GAINED")
-  .pos(20, 10, 140, 580)
+  .size(140, 580)
   .dynamics([
     {
       box: yv(500, 0, 0),
@@ -102,7 +102,7 @@ export const bug2 = new SuitcaseBuilder()
 
 export const bug1 = new SuitcaseBuilder()
   .description("small amount of energy is LOST")
-  .pos(40, 160, 140, 580)
+  .size(140, 580)
   .dynamics([
     {
       box: yv(500, 0, 0),
@@ -123,7 +123,7 @@ export const bug1 = new SuitcaseBuilder()
   .build();
 
 export const crash = new SuitcaseBuilder()
-  .pos(NaN, NaN, 120, 500)
+  .size(120, 500)
   .dynamics(
     new Array(6)
       .fill(null)
@@ -141,7 +141,7 @@ export const crash = new SuitcaseBuilder()
   .build();
 
 export const newtonsCradle = new SuitcaseBuilder()
-  .pos(NaN, NaN, 120, 500)
+  .size(120, 500)
   .dynamics(
     new Array(6)
       .fill(null)
@@ -158,7 +158,7 @@ export const newtonsCradle = new SuitcaseBuilder()
   .build();
 
 export const realNewtonsCradle = new SuitcaseBuilder()
-  .pos(NaN, NaN, 120, 500)
+  .size(120, 500)
   .dynamics(
     new Array(4)
       .fill(null)
