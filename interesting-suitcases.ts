@@ -38,7 +38,7 @@ function generateBouncingDynamics(h: number, count: number) {
   }
 
   let speedSign = 1;
-  const v = 1 / 3000;
+  const v = 1;
 
   const dynamicsArray = [];
 
@@ -90,7 +90,7 @@ export const bug2 = new SuitcaseBuilder()
       mass: 3000,
     },
     {
-      box: yv(500 - 12 - 50, 10 / 3000, 0),
+      box: yv(500 - 12 - 50, 10, 0),
       size: 300,
       color: "green",
       name: "b",
@@ -112,7 +112,7 @@ export const bug1 = new SuitcaseBuilder()
       mass: 3000,
     },
     {
-      box: yv(500 - 12 - 150, 10 / 3000, 0),
+      box: yv(500 - 12 - 150, 10, 0),
       size: 300,
       color: "green",
       name: "b",
@@ -128,10 +128,10 @@ export const crash = new SuitcaseBuilder()
     new Array(6)
       .fill(null)
       .map((_, idx) => ({
-        box: yv(330 + idx * 30, -3 / 3000, 0),
+        box: yv(330 + idx * 30, -3, 0),
         mass: undefined,
       }))
-      .concat({ box: yv(12, 3 / 3000, 0), mass: 600 }),
+      .concat({ box: yv(12, 3, 0), mass: 600 }),
   )
   .springs(
     new Array(5)
@@ -148,7 +148,7 @@ export const newtonsCradle = new SuitcaseBuilder()
       .map((_, idx) => ({
         box: yv(100 + idx * 30, 0, 0),
       }))
-      .concat({ box: yv(12, 3 / 3000, 0) }, { box: yv(250 + 12, 0 / 3000, 0) }),
+      .concat({ box: yv(12, 3, 0) }, { box: yv(250 + 12, 0, 0) }),
   )
   .springs(
     new Array(5)
@@ -165,7 +165,7 @@ export const realNewtonsCradle = new SuitcaseBuilder()
       .map((_, idx) => ({
         box: yv(250 + idx * 12, 0, 0),
       }))
-      .concat({ box: yv(12, 13 / 3000, 0) }),
+      .concat({ box: yv(12, 13, 0) }),
   )
   .build();
 

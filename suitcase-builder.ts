@@ -6,6 +6,7 @@ import {
   SuitcaseWithoutCtrl,
 } from "./types";
 import { MAX_Y_ANCHOR, MIN_Y_ANCHOR } from "./springs";
+import { getV, yv } from "./ii-utils";
 import { cloneDeep } from "lodash";
 import { namedCssColors } from "./named-css-colors";
 
@@ -100,7 +101,11 @@ export class SuitcaseBuilder {
     });
 
     this.dynamicsData.forEach((item) => {
-      this.scase.boxes.push(getPosAdjustedBox(item.box, this.scase.MIN_Y));
+      const v = getV(item.box);
+      const vSub = v * this.scase.dt;
+      item.box = yv(item.box.y, vSub, item.box.acc);
+
+      this.scase.boxes.push(item.box);
       this.scase.colors.push(item.color);
       this.scase.names.push(item.name);
       this.scase.masses.push(item.mass);
@@ -109,10 +114,6 @@ export class SuitcaseBuilder {
 
     return cloneDeep(this.scase);
   }
-}
-
-function getPosAdjustedBox(box: Dynamics, minY: number): Dynamics {
-  return { ...box, y: box.y + minY, prevY: box.prevY + minY };
 }
 
 const ALPHABET = "abcdefghijklmnopqrstuvwxyz";

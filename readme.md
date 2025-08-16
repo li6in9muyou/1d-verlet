@@ -11,7 +11,7 @@ This list is ordered in decreasing order of importance.
 - [x] save multiple suitcases
 - [x] draw multiple suitcases from left to right, and suitcases should not know its position on the canvas
 - [x] offline simulation
-- [ ] suitcase builder should use normal speed like 1 instead of 1 / 3000, where is 3000 come from?
+- [x] suitcase builder should use normal speed like 1 instead of 1 / 3000, where is 3000 come from?
 - [ ] remove `builder.pos`
 - [ ] type issues with `builder.dynamics`
 - [ ] other builder methods
