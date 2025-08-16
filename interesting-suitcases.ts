@@ -125,47 +125,44 @@ export const bug1 = new SuitcaseBuilder()
 export const crash = new SuitcaseBuilder()
   .size(120, 500)
   .dynamics(
-    new Array(6)
-      .fill(null)
-      .map((_, idx) => ({
-        box: yv(330 + idx * 30, -3, 0),
-        mass: undefined,
-      }))
-      .concat({ box: yv(12, 3, 0), mass: 600 }),
+    Array.from({ length: 6 }, (_, idx) => ({
+      box: yv(330 + idx * 30, -3, 0),
+      mass: undefined,
+    })).concat({ box: yv(12, 3, 0), mass: 600 }),
   )
   .springs(
-    new Array(5)
-      .fill(null)
-      .map((_, idx) => ({ k: 30, one: idx, two: idx + 1, restingLen: 30 })),
+    Array.from({ length: 5 }, (_, idx) => ({
+      k: 30,
+      one: idx,
+      two: idx + 1,
+      restingLen: 30,
+    })),
   )
   .build();
 
 export const newtonsCradle = new SuitcaseBuilder()
   .size(120, 500)
   .dynamics(
-    new Array(6)
-      .fill(null)
-      .map((_, idx) => ({
-        box: yv(100 + idx * 30, 0, 0),
-      }))
-      .concat({ box: yv(12, 3, 0) }, { box: yv(250 + 12, 0, 0) }),
+    Array.from({ length: 6 }, (_, idx) => ({
+      box: yv(100 + idx * 30, 0, 0),
+    })).concat({ box: yv(12, 3, 0) }, { box: yv(250 + 12, 0, 0) }),
   )
   .springs(
-    new Array(5)
-      .fill(null)
-      .map((_, idx) => ({ k: 30, one: idx, two: idx + 1, restingLen: 30 })),
+    Array.from({ length: 5 }, (_, idx) => ({
+      k: 30,
+      one: idx,
+      two: idx + 1,
+      restingLen: 30,
+    })),
   )
   .build();
 
 export const realNewtonsCradle = new SuitcaseBuilder()
   .size(120, 500)
   .dynamics(
-    new Array(4)
-      .fill(null)
-      .map((_, idx) => ({
-        box: yv(250 + idx * 12, 0, 0),
-      }))
-      .concat({ box: yv(12, 13, 0) }),
+    Array.from({ length: 4 }, (_, idx) => ({
+      box: yv(250 + idx * 12, 0, 0),
+    })).concat({ box: yv(12, 13, 0) }),
   )
   .build();
 

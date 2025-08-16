@@ -13,7 +13,7 @@ This list is ordered in decreasing order of importance.
 - [x] offline simulation
 - [x] suitcase builder should use normal speed like 1 instead of 1 / 3000, where is 3000 come from?
 - [x] remove `builder.pos`
-- [ ] type issues with `builder.dynamics`
+- [x] type issues with `builder.dynamics`
 - [ ] other builder methods
 - [ ] easily control which suitcase is shown
 - [ ] stat numbers make no sense, plot them
