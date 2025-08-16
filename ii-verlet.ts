@@ -9,14 +9,6 @@ import { getV, transformSuitcase, yv } from "./ii-utils";
 import allSuitcases from "./interesting-suitcases";
 import { leftToRight } from "./layout";
 
-const suitcases = allSuitcases;
-const trans = leftToRight(
-  suitcases.map((wd) => ({ w: wd.MAX_X, h: wd.MAX_Y })),
-);
-suitcases.forEach((w: Suitcase, idx: number) =>
-  transformSuitcase(w, trans[idx]),
-);
-
 export function afterCrashing(state: Suitcase): Suitcase {
   const nextBoxes = [...state.boxes];
 
@@ -271,15 +263,39 @@ function drawFrameTimeAndFrameCnt(ftWindow: number[], w: Suitcase) {
   text(`${w.frameCnt}   ${ft.toFixed(2)}ms`, w.MIN_X, w.MAX_Y + 10 + 15);
 }
 
+let lastShowing: Suitcase[];
+function getShowingSuitcases(): Suitcase[] {
+  const s =
+    JSON.parse(localStorage.getItem("ii-verlet-showing-suitcases")) || [];
+  if (lastShowing) {
+    const [, inverse] = leftToRight(
+      lastShowing.map((wd) => ({ w: wd.MAX_X, h: wd.MAX_Y })),
+    );
+    lastShowing.forEach((w: Suitcase, idx: number) =>
+      transformSuitcase(w, inverse[idx]),
+    );
+  }
+  const showing = s.map((s: string) => ({ ...allSuitcases[s] }));
+  lastShowing = showing;
+  const [trans] = leftToRight(
+    showing.map((wd) => ({ w: wd.MAX_X, h: wd.MAX_Y })),
+  );
+  showing.forEach((w: Suitcase, idx: number) =>
+    transformSuitcase(w, trans[idx]),
+  );
+  return showing;
+}
+
 export function draw() {
   textFont("monospace");
   strokeCap(SQUARE);
   background("#000");
 
-  for (let i = 0; i < suitcases.length; i++) {
+  const showing = getShowingSuitcases();
+  for (let i = 0; i < showing.length; i++) {
     const frameStart = performance.now();
 
-    let SCASE = suitcases[i];
+    let SCASE = showing[i];
 
     SCASE = afterHandlingEvents(SCASE);
 
@@ -307,7 +323,7 @@ export function draw() {
 
     drawFrameTimeAndFrameCnt(thisWindow, SCASE);
 
-    suitcases[i] = SCASE;
+    showing[i] = SCASE;
   }
 }
 
@@ -317,7 +333,7 @@ export function setup() {
 }
 
 export function emitEvent(ev: Suitcase["ctrl"]["events"][number]) {
-  suitcases.forEach((SCASE) => SCASE.ctrl.events.push(ev));
+  getShowingSuitcases().forEach((SCASE) => SCASE.ctrl.events.push(ev));
 }
 
 function afterSimulate(SCASE: Suitcase) {
