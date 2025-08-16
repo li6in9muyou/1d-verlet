@@ -81,6 +81,21 @@ export class SuitcaseBuilder {
     return this;
   }
 
+  public gravityAcc(gravityAcc: number): SuitcaseBuilder {
+    this.scase.gravityAcc = gravityAcc;
+    return this;
+  }
+
+  public dragCoeff(dragCoeff: number): SuitcaseBuilder {
+    this.scase.dragCoeff = dragCoeff;
+    return this;
+  }
+
+  public dt(dt: number): SuitcaseBuilder {
+    this.scase.dt = dt;
+    return this;
+  }
+
   public build(): typeof this.scase {
     this.scase.springs.forEach((spring) => {
       const { one, two } = spring;

@@ -68,6 +68,34 @@ function generateBouncingDynamics(h: number, count: number) {
   return dynamicsArray;
 }
 
+export const tennisBallFalling9metersOnTheMoon = new SuitcaseBuilder()
+  .size(100, 900)
+  .gravityAcc((10 * 1e-2) / 6)
+  .dragCoeff(0)
+  .dynamics([{ box: yv(6, 0, 0), mass: 0.057 }])
+  .build();
+
+export const tennisBallFalling9meters = new SuitcaseBuilder()
+  .size(100, 900)
+  .gravityAcc(10 * 1e-2)
+  .dragCoeff(0.5 * 1.225 * 0.55 * 0.00353 * 1e-4)
+  .dynamics([{ box: yv(6, 0, 0), mass: 0.057 }])
+  .build();
+
+export const tennisBallFalling900meters = new SuitcaseBuilder()
+  .size(100, 900)
+  .gravityAcc(10)
+  .dragCoeff(0.5 * 1.225 * 0.55 * 0.00353)
+  .dynamics([{ box: yv(6, 0, 0), mass: 0.057 }])
+  .build();
+
+export const tennisBallFalling900metersWithoutAir = new SuitcaseBuilder()
+  .size(100, 900)
+  .gravityAcc(10)
+  .dragCoeff(0)
+  .dynamics([{ box: yv(6, 0, 0), mass: 0.057 }])
+  .build();
+
 export const bouncing2 = new SuitcaseBuilder()
   .size(100, 900)
   .dynamics(generateBouncingDynamics(900, 2))
@@ -124,6 +152,7 @@ export const bug1 = new SuitcaseBuilder()
 
 export const crash = new SuitcaseBuilder()
   .size(120, 500)
+  .dragCoeff(1e-1)
   .dynamics(
     Array.from({ length: 6 }, (_, idx) => ({
       box: yv(330 + idx * 30, -3, 0),
@@ -176,5 +205,9 @@ const all = [
   bug2,
   bug1,
   bouncing2,
+  tennisBallFalling9metersOnTheMoon,
+  tennisBallFalling900metersWithoutAir,
+  tennisBallFalling900meters,
+  tennisBallFalling9meters,
 ];
 export default all;
