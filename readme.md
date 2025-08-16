@@ -16,6 +16,7 @@ This list is ordered in decreasing order of importance.
 - [x] type issues with `builder.dynamics`
 - [x] other builder methods
 - [ ] easily control which suitcase is shown
+- [ ] suitcase coordinates stuff need major refactoring, do no change MAX/MIN_X/Y or boxes for the ease of drawing
 - [ ] stat numbers make no sense, plot them
 - [ ] speed up crashing detection with fancy algorithm
 - [ ] make it interactive
