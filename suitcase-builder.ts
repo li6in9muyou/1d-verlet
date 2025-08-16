@@ -60,19 +60,6 @@ export class SuitcaseBuilder {
   }
 
   public dynamics(dynamicsArray: DynamicItem[]): SuitcaseBuilder {
-    const alphabet = "abcdefghijklmnopqrstuvwxyz";
-
-    const generateName = (index: number): string => {
-      let result = "";
-      let n = index + 1;
-      while (n > 0) {
-        const remainder = (n - 1) % 26;
-        result = alphabet[remainder] + result;
-        n = Math.floor((n - 1) / 26);
-      }
-      return result;
-    };
-
     this.dynamicsData = dynamicsArray.map((item, index) => ({
       box: item.box,
       color: item.color ?? namedCssColors[index % namedCssColors.length],
@@ -126,4 +113,16 @@ export class SuitcaseBuilder {
 
 function getPosAdjustedBox(box: Dynamics, minY: number): Dynamics {
   return { ...box, y: box.y + minY, prevY: box.prevY + minY };
+}
+
+const ALPHABET = "abcdefghijklmnopqrstuvwxyz";
+function generateName(index: number): string {
+  let result = "";
+  let n = index + 1;
+  while (n > 0) {
+    const remainder = (n - 1) % 26;
+    result = ALPHABET[remainder] + result;
+    n = Math.floor((n - 1) / 26);
+  }
+  return result;
 }
