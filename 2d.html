@@ -123,7 +123,7 @@
 
         canvasWidth = windowWidth;
         canvasHeight = windowHeight;
-        rodLength = Math.min(canvasWidth, canvasHeight) * 0.1;
+        rodLength = Math.min(canvasWidth, canvasHeight) * 0.3;
 
         resetSystem();
 
@@ -227,6 +227,18 @@
         }
       }
 
+      class FixPosition {
+        constructor(p1, x, y) {
+          this.p1 = p1;
+          this.fixedPoint = createVector(x, y);
+        }
+
+        apply() {
+          this.p1.position = this.fixedPoint;
+          this.p1.previous = this.fixedPoint;
+        }
+      }
+
       // 距离约束类
       class DistanceConstraint {
         constructor(p1, p2, distance) {
@@ -263,10 +275,10 @@
 
         // 创建质点A和B
         particles.push(
-          new Particle(-rodLength / 2, 0, 30, color(255, 100, 100)),
+          new Particle(-rodLength / 4, 0, 30, color(255, 100, 100)),
         );
         particles.push(
-          new Particle(rodLength / 2, 0, 10, color(100, 255, 100)),
+          new Particle((rodLength / 4) * 3, 0, 10, color(100, 255, 100)),
         );
 
         particles[0].velocity.x = 0;
@@ -284,6 +296,7 @@
           particles[1].position.y - particles[1].velocity.y,
         );
 
+        // constraints.push(new FixPosition(particles[0], -rodLength / 4, 0));
         // 创建距离约束
         constraints.push(
           new DistanceConstraint(particles[0], particles[1], rodLength),
