@@ -265,7 +265,8 @@ function drawFrameTimeAndFrameCnt(ftWindow: number[], w: Suitcase) {
 }
 
 let lastText = "";
-let currentShowing: Suitcase[] = allSuitcases;
+let currentShowingIdx: string[] = [];
+let currentShowing: Suitcase[] = [];
 function getShowingSuitcases(): Suitcase[] {
   const text = localStorage.getItem("ii-verlet-showing-suitcases");
   if (text === lastText) {
@@ -274,14 +275,25 @@ function getShowingSuitcases(): Suitcase[] {
   lastText = text;
 
   const s = JSON.parse(text) || [];
-  const showing: Suitcase[] = s.map((s: string) => cloneDeep(allSuitcases[s]));
+  const showingIdxToIdx = new Map();
+  const showing: Suitcase[] = s.map((s: string, idx: number) => {
+    showingIdxToIdx.set(s, idx);
+    return cloneDeep(allSuitcases[s]);
+  });
   const [trans] = leftToRight(
     showing.map((wd) => ({ w: wd.MAX_X, h: wd.MAX_Y })),
   );
   showing.forEach((w: Suitcase, idx: number) =>
     transformSuitcase(w, trans[idx]),
   );
+
+  for (let i = 0; i < currentShowing.length; i++) {
+    const replaceIdx = showingIdxToIdx.get(currentShowingIdx[i]);
+    showing[replaceIdx] = currentShowing[i];
+  }
+
   currentShowing = showing;
+  currentShowingIdx = s;
   return showing;
 }
 
