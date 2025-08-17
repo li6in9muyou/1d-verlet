@@ -1,4 +1,10 @@
-import { DynamicsStuff, RenderStuff, Spring, Suitcase } from "./types";
+import {
+  DrawConfig,
+  DynamicsStuff,
+  RenderStuff,
+  Spring,
+  Suitcase,
+} from "./types";
 import {
   afterApplyingForce,
   getAnchorName,
@@ -114,12 +120,17 @@ function drawOneSpring(
   lineln(i, j, +RENDER_CONFIG.SPRING_TENSION_OFFSET);
 }
 
-function drawSprings(w: RenderStuff & DynamicsStuff) {
+function drawSprings(w: RenderStuff & DynamicsStuff, renderConfig: DrawConfig) {
   const springs = w.springs;
 
   let xOffset = w.SPRING_X;
-  function lineln(ya: number, yb: number, tempOffset: number) {
-    const x = xOffset + tempOffset;
+  function lineln(_ya: number, _yb: number, tempOffset: number) {
+    const _x = xOffset + tempOffset;
+
+    const { x: screenX, y: screenY } = renderConfig.whereToRender;
+    const [x] = v2Add(_x, 0, screenX, 0);
+    const [ya, yb] = v2Add(_ya, _yb, screenY, screenY);
+
     line(x, ya, x, yb);
   }
 
@@ -337,7 +348,7 @@ export function draw() {
 
     drawBoxes(SCASE, renderConfig);
     drawWalls(SCASE, renderConfig);
-    drawSprings(SCASE);
+    drawSprings(SCASE, renderConfig);
     drawStats(SCASE);
 
     const frameTime = performance.now() - frameStart;

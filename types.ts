@@ -63,6 +63,6 @@ export type ControlState = {
   };
 };
 
-export type renderConfig = {
+export type DrawConfig = {
   whereToRender: { x: number; y: number };
 };

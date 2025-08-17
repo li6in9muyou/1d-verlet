@@ -58,7 +58,7 @@ export class SuitcaseBuilder {
     this.scase.MIN_X = 0;
     this.scase.MIN_Y = 0;
     this.scase.MAX_Y = 0 + h;
-    this.scase.SPRING_X = (this.scase.MIN_X + this.scase.MAX_X) / 2 - 6 - 1;
+    this.scase.SPRING_X = w / 2 - 6 - 1;
     return this;
   }
 
