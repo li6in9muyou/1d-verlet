@@ -99,7 +99,6 @@
       let canvasWidth, canvasHeight;
       let cameraOffset = null;
       let cameraTarget = null;
-      let cameraSmoothness = 0.1; // 摄像机跟随平滑度
       let totalEnergy = 0;
       let energyHistory = [];
       const maxEnergyHistory = 100;
@@ -270,12 +269,24 @@
         constraints = [];
         energyHistory = [];
 
+        const ma = 30;
+        const mb = 10;
         // 创建质点A和B
         particles.push(
-          new Particle(-rodLength / 4, 0, 30, color(255, 100, 100)),
+          new Particle(
+            -rodLength * (ma / (ma + mb)),
+            0,
+            ma,
+            color(255, 100, 100),
+          ),
         );
         particles.push(
-          new Particle((rodLength / 4) * 3, 0, 10, color(100, 255, 100)),
+          new Particle(
+            rodLength * (mb / (ma + mb)),
+            0,
+            mb,
+            color(100, 255, 100),
+          ),
         );
 
         particles[0].velocity.x = 0;
@@ -287,7 +298,7 @@
 
         // 给质点B初始向下速度
         particles[1].velocity.x = 0;
-        particles[1].velocity.y = 3;
+        particles[1].velocity.y = 30;
         particles[1].previous = createVector(
           particles[1].position.x - particles[1].velocity.x,
           particles[1].position.y - particles[1].velocity.y,
@@ -334,8 +345,7 @@
         // 计算质心位置
         const com = calculateCenterOfMass();
 
-        // 平滑更新摄像机位置
-        cameraTarget = p5.Vector.lerp(cameraTarget, com, cameraSmoothness);
+        cameraTarget = com;
         cameraOffset = createVector(
           width / 2 - cameraTarget.x,
           height / 2 - cameraTarget.y,
