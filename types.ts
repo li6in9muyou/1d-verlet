@@ -24,10 +24,6 @@ export type DynamicsStuff = {
   gravityAcc: number;
   WIDTH: number;
   HEIGHT: number;
-  MIN_X: number;
-  MAX_X: number;
-  MIN_Y: number;
-  MAX_Y: number;
   boxes: Dynamics[];
   sizes: number[];
   masses: number[];

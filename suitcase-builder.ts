@@ -25,10 +25,6 @@ export class SuitcaseBuilder {
     gravityAcc: 0,
     dragCoeff: 0,
     frameCnt: 0,
-    MIN_X: 0,
-    MAX_X: 0,
-    MIN_Y: 0,
-    MAX_Y: 0,
     SPRING_X: 0,
     SPRING_TENSION_OFFSET: 3,
     SPRING_MARGIN_X: -7,
@@ -54,10 +50,6 @@ export class SuitcaseBuilder {
   public size(w: number, h: number): SuitcaseBuilder {
     this.scase.WIDTH = w;
     this.scase.HEIGHT = h;
-    this.scase.MAX_X = 0 + w;
-    this.scase.MIN_X = 0;
-    this.scase.MIN_Y = 0;
-    this.scase.MAX_Y = 0 + h;
     this.scase.SPRING_X = w / 2 - 6 - 1;
     return this;
   }

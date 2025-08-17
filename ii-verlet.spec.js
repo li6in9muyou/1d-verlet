@@ -113,13 +113,13 @@ describe("afterHittingWall", () => {
       },
     },
   ];
+  testCases.forEach((t) => ((t.y -= 10), (t.expected.y -= 10)));
 
   test.each(testCases)(
     "basic movement: v=$v y=$y",
     ({ y, v, expected: exp }) => {
       const s = afterHittingWall({
-        MIN_Y: 10,
-        MAX_Y: 100,
+        HEIGHT: 90,
         boxes: [yv(y, v)],
         sizes: [12],
       });
@@ -176,8 +176,6 @@ describe("afterCrashing", () => {
 
   test.each(testCases)("$what", ({ pair, expected: exp }) => {
     const s = afterCrashing({
-      MIN_Y: 10,
-      MAX_Y: 100,
       boxes: [...pair],
       sizes: [12, 12],
       masses: [10, 10],

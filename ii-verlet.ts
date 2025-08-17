@@ -67,15 +67,15 @@ export function afterMoving(state: Suitcase): Suitcase {
 export function afterHittingWall(state: Suitcase): Suitcase {
   const nextBoxes = state.boxes.map((box, idx) => {
     const halfSize = state.sizes[idx] / 2;
-    if (box.y > state.MAX_Y - halfSize) {
-      const yOverBound = box.y - (state.MAX_Y - halfSize);
-      const nextY = state.MAX_Y - halfSize - yOverBound;
+    if (box.y > state.HEIGHT - halfSize) {
+      const yOverBound = box.y - (state.HEIGHT - halfSize);
+      const nextY = state.HEIGHT - halfSize - yOverBound;
       const nextV = -Math.abs(box.y - box.prevY);
       return yv(nextY, nextV, box.acc);
     }
-    if (box.y < state.MIN_Y + halfSize) {
-      const yOverBound = state.MIN_Y + halfSize - box.y;
-      const nextY = state.MIN_Y + halfSize + yOverBound;
+    if (box.y < halfSize) {
+      const yOverBound = halfSize - box.y;
+      const nextY = halfSize + yOverBound;
       const nextV = Math.abs(box.y - box.prevY);
       return yv(nextY, nextV, box.acc);
     }
@@ -192,7 +192,7 @@ export function getStats(w: Suitcase) {
     const v = (box.y - box.prevY) / w.dt;
     const m = w.masses[idx];
     const ke = 0.5 * m * v * v;
-    const gp = m * w.gravityAcc * -(box.y - w.MAX_Y);
+    const gp = m * w.gravityAcc * -(box.y - w.HEIGHT);
     stats.boxes.push({
       name: w.names[idx],
       velocity: v,

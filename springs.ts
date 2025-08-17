@@ -18,7 +18,7 @@ export function getAnchorName(anchor: number) {
 }
 
 export function getSpringEndpointY(
-  w: { boxes: Suitcase["boxes"]; MIN_Y: number; MAX_Y: number },
+  w: { boxes: Suitcase["boxes"]; HEIGHT: number },
   spring: Spring,
 ): [number, number] {
   if (!isSpringNotMoving(spring)) {
@@ -26,7 +26,7 @@ export function getSpringEndpointY(
   }
 
   const whichIsAnchor = spring.one < 0 ? spring.one : spring.two;
-  const anchorY = whichIsAnchor === MIN_Y_ANCHOR ? w.MIN_Y : w.MAX_Y;
+  const anchorY = whichIsAnchor === MIN_Y_ANCHOR ? 0 : w.HEIGHT;
   const boxIdx = spring.one < 0 ? spring.two : spring.one;
   const i = w.boxes[boxIdx];
   return [i.y, anchorY];
