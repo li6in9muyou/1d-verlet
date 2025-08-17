@@ -30,10 +30,10 @@ export const spring2 = new SuitcaseBuilder()
   .springs([{ one: 0, two: 1, k: 1e-2, restingLen: 100 }])
   .build();
 
-function generateBouncingDynamics(h: number, count: number) {
+function generateBouncingDynamics(h: number, count: number, size = 12) {
   const pairCnt = (count - 2) / 2;
   const gapCnt = pairCnt + 1;
-  const gapH = (h - count * 12) / gapCnt;
+  const gapH = (h - count * size) / gapCnt;
 
   if (gapH <= 4) {
     throw "count too big for this h";
@@ -45,26 +45,30 @@ function generateBouncingDynamics(h: number, count: number) {
   const dynamicsArray = [];
 
   dynamicsArray.push({
-    box: yv(6, speedSign * v, 0),
+    box: yv(size / 2, speedSign * v, 0),
     mass: 1,
+    size,
   });
 
-  let currPairStart = 12;
+  let currPairStart = size;
   for (let i = 0; i < pairCnt; i++) {
     dynamicsArray.push({
-      box: yv(currPairStart + gapH + 6, (speedSign *= -1) * v, 0),
+      box: yv(currPairStart + gapH + size / 2, (speedSign *= -1) * v, 0),
       mass: 1,
+      size,
     });
     dynamicsArray.push({
-      box: yv(currPairStart + gapH + 18, (speedSign *= -1) * v, 0),
+      box: yv(currPairStart + gapH + size + size / 2, (speedSign *= -1) * v, 0),
       mass: 1,
+      size,
     });
-    currPairStart += gapH + 12 + 12;
+    currPairStart += gapH + size * 2;
   }
 
   dynamicsArray.push({
-    box: yv(h - 6, speedSign * v, 0),
+    box: yv(h - size / 2, speedSign * v, 0),
     mass: 1,
+    size,
   });
 
   return dynamicsArray;
@@ -105,7 +109,7 @@ export const tennisBallFalling900metersWithoutAir = new SuitcaseBuilder()
 export const bouncing2 = new SuitcaseBuilder()
   .description("short")
   .size(100, 100)
-  .dynamics(generateBouncingDynamics(100, 2))
+  .dynamics(generateBouncingDynamics(100, 6))
   .build();
 
 export const sanityCheck = new SuitcaseBuilder()
@@ -117,7 +121,7 @@ export const sanityCheck = new SuitcaseBuilder()
 export const bouncing = new SuitcaseBuilder()
   .description("crashing stress test")
   .size(100, 900)
-  .dynamics(generateBouncingDynamics(900, 64))
+  .dynamics(generateBouncingDynamics(900, 100, 6))
   .build();
 
 export const bug2 = new SuitcaseBuilder()
