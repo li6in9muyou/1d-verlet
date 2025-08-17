@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>轻杆约束模拟 - PBD方法</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+      }
+
+      #canvas-container {
+        background: rgba(10, 15, 40, 0.85);
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        overflow: hidden;
+        position: relative;
+      }
+
+      .info-panel {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        background: rgba(25, 35, 70, 0.7);
+        padding: 15px;
+        border-radius: 10px;
+        color: white;
+        font-size: 14px;
+        max-width: 300px;
+      }
+
+      .title {
+        position: absolute;
+        top: 20px;
+        left: 0;
+        right: 0;
+        text-align: center;
+        color: #ffcc00;
+        font-size: 24px;
+        font-weight: bold;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+      }
+
+      .legend {
+        position: absolute;
+        top: 60px;
+        left: 20px;
+        background: rgba(25, 35, 70, 0.7);
+        padding: 10px;
+        border-radius: 10px;
+        color: white;
+        font-size: 14px;
+      }
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        margin: 5px 0;
+      }
+
+      .color-box {
+        width: 15px;
+        height: 15px;
+        margin-right: 10px;
+        border-radius: 50%;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="title">轻杆约束模拟 - Position-Based Dynamics</div>
+
+    <div id="canvas-container">
+      <div class="legend">
+        <div class="legend-item">
+          <div class="color-box" style="background-color: #ff5555"></div>
+          <span>质点A (红色)</span>
+        </div>
+        <div class="legend-item">
+          <div class="color-box" style="background-color: #55ff55"></div>
+          <span>质点B (绿色)</span>
+        </div>
+        <div class="legend-item">
+          <div class="color-box" style="background-color: #ffff00"></div>
+          <span>系统质心</span>
+        </div>
+      </div>
+
+      <div class="info-panel">
+        <p>• 质点A和B通过轻杆刚性连接，杆长固定</p>
+        <p>• 初始状态：质点B以速度3向下移动</p>
+        <p>• 模拟方法：Position-Based Dynamics(PBD)</p>
+        <p>• 物理原理：动量守恒 + 角动量守恒</p>
+      </div>
+    </div>
+
+    <script>
+      // 定义质点类
+      class Particle {
+        constructor(x, y, mass, color) {
+          this.position = createVector(x, y);
+          this.previous = createVector(x, y);
+          this.velocity = createVector(0, 0);
+          this.acceleration = createVector(0, 0);
+          this.mass = mass;
+          this.invMass = 1.0 / mass;
+          this.radius = 15;
+          this.color = color;
+          this.trail = [];
+          this.maxTrail = 50;
+        }
+
+        // 更新位置（Verlet积分）
+        update(dt) {
+          // 保存当前位置
+          const temp = this.position.copy();
+
+          // Verlet积分
+          this.velocity = p5.Vector.sub(this.position, this.previous);
+          this.previous = this.position.copy();
+
+          // 应用加速度
+          this.position.add(this.velocity);
+          this.position.add(p5.Vector.mult(this.acceleration, dt * dt));
+
+          // 重置加速度
+          this.acceleration.mult(0);
+
+          // 保存轨迹
+          this.trail.push(this.position.copy());
+          if (this.trail.length > this.maxTrail) {
+            this.trail.shift();
+          }
+        }
+
+        // 应用力
+        applyForce(force) {
+          const f = p5.Vector.div(force, this.mass);
+          this.acceleration.add(f);
+        }
+
+        // 绘制质点
+        display() {
+          // 绘制轨迹
+          noFill();
+          stroke(255, 150);
+          strokeWeight(1);
+          beginShape();
+          for (let i = 0; i < this.trail.length; i++) {
+            vertex(this.trail[i].x, this.trail[i].y);
+          }
+          endShape();
+
+          // 绘制质点
+          fill(this.color);
+          noStroke();
+          ellipse(this.position.x, this.position.y, this.radius * 2);
+
+          // 绘制速度向量
+          if (this.velocity.mag() > 0.1) {
+            stroke(255, 255, 0);
+            strokeWeight(2);
+            const vel = this.velocity.copy().mult(5);
+            line(
+              this.position.x,
+              this.position.y,
+              this.position.x + vel.x,
+              this.position.y + vel.y,
+            );
+          }
+        }
+      }
+
+      // 定义距离约束（轻杆）
+      class DistanceConstraint {
+        constructor(p1, p2, distance) {
+          this.p1 = p1;
+          this.p2 = p2;
+          this.distance = distance;
+          this.stiffness = 1.0; // 约束刚度
+        }
+
+        // 应用约束
+        apply() {
+          // 计算当前距离
+          const delta = p5.Vector.sub(this.p2.position, this.p1.position);
+          const currentDistance = delta.mag();
+
+          // 计算修正向量
+          const correction = delta.copy();
+          correction.normalize();
+          correction.mult((currentDistance - this.distance) * this.stiffness);
+
+          // 根据质量分配修正量
+          const totalMass = this.p1.mass + this.p2.mass;
+          const ratio1 = this.p2.mass / totalMass;
+          const ratio2 = this.p1.mass / totalMass;
+
+          // 应用位置修正
+          this.p1.position.add(p5.Vector.mult(correction, ratio1));
+          this.p2.position.sub(p5.Vector.mult(correction, ratio2));
+        }
+      }
+
+      // 全局变量
+      let particles = [];
+      let constraints = [];
+      let rodLength = 200;
+      let centerX, centerY;
+
+      function setup() {
+        const container = document.getElementById("canvas-container");
+        const canvas = createCanvas(800, 500);
+        canvas.parent("canvas-container");
+
+        centerX = width / 2;
+        centerY = height / 2;
+
+        resetSystem();
+      }
+
+      function resetSystem() {
+        particles = [];
+        constraints = [];
+
+        // 创建质点A和B
+        particles.push(
+          new Particle(
+            centerX - rodLength / 2,
+            centerY,
+            10,
+            color(255, 100, 100),
+          ),
+        ); // 红色
+        particles.push(
+          new Particle(
+            centerX + rodLength / 2,
+            centerY,
+            10,
+            color(100, 255, 100),
+          ),
+        ); // 绿色
+
+        // 给质点B初始向下速度
+        particles[1].velocity.y = 3;
+        // 设置previous位置以匹配初始速度
+        particles[1].previous = createVector(
+          particles[1].position.x,
+          particles[1].position.y - 3,
+        );
+
+        // 创建距离约束（轻杆）
+        constraints.push(
+          new DistanceConstraint(particles[0], particles[1], rodLength),
+        );
+      }
+
+      function draw() {
+        background(20, 30, 50, 200);
+
+        // 绘制网格
+        drawGrid();
+
+        // 绘制质心
+        drawCenterOfMass();
+
+        // 更新物理
+        const dt = 1 / 60;
+
+        // 更新质点位置
+        for (let p of particles) {
+          p.update(dt);
+        }
+
+        // 迭代应用约束（多次迭代提高稳定性）
+        for (let i = 0; i < 10; i++) {
+          for (let c of constraints) {
+            c.apply();
+          }
+        }
+
+        // 绘制轻杆
+        stroke(200, 200, 255);
+        strokeWeight(5);
+        line(
+          particles[0].position.x,
+          particles[0].position.y,
+          particles[1].position.x,
+          particles[1].position.y,
+        );
+
+        // 绘制质点
+        for (let p of particles) {
+          p.display();
+        }
+
+        // 绘制信息
+        drawInfo();
+      }
+
+      function drawGrid() {
+        stroke(50, 80);
+        strokeWeight(1);
+
+        // 垂直线
+        for (let x = 0; x <= width; x += 50) {
+          line(x, 0, x, height);
+        }
+
+        // 水平线
+        for (let y = 0; y <= height; y += 50) {
+          line(0, y, width, y);
+        }
+      }
+
+      function drawCenterOfMass() {
+        // 计算质心位置
+        let comX = 0;
+        let comY = 0;
+        let totalMass = 0;
+
+        for (let p of particles) {
+          comX += p.position.x * p.mass;
+          comY += p.position.y * p.mass;
+          totalMass += p.mass;
+        }
+
+        comX /= totalMass;
+        comY /= totalMass;
+
+        // 绘制质心
+        fill(255, 255, 0, 220);
+        noStroke();
+        ellipse(comX, comY, 12, 12);
+
+        // 绘制质心轨迹
+        stroke(255, 255, 0, 100);
+        strokeWeight(2);
+        noFill();
+        beginShape();
+        for (let i = 0; i < particles[0].trail.length; i++) {
+          const x =
+            (particles[0].trail[i].x * particles[0].mass +
+              particles[1].trail[i].x * particles[1].mass) /
+            totalMass;
+          const y =
+            (particles[0].trail[i].y * particles[0].mass +
+              particles[1].trail[i].y * particles[1].mass) /
+            totalMass;
+          vertex(x, y);
+        }
+        endShape();
+      }
+
+      function drawInfo() {
+        // 绘制状态信息
+        fill(255);
+        noStroke();
+        textSize(16);
+        textAlign(LEFT, TOP);
+
+        const vA = particles[0].velocity.mag().toFixed(2);
+        const vB = particles[1].velocity.mag().toFixed(2);
+
+        text(`质点A速度: ${vA}`, 20, 20);
+        text(`质点B速度: ${vB}`, 20, 45);
+
+        // 绘制角速度
+        const delta = p5.Vector.sub(
+          particles[1].position,
+          particles[0].position,
+        );
+        const center = p5.Vector.add(
+          particles[0].position,
+          p5.Vector.div(delta, 2),
+        );
+        const rA = p5.Vector.sub(particles[0].position, center);
+        const rB = p5.Vector.sub(particles[1].position, center);
+
+        // 计算角速度 (ω = (v × r) / |r|²)
+        const vRelA = p5.Vector.sub(
+          particles[0].velocity,
+          particles[0].velocity,
+        ); // 相对质心的速度
+        const vRelB = p5.Vector.sub(
+          particles[1].velocity,
+          particles[0].velocity,
+        );
+
+        // 使用叉积计算角速度
+        const crossA = rA.x * vRelA.y - rA.y * vRelA.x;
+        const crossB = rB.x * vRelB.y - rB.y * vRelB.x;
+
+        const omega = ((crossA + crossB) / (rA.magSq() + rB.magSq())).toFixed(
+          2,
+        );
+        text(`角速度: ${omega} rad/frame`, 20, 70);
+      }
+    </script>
+  </body>
+</html>
