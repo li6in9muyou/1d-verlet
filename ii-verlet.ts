@@ -15,6 +15,7 @@ import { getV, v2Add, yv } from "./ii-utils";
 import allSuitcases from "./interesting-suitcases";
 import { cloneDeep } from "lodash";
 import { leftToRight } from "./layout";
+import * as p5 from "p5";
 
 export function afterCrashing(state: Suitcase): Suitcase {
   const nextBoxes = [...state.boxes];
@@ -254,7 +255,10 @@ export function getStats(w: Suitcase) {
   return stats;
 }
 
-function drawStats(w: Suitcase) {
+function drawStats(
+  w: Suitcase,
+  transform: (x: number, y: number) => [number, number],
+) {
   const stats = getStats(w);
 
   noStroke();
@@ -262,9 +266,11 @@ function drawStats(w: Suitcase) {
 
   textSize(14);
   const LINE_HEIGHT = 15;
-  let yOffset = w.MAX_Y + 10;
+
+  const [x, _y] = transform(0, w.HEIGHT);
+  let yOffset = _y + 10;
   function textln(s: string) {
-    text(s, w.MIN_X, (yOffset += LINE_HEIGHT));
+    text(s, x, (yOffset += LINE_HEIGHT));
   }
 
   textln("");
@@ -287,10 +293,10 @@ function drawStats(w: Suitcase) {
 }
 
 const frameTimeWindow = [];
-function drawFrameTimeAndFrameCnt(ftWindow: number[], w: Suitcase) {
+function drawFrameTimeAndFrameCnt(ftWindow: number[], w: Suitcase, api) {
   const ft = ftWindow.reduce((a, b) => a + b, 0) / ftWindow.length;
-  textSize(14);
-  text(`${w.frameCnt}   ${ft.toFixed(2)}ms`, w.MIN_X, w.MAX_Y + 10 + 15);
+  api.textSize(14);
+  api.text(`${w.frameCnt}   ${ft.toFixed(2)}ms`, 0, w.HEIGHT + 10 + 15);
 }
 
 let lastText = "";
@@ -326,6 +332,16 @@ function getShowingSuitcases(): Suitcase[] {
   return showing;
 }
 
+const renderConfig = { whereToRender: { x: 155, y: 233 } };
+function transform(x: number, y: number): [number, number] {
+  return v2Add(
+    x,
+    y,
+    renderConfig.whereToRender.x,
+    renderConfig.whereToRender.y,
+  );
+}
+
 export function draw() {
   textFont("monospace");
   strokeCap(SQUARE);
@@ -336,7 +352,6 @@ export function draw() {
     const frameStart = performance.now();
 
     let SCASE = showing[i];
-    const renderConfig = { whereToRender: { x: 155, y: 233 } };
 
     SCASE = afterHandlingEvents(SCASE);
 
@@ -349,7 +364,7 @@ export function draw() {
     drawBoxes(SCASE, renderConfig);
     drawWalls(SCASE, renderConfig);
     drawSprings(SCASE, renderConfig);
-    drawStats(SCASE);
+    drawStats(SCASE, transform);
 
     const frameTime = performance.now() - frameStart;
 
@@ -362,7 +377,13 @@ export function draw() {
       thisWindow.shift();
     }
 
-    drawFrameTimeAndFrameCnt(thisWindow, SCASE);
+    drawFrameTimeAndFrameCnt(thisWindow, SCASE, {
+      textSize: window.textSize,
+      text: function (str: string, _x: number, _y: number) {
+        const [x, y] = transform(_x, _y);
+        text(str, x, y);
+      },
+    });
 
     showing[i] = SCASE;
   }
