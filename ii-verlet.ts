@@ -98,13 +98,14 @@ function drawOneSpring(
   j: number,
   RENDER_CONFIG: { SPRING_X: number; SPRING_TENSION_OFFSET: number },
   lineln: (ya: number, yb: number, tempOffset: number) => void,
+  api,
 ) {
   const ij = Math.sign(j - i);
 
   const mid = (i + j) / 2;
   const halfLen = spring.restingLen / 2;
-  stroke("white");
-  strokeWeight(2);
+  api.stroke("white");
+  api.strokeWeight(2);
   lineln(mid - halfLen * ij, mid + halfLen * ij, 0);
 
   const actualLen = Math.abs(i - j);
@@ -116,23 +117,18 @@ function drawOneSpring(
   } else {
     tensionColor = "white";
   }
-  stroke(tensionColor);
-  strokeWeight(2);
+  api.stroke(tensionColor);
+  api.strokeWeight(2);
   lineln(i, j, +RENDER_CONFIG.SPRING_TENSION_OFFSET);
 }
 
-function drawSprings(w: RenderStuff & DynamicsStuff, renderConfig: DrawConfig) {
+function drawSprings(w: RenderStuff & DynamicsStuff, api) {
   const springs = w.springs;
 
   let xOffset = w.SPRING_X;
-  function lineln(_ya: number, _yb: number, tempOffset: number) {
-    const _x = xOffset + tempOffset;
-
-    const { x: screenX, y: screenY } = renderConfig.whereToRender;
-    const [x] = v2Add(_x, 0, screenX, 0);
-    const [ya, yb] = v2Add(_ya, _yb, screenY, screenY);
-
-    line(x, ya, x, yb);
+  function lineln(ya: number, yb: number, tempOffset: number) {
+    const x = xOffset + tempOffset;
+    api.line(x, ya, x, yb);
   }
 
   springs.sort((a, b) => {
@@ -144,14 +140,11 @@ function drawSprings(w: RenderStuff & DynamicsStuff, renderConfig: DrawConfig) {
   for (const spring of springs) {
     const [ya, yb] = getSpringEndpointY(w, spring);
     xOffset += w.SPRING_MARGIN_X;
-    drawOneSpring(spring, ya, yb, w, lineln);
+    drawOneSpring(spring, ya, yb, w, lineln, api);
   }
 }
 
-function drawBoxes(
-  w: RenderStuff & DynamicsStuff,
-  renderConfig: { whereToRender: { x: number; y: number } },
-) {
+function drawBoxes(w: RenderStuff & DynamicsStuff, api) {
   for (const idx in w.boxes) {
     const box = w.boxes[idx];
     const size = w.sizes[idx];
@@ -160,45 +153,34 @@ function drawBoxes(
     const color = w.colors[idx];
     const m = w.masses[idx];
 
-    const _xBox = w.WIDTH / 2 - 6 - 1;
-    const _yBox = box.y - halfSize - 1;
-    const _xText = w.WIDTH / 2 + 2 * 6;
-    const _yText = box.y + 6 - 2;
+    const xBox = w.WIDTH / 2 - 6 - 1;
+    const yBox = box.y - halfSize - 1;
+    const xText = w.WIDTH / 2 + 2 * 6;
+    const yText = box.y + 6 - 2;
 
-    const { x: screenX, y: screenY } = renderConfig.whereToRender;
-    const [xBox, yBox] = v2Add(_xBox, _yBox, screenX, screenY);
-    const [xText, yText] = v2Add(_xText, _yText, screenX, screenY);
-
-    stroke("#000");
-    strokeWeight(1);
-    fill(color);
-    rect(xBox, yBox, 12 + 2, 2 * halfSize + 2);
-    fill("white");
-    text(`${m} ${name}`, xText, yText);
+    api.stroke("#000");
+    api.strokeWeight(1);
+    api.fill(color);
+    api.rect(xBox, yBox, 12 + 2, 2 * halfSize + 2);
+    api.fill("white");
+    api.text(`${m} ${name}`, xText, yText);
   }
 }
 
-function drawWalls(
-  w: RenderStuff & DynamicsStuff,
-  renderConfig: { whereToRender: { x: number; y: number } },
-) {
-  const _xTL = 0;
-  const _yTL = 0;
-  const _xBR = w.WIDTH;
-  const _yBR = w.HEIGHT;
+function drawWalls(w: RenderStuff & DynamicsStuff, api) {
+  const xTL = 0;
+  const yTL = 0;
+  const xBR = w.WIDTH;
+  const yBR = w.HEIGHT;
 
-  const { x: screenX, y: screenY } = renderConfig.whereToRender;
-  const [xTL, yTL] = v2Add(_xTL, _yTL, screenX, screenY);
-  const [xBR, yBR] = v2Add(_xBR, _yBR, screenX, screenY);
+  api.stroke("#333");
+  api.strokeWeight(10);
+  api.line(xTL, yTL - 5, xBR, yTL - 5);
+  api.line(xTL, yBR + 5, xBR, yBR + 5);
 
-  stroke("#333");
-  strokeWeight(10);
-  line(xTL, yTL - 5, xBR, yTL - 5);
-  line(xTL, yBR + 5, xBR, yBR + 5);
-
-  strokeWeight(1);
-  line(xTL, yTL, xTL, yBR);
-  line(xBR, yTL, xBR, yBR);
+  api.strokeWeight(1);
+  api.line(xTL, yTL, xTL, yBR);
+  api.line(xBR, yTL, xBR, yBR);
 }
 
 export function getStats(w: Suitcase) {
@@ -255,33 +237,29 @@ export function getStats(w: Suitcase) {
   return stats;
 }
 
-function drawStats(
-  w: Suitcase,
-  transform: (x: number, y: number) => [number, number],
-) {
+function drawStats(w: Suitcase, api) {
   const stats = getStats(w);
 
-  noStroke();
-  fill("white");
+  api.noStroke();
+  api.fill("white");
 
-  textSize(14);
+  api.textSize(14);
   const LINE_HEIGHT = 15;
 
-  const [x, _y] = transform(0, w.HEIGHT);
-  let yOffset = _y + 10;
+  let yOffset = w.HEIGHT + 10;
   function textln(s: string) {
-    text(s, x, (yOffset += LINE_HEIGHT));
+    api.text(s, 0, (yOffset += LINE_HEIGHT));
   }
 
   textln("");
   stats.boxes.sort((i, j) => i.y - j.y);
   for (const boxStat of stats.boxes) {
-    fill(boxStat.color);
+    api.fill(boxStat.color);
     textln(`${boxStat.name}.v=${boxStat.velocity.toFixed(2)}`);
     textln(`${boxStat.name}.acc=${boxStat.acc.toFixed(2)}`);
   }
 
-  fill("white");
+  api.fill("white");
   for (const springStat of stats.springs) {
     textln(`${springStat.name}=${springStat.elasticEnergy.toFixed(2)}`);
   }
@@ -347,6 +325,27 @@ export function draw() {
   strokeCap(SQUARE);
   background("#000");
 
+  const API = {
+    fill: window.fill,
+    noStroke: window.noStroke,
+    stroke: window.stroke,
+    strokeWeight: window.strokeWeight,
+    textSize: window.textSize,
+    text: function (str: string, _x: number, _y: number) {
+      const [x, y] = transform(_x, _y);
+      window.text(str, x, y);
+    },
+    rect: function (_x: number, _y: number, w: number, h: number) {
+      const [x, y] = transform(_x, _y);
+      window.rect(x, y, w, h);
+    },
+    line: function (_x: number, _y: number, _xx: number, _yy: number) {
+      const [x, y] = transform(_x, _y);
+      const [xx, yy] = transform(_xx, _yy);
+      window.line(x, y, xx, yy);
+    },
+  };
+
   const showing = getShowingSuitcases();
   for (let i = 0; i < showing.length; i++) {
     const frameStart = performance.now();
@@ -361,10 +360,10 @@ export function draw() {
       SCASE = afterDrawing(SCASE);
     }
 
-    drawBoxes(SCASE, renderConfig);
-    drawWalls(SCASE, renderConfig);
-    drawSprings(SCASE, renderConfig);
-    drawStats(SCASE, transform);
+    drawBoxes(SCASE, API);
+    drawWalls(SCASE, API);
+    drawSprings(SCASE, API);
+    drawStats(SCASE, API);
 
     const frameTime = performance.now() - frameStart;
 
@@ -377,13 +376,7 @@ export function draw() {
       thisWindow.shift();
     }
 
-    drawFrameTimeAndFrameCnt(thisWindow, SCASE, {
-      textSize: window.textSize,
-      text: function (str: string, _x: number, _y: number) {
-        const [x, y] = transform(_x, _y);
-        text(str, x, y);
-      },
-    });
+    drawFrameTimeAndFrameCnt(thisWindow, SCASE, API);
 
     showing[i] = SCASE;
   }
