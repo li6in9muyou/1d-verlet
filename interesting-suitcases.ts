@@ -3,6 +3,7 @@ import { SuitcaseBuilder } from "./suitcase-builder";
 import { yv } from "./ii-utils";
 
 export const spring1 = new SuitcaseBuilder()
+  .description("spring1")
   .size(100, 600)
   .dynamics([
     {
@@ -16,6 +17,7 @@ export const spring1 = new SuitcaseBuilder()
   .build();
 
 export const spring2 = new SuitcaseBuilder()
+  .description("spring2")
   .size(100, 600)
   .dynamics([
     {
@@ -69,6 +71,7 @@ function generateBouncingDynamics(h: number, count: number) {
 }
 
 export const tennisBallFalling9metersOnTheMoon = new SuitcaseBuilder()
+  .description("falling moon")
   .size(100, 900)
   .gravityAcc((10 * 1e-2) / 6)
   .dragCoeff(0)
@@ -76,6 +79,7 @@ export const tennisBallFalling9metersOnTheMoon = new SuitcaseBuilder()
   .build();
 
 export const tennisBallFalling9meters = new SuitcaseBuilder()
+  .description("falling 9m")
   .size(100, 900)
   .gravityAcc(10 * 1e-2)
   .dragCoeff(0.5 * 1.225 * 0.55 * 0.00353 * 1e-4)
@@ -83,6 +87,7 @@ export const tennisBallFalling9meters = new SuitcaseBuilder()
   .build();
 
 export const tennisBallFalling900meters = new SuitcaseBuilder()
+  .description("falling 900m")
   .size(100, 900)
   .gravityAcc(10)
   .dragCoeff(0.5 * 1.225 * 0.55 * 0.00353)
@@ -90,6 +95,7 @@ export const tennisBallFalling900meters = new SuitcaseBuilder()
   .build();
 
 export const tennisBallFalling900metersWithoutAir = new SuitcaseBuilder()
+  .description("falling 900m no air")
   .size(100, 900)
   .gravityAcc(10)
   .dragCoeff(0)
@@ -97,16 +103,19 @@ export const tennisBallFalling900metersWithoutAir = new SuitcaseBuilder()
   .build();
 
 export const bouncing2 = new SuitcaseBuilder()
-  .size(100, 900)
-  .dynamics(generateBouncingDynamics(900, 2))
+  .description("short")
+  .size(100, 100)
+  .dynamics(generateBouncingDynamics(100, 2))
   .build();
 
 export const sanityCheck = new SuitcaseBuilder()
+  .description("sanity check")
   .size(100, 900)
   .dynamics(generateBouncingDynamics(900, 4).map((b) => ((b.prevY = b.y), b)))
   .build();
 
 export const bouncing = new SuitcaseBuilder()
+  .description("crashing stress test")
   .size(100, 900)
   .dynamics(generateBouncingDynamics(900, 64))
   .build();
@@ -156,6 +165,7 @@ export const bug1 = new SuitcaseBuilder()
   .build();
 
 export const crash = new SuitcaseBuilder()
+  .description("crash")
   .size(120, 500)
   .dragCoeff(1e-1)
   .dynamics(
@@ -175,6 +185,7 @@ export const crash = new SuitcaseBuilder()
   .build();
 
 export const newtonsCradle = new SuitcaseBuilder()
+  .description("newtons cradle spring")
   .size(120, 500)
   .dynamics(
     Array.from({ length: 6 }, (_, idx) => ({
@@ -192,6 +203,7 @@ export const newtonsCradle = new SuitcaseBuilder()
   .build();
 
 export const realNewtonsCradle = new SuitcaseBuilder()
+  .description("newtons cradle")
   .size(120, 500)
   .dynamics(
     Array.from({ length: 4 }, (_, idx) => ({

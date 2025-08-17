@@ -9,6 +9,7 @@ export type Suitcase = DynamicsStuff & RenderStuff & SimStuff & ControlState;
 export type SuitcaseWithoutCtrl = DynamicsStuff & RenderStuff & SimStuff;
 
 export type RenderStuff = {
+  name?: string;
   description?: string;
   frameCnt: number;
   colors: string[];

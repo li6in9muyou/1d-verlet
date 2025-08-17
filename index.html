@@ -23,6 +23,7 @@
       }
       .enable-suitcases:hover {
         opacity: 1;
+        background: #333;
       }
       .enable-suitcases {
         opacity: 0.05;
@@ -30,6 +31,7 @@
         display: grid;
         grid-template-columns: 1fr 1fr;
         flex-shrink: 0;
+        max-width: 300px;
       }
     </style>
   </head>
@@ -115,7 +117,7 @@
 
         createCheckboxGroup(
           suitcases.map((s, idx) => ({
-            label: `suitecase-${idx}`,
+            label: s.name ?? `suitecase-${idx}`,
             value: idx,
           })),
           "checkbox-group",

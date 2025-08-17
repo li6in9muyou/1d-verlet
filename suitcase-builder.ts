@@ -70,8 +70,9 @@ export class SuitcaseBuilder {
     return this;
   }
 
-  public description(description: string): SuitcaseBuilder {
-    this.scase.description = description;
+  public description(short: string, long?: string): SuitcaseBuilder {
+    this.scase.name = short;
+    this.scase.description = long ?? short;
     return this;
   }
 
