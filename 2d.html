@@ -392,14 +392,14 @@
         stroke(50, 50, 70, 60);
         strokeWeight(1);
 
-        // 绘制网格线（基于世界坐标）
-        const gridSize = 4000;
+        const gridSize = 1000;
         const step = 50;
         const startX = -gridSize;
         const endX = gridSize;
         const startY = -gridSize;
         const endY = gridSize;
 
+        translate(-cameraOffset.x, -cameraOffset.y);
         // 垂直线
         for (let x = startX; x <= endX; x += step) {
           line(x, startY, x, endY);
@@ -409,6 +409,7 @@
         for (let y = startY; y <= endY; y += step) {
           line(startX, y, endX, y);
         }
+        translate(cameraOffset.x, cameraOffset.y);
       }
 
       function drawCenterOfMass(com) {
