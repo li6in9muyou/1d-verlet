@@ -66,3 +66,14 @@ export type ControlState = {
 export type DrawConfig = {
   whereToRender: { x: number; y: number };
 };
+
+export type Painter = {
+  fill: (v: string) => void;
+  noStroke: () => void;
+  stroke: (v: string) => void;
+  strokeWeight: (v: number) => void;
+  textSize: (v: number) => void;
+  text: (s: string, x: number, y: number) => void;
+  rect: (x: number, y: number, xx: number, yy: number) => void;
+  line: (x: number, y: number, xx: number, yy: number) => void;
+};

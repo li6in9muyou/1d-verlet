@@ -1,17 +1,11 @@
-import {
-  DrawConfig,
-  DynamicsStuff,
-  RenderStuff,
-  Spring,
-  Suitcase,
-} from "./types";
+import { DynamicsStuff, Painter, RenderStuff, Spring, Suitcase } from "./types";
 import {
   afterApplyingForce,
   getAnchorName,
   getSpringEndpointY,
 } from "./springs";
 import { afterDrawing, afterHandlingEvents } from "./simctrl";
-import { getV, v2Add, yv } from "./ii-utils";
+import { getV, yv } from "./ii-utils";
 import allSuitcases from "./interesting-suitcases";
 import { cloneDeep } from "lodash";
 import { leftToRight } from "./layout";
@@ -97,7 +91,7 @@ function drawOneSpring(
   j: number,
   RENDER_CONFIG: { SPRING_X: number; SPRING_TENSION_OFFSET: number },
   lineln: (ya: number, yb: number, tempOffset: number) => void,
-  api,
+  api: Painter,
 ) {
   const ij = Math.sign(j - i);
 
@@ -121,7 +115,7 @@ function drawOneSpring(
   lineln(i, j, +RENDER_CONFIG.SPRING_TENSION_OFFSET);
 }
 
-function drawSprings(w: RenderStuff & DynamicsStuff, api) {
+function drawSprings(w: RenderStuff & DynamicsStuff, api: Painter) {
   const springs = w.springs;
 
   let xOffset = w.SPRING_X;
@@ -143,7 +137,7 @@ function drawSprings(w: RenderStuff & DynamicsStuff, api) {
   }
 }
 
-function drawBoxes(w: RenderStuff & DynamicsStuff, api) {
+function drawBoxes(w: RenderStuff & DynamicsStuff, api: Painter) {
   for (const idx in w.boxes) {
     const box = w.boxes[idx];
     const size = w.sizes[idx];
@@ -166,7 +160,7 @@ function drawBoxes(w: RenderStuff & DynamicsStuff, api) {
   }
 }
 
-function drawWalls(w: RenderStuff & DynamicsStuff, api) {
+function drawWalls(w: RenderStuff & DynamicsStuff, api: Painter) {
   const xTL = 0;
   const yTL = 0;
   const xBR = w.WIDTH;
@@ -236,7 +230,7 @@ export function getStats(w: Suitcase) {
   return stats;
 }
 
-function drawStats(w: Suitcase, api) {
+function drawStats(w: Suitcase, api: Painter) {
   const stats = getStats(w);
 
   api.noStroke();
@@ -270,7 +264,11 @@ function drawStats(w: Suitcase, api) {
 }
 
 const frameTimeWindow = [];
-function drawFrameTimeAndFrameCnt(ftWindow: number[], w: Suitcase, api) {
+function drawFrameTimeAndFrameCnt(
+  ftWindow: number[],
+  w: Suitcase,
+  api: Painter,
+) {
   const ft = ftWindow.reduce((a, b) => a + b, 0) / ftWindow.length;
   api.textSize(14);
   api.text(`${w.frameCnt}   ${ft.toFixed(2)}ms`, 0, w.HEIGHT + 10 + 15);
@@ -279,7 +277,7 @@ function drawFrameTimeAndFrameCnt(ftWindow: number[], w: Suitcase, api) {
 let lastText = "";
 let currentShowingIdx: string[] = [];
 let currentShowing: Suitcase[] = [];
-let currentApi: Partial<p5>[] = [];
+let currentApi: Painter[] = [];
 function getShowingSuitcases(): Suitcase[] {
   const text = localStorage.getItem("ii-verlet-showing-suitcases");
   if (text === lastText) {
@@ -309,7 +307,9 @@ function getShowingSuitcases(): Suitcase[] {
   return showing;
 }
 
-function makeApi(transform) {
+function makeApi(
+  transform: (x: number, y: number) => [number, number],
+): Painter {
   return {
     fill: window.fill,
     noStroke: window.noStroke,
@@ -328,7 +328,6 @@ function makeApi(transform) {
       const [x, y] = transform(_x, _y);
       const [xx, yy] = transform(_xx, _yy);
       window.line(x, y, xx, yy);
-      return window;
     },
   };
 }
