@@ -15,7 +15,6 @@ import { getV, v2Add, yv } from "./ii-utils";
 import allSuitcases from "./interesting-suitcases";
 import { cloneDeep } from "lodash";
 import { leftToRight } from "./layout";
-import * as p5 from "p5";
 
 export function afterCrashing(state: Suitcase): Suitcase {
   const nextBoxes = [...state.boxes];
@@ -280,6 +279,7 @@ function drawFrameTimeAndFrameCnt(ftWindow: number[], w: Suitcase, api) {
 let lastText = "";
 let currentShowingIdx: string[] = [];
 let currentShowing: Suitcase[] = [];
+let currentApi: Partial<p5>[] = [];
 function getShowingSuitcases(): Suitcase[] {
   const text = localStorage.getItem("ii-verlet-showing-suitcases");
   if (text === lastText) {
@@ -294,11 +294,9 @@ function getShowingSuitcases(): Suitcase[] {
     return cloneDeep(allSuitcases[s]);
   });
   const [trans] = leftToRight(
-    showing.map((wd) => ({ w: wd.MAX_X, h: wd.MAX_Y })),
+    showing.map((wd) => ({ w: wd.WIDTH, h: wd.HEIGHT })),
   );
-  // showing.forEach((w: Suitcase, idx: number) =>
-  //   transformSuitcase(w, trans[idx]),
-  // );
+  const apis = trans.map(makeApi);
 
   for (let i = 0; i < currentShowing.length; i++) {
     const replaceIdx = showingIdxToIdx.get(currentShowingIdx[i]);
@@ -306,26 +304,13 @@ function getShowingSuitcases(): Suitcase[] {
   }
 
   currentShowing = showing;
+  currentApi = apis;
   currentShowingIdx = s;
   return showing;
 }
 
-const renderConfig = { whereToRender: { x: 155, y: 233 } };
-function transform(x: number, y: number): [number, number] {
-  return v2Add(
-    x,
-    y,
-    renderConfig.whereToRender.x,
-    renderConfig.whereToRender.y,
-  );
-}
-
-export function draw() {
-  textFont("monospace");
-  strokeCap(SQUARE);
-  background("#000");
-
-  const API = {
+function makeApi(transform) {
+  return {
     fill: window.fill,
     noStroke: window.noStroke,
     stroke: window.stroke,
@@ -343,13 +328,21 @@ export function draw() {
       const [x, y] = transform(_x, _y);
       const [xx, yy] = transform(_xx, _yy);
       window.line(x, y, xx, yy);
+      return window;
     },
   };
+}
+
+export function draw() {
+  textFont("monospace");
+  strokeCap(SQUARE);
+  background("#000");
 
   const showing = getShowingSuitcases();
   for (let i = 0; i < showing.length; i++) {
     const frameStart = performance.now();
 
+    const API = currentApi[i];
     let SCASE = showing[i];
 
     SCASE = afterHandlingEvents(SCASE);
