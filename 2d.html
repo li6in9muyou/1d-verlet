@@ -269,8 +269,15 @@
           new Particle(rodLength / 2, 0, 10, color(100, 255, 100)),
         );
 
+        particles[0].velocity.x = 0;
+        particles[0].velocity.y = 0;
+        particles[0].previous = createVector(
+          particles[0].position.x - particles[0].velocity.x,
+          particles[0].position.y - particles[0].velocity.y,
+        );
+
         // 给质点B初始向下速度
-        particles[1].velocity.x = -3 * Math.sqrt(3);
+        particles[1].velocity.x = 0;
         particles[1].velocity.y = 3;
         particles[1].previous = createVector(
           particles[1].position.x - particles[1].velocity.x,
