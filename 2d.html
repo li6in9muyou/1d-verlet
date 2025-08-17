@@ -290,22 +290,6 @@
       function draw() {
         background(20, 30, 50, 200);
 
-        // 计算质心位置
-        const com = calculateCenterOfMass();
-
-        // 平滑更新摄像机位置
-        cameraTarget = p5.Vector.lerp(cameraTarget, com, cameraSmoothness);
-        cameraOffset = createVector(
-          width / 2 - cameraTarget.x,
-          height / 2 - cameraTarget.y,
-        );
-
-        // 应用摄像机偏移
-        translate(cameraOffset.x, cameraOffset.y);
-
-        // 绘制半透明网格
-        drawGrid();
-
         // 更新物理
         if (!paused) {
           const dt = 1 / 60;
@@ -322,6 +306,22 @@
             }
           }
         }
+
+        // 计算质心位置
+        const com = calculateCenterOfMass();
+
+        // 平滑更新摄像机位置
+        cameraTarget = p5.Vector.lerp(cameraTarget, com, cameraSmoothness);
+        cameraOffset = createVector(
+          width / 2 - cameraTarget.x,
+          height / 2 - cameraTarget.y,
+        );
+
+        // 应用摄像机偏移
+        translate(cameraOffset.x, cameraOffset.y);
+
+        // 绘制半透明网格
+        drawGrid();
 
         // 绘制轻杆
         stroke(180, 200, 255, 200);
