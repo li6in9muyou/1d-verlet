@@ -10,13 +10,13 @@ import { getV, yv } from "./ii-utils";
 import { cloneDeep } from "lodash";
 import { namedCssColors } from "./named-css-colors";
 
-interface DynamicItem {
+type DynamicItem = {
   box: Dynamics;
   color?: string;
   mass?: number;
   name?: string;
   size?: number;
-}
+};
 
 export class SuitcaseBuilder {
   private dynamicsData: DynamicItem[] = [];
