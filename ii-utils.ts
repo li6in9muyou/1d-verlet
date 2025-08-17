@@ -25,3 +25,12 @@ export function transformSuitcase(
     b.prevY = transform(0, b.prevY)[1];
   });
 }
+
+export function v2Add(
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+): [number, number] {
+  return [x1 + x2, y1 + y2];
+}

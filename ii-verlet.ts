@@ -5,7 +5,7 @@ import {
   getSpringEndpointY,
 } from "./springs";
 import { afterDrawing, afterHandlingEvents } from "./simctrl";
-import { getV, transformSuitcase, yv } from "./ii-utils";
+import { getV, v2Add, yv } from "./ii-utils";
 import allSuitcases from "./interesting-suitcases";
 import { cloneDeep } from "lodash";
 import { leftToRight } from "./layout";
@@ -136,7 +136,10 @@ function drawSprings(w: RenderStuff & DynamicsStuff) {
   }
 }
 
-function drawBoxes(w: RenderStuff & DynamicsStuff) {
+function drawBoxes(
+  w: RenderStuff & DynamicsStuff,
+  renderConfig: { whereToRender: { x: number; y: number } },
+) {
   for (const idx in w.boxes) {
     const box = w.boxes[idx];
     const size = w.sizes[idx];
@@ -144,31 +147,46 @@ function drawBoxes(w: RenderStuff & DynamicsStuff) {
     const name = w.names[idx];
     const color = w.colors[idx];
     const m = w.masses[idx];
-    const y = box.y;
+
+    const _xBox = w.WIDTH / 2 - 6 - 1;
+    const _yBox = box.y - halfSize - 1;
+    const _xText = w.WIDTH / 2 + 2 * 6;
+    const _yText = box.y + 6 - 2;
+
+    const { x: screenX, y: screenY } = renderConfig.whereToRender;
+    const [xBox, yBox] = v2Add(_xBox, _yBox, screenX, screenY);
+    const [xText, yText] = v2Add(_xText, _yText, screenX, screenY);
 
     stroke("#000");
     strokeWeight(1);
     fill(color);
-    rect(
-      (w.MIN_X + w.MAX_X) / 2 - 6 - 1,
-      y - halfSize - 1,
-      12 + 2,
-      2 * halfSize + 2,
-    );
+    rect(xBox, yBox, 12 + 2, 2 * halfSize + 2);
     fill("white");
-    text(`${m} ${name}`, (w.MIN_X + w.MAX_X) / 2 + 2 * 6, y + 6 - 2);
+    text(`${m} ${name}`, xText, yText);
   }
 }
 
-function drawWalls(w: DynamicsStuff) {
+function drawWalls(
+  w: RenderStuff & DynamicsStuff,
+  renderConfig: { whereToRender: { x: number; y: number } },
+) {
+  const _xTL = 0;
+  const _yTL = 0;
+  const _xBR = w.WIDTH;
+  const _yBR = w.HEIGHT;
+
+  const { x: screenX, y: screenY } = renderConfig.whereToRender;
+  const [xTL, yTL] = v2Add(_xTL, _yTL, screenX, screenY);
+  const [xBR, yBR] = v2Add(_xBR, _yBR, screenX, screenY);
+
   stroke("#333");
   strokeWeight(10);
-  line(w.MIN_X, w.MIN_Y - 5, w.MAX_X, w.MIN_Y - 5);
-  line(w.MIN_X, w.MAX_Y + 5, w.MAX_X, w.MAX_Y + 5);
+  line(xTL, yTL - 5, xBR, yTL - 5);
+  line(xTL, yBR + 5, xBR, yBR + 5);
 
   strokeWeight(1);
-  line(w.MIN_X, w.MIN_Y, w.MIN_X, w.MAX_Y);
-  line(w.MAX_X, w.MIN_Y, w.MAX_X, w.MAX_Y);
+  line(xTL, yTL, xTL, yBR);
+  line(xBR, yTL, xBR, yBR);
 }
 
 export function getStats(w: Suitcase) {
@@ -283,9 +301,9 @@ function getShowingSuitcases(): Suitcase[] {
   const [trans] = leftToRight(
     showing.map((wd) => ({ w: wd.MAX_X, h: wd.MAX_Y })),
   );
-  showing.forEach((w: Suitcase, idx: number) =>
-    transformSuitcase(w, trans[idx]),
-  );
+  // showing.forEach((w: Suitcase, idx: number) =>
+  //   transformSuitcase(w, trans[idx]),
+  // );
 
   for (let i = 0; i < currentShowing.length; i++) {
     const replaceIdx = showingIdxToIdx.get(currentShowingIdx[i]);
@@ -307,6 +325,7 @@ export function draw() {
     const frameStart = performance.now();
 
     let SCASE = showing[i];
+    const renderConfig = { whereToRender: { x: 155, y: 233 } };
 
     SCASE = afterHandlingEvents(SCASE);
 
@@ -316,8 +335,8 @@ export function draw() {
       SCASE = afterDrawing(SCASE);
     }
 
-    drawBoxes(SCASE);
-    drawWalls(SCASE);
+    drawBoxes(SCASE, renderConfig);
+    drawWalls(SCASE, renderConfig);
     drawSprings(SCASE);
     drawStats(SCASE);
 

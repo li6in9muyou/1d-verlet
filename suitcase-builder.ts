@@ -52,6 +52,8 @@ export class SuitcaseBuilder {
   } as Suitcase;
 
   public size(w: number, h: number): SuitcaseBuilder {
+    this.scase.WIDTH = w;
+    this.scase.HEIGHT = h;
     this.scase.MAX_X = 0 + w;
     this.scase.MIN_X = 0;
     this.scase.MIN_Y = 0;

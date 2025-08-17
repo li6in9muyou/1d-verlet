@@ -22,6 +22,8 @@ export type RenderStuff = {
 export type DynamicsStuff = {
   dragCoeff: number;
   gravityAcc: number;
+  WIDTH: number;
+  HEIGHT: number;
   MIN_X: number;
   MAX_X: number;
   MIN_Y: number;
@@ -59,4 +61,8 @@ export type ControlState = {
       states: (DynamicsStuff & RenderStuff & SimStuff)[];
     };
   };
+};
+
+export type renderConfig = {
+  whereToRender: { x: number; y: number };
 };
