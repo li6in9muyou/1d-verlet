@@ -107,6 +107,9 @@
       let cameraOffset = null;
       let cameraTarget = null;
       let cameraSmoothness = 0.1; // 摄像机跟随平滑度
+      let totalEnergy = 0;
+      let energyHistory = [];
+      const maxEnergyHistory = 100;
 
       // 响应窗口大小变化
       function windowResized() {
@@ -272,6 +275,7 @@
       function resetSystem() {
         particles = [];
         constraints = [];
+        energyHistory = [];
 
         // 创建质点A和B
         particles.push(
@@ -325,6 +329,13 @@
               c.apply();
             }
           }
+
+          // 更新能量计算
+          totalEnergy = calculateTotalEnergy();
+          energyHistory.push(totalEnergy);
+          if (energyHistory.length > maxEnergyHistory) {
+            energyHistory.shift();
+          }
         }
 
         // 计算质心位置
@@ -369,6 +380,9 @@
 
         // 绘制状态信息
         drawStatus();
+
+        // 绘制能量图
+        drawEnergyGraph();
       }
 
       function drawGrid() {
@@ -474,6 +488,83 @@
           2,
         );
         text(`角速度: ${omega} rad/frame`, width - 20, 95);
+      }
+
+      function drawEnergyGraph() {
+        if (energyHistory.length < 2) return;
+
+        const graphWidth = 200;
+        const graphHeight = 80;
+        const graphX = width - graphWidth - 20;
+        const graphY = height - graphHeight - 20;
+
+        // 绘制背景
+        fill(25, 35, 70, 200);
+        noStroke();
+        rect(graphX, graphY, graphWidth, graphHeight);
+
+        // 绘制标题
+        fill(255);
+        textSize(14);
+        textAlign(LEFT, TOP);
+        text("系统能量变化", graphX + 5, graphY + 5);
+
+        // 找出最大最小值
+        let maxEnergy = Math.max(...energyHistory);
+        let minEnergy = Math.min(...energyHistory);
+        if (maxEnergy === minEnergy) {
+          maxEnergy = minEnergy + 1;
+        }
+
+        // 绘制坐标轴
+        stroke(200);
+        strokeWeight(1);
+        line(
+          graphX,
+          graphY + graphHeight - 10,
+          graphX + graphWidth,
+          graphY + graphHeight - 10,
+        );
+        line(graphX + 10, graphY + 25, graphX + 10, graphY + graphHeight - 10);
+
+        // 绘制能量曲线
+        noFill();
+        stroke(100, 255, 100);
+        strokeWeight(2);
+        beginShape();
+        for (let i = 0; i < energyHistory.length; i++) {
+          const x =
+            graphX + 10 + (i * (graphWidth - 20)) / (maxEnergyHistory - 1);
+          const y =
+            graphY +
+            25 +
+            (1 - (energyHistory[i] - minEnergy) / (maxEnergy - minEnergy)) *
+              (graphHeight - 35);
+          vertex(x, y);
+        }
+        endShape();
+
+        // 绘制当前能量值
+        const currentEnergy = energyHistory[energyHistory.length - 1];
+        text(
+          `当前能量: ${currentEnergy.toFixed(2)}`,
+          graphX + 10,
+          graphY + graphHeight - 20,
+        );
+      }
+
+      // 计算系统总能量
+      function calculateTotalEnergy() {
+        let kinetic = 0;
+        let potential = 0;
+
+        // 动能 = 1/2 * m * v^2
+        for (let p of particles) {
+          kinetic += 0.5 * p.mass * p.velocity.magSq();
+        }
+
+        // 这里没有势能，但为了完整性保留
+        return kinetic + potential;
       }
     </script>
   </body>
