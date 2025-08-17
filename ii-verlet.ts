@@ -280,7 +280,7 @@ let currentShowing: Suitcase[] = [];
 let currentApi: Painter[] = [];
 function getShowingSuitcases(): Suitcase[] {
   const text = localStorage.getItem("ii-verlet-showing-suitcases");
-  if (text === lastText) {
+  if (text === lastText && currentApi[0].fill !== undefined) {
     return currentShowing;
   }
   lastText = text;
