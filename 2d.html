@@ -14,11 +14,12 @@
 
       body {
         overflow: hidden;
-        background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+        background: black;
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         height: 100vh;
         width: 100vw;
         position: relative;
+        font-size: 0;
       }
 
       #canvas-container {
@@ -82,14 +83,6 @@
     </style>
   </head>
   <body>
-    <div class="info">
-      <h2>摄像机跟随质心的轻杆约束模拟</h2>
-      <p>• 摄像机始终跟随A和B的质心</p>
-      <p>• 质点A(红色)和质点B(绿色)通过轻杆刚性连接</p>
-      <p>• 初始状态：质点B以速度3向下移动</p>
-      <p>• 模拟方法：Position-Based Dynamics(PBD)</p>
-    </div>
-
     <div class="controls">
       <button id="resetBtn">重置系统</button>
       <button id="pauseBtn">暂停/继续</button>
