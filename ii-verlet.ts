@@ -215,7 +215,7 @@ export function getStats(w: Suitcase) {
     const nameOne = w.names[spring.one] ?? getAnchorName(spring.one);
     const nameTwo = w.names[spring.two] ?? getAnchorName(spring.two);
     stats.springs.push({
-      name: `${nameOne}-${nameTwo}`,
+      name: `${nameOne}-${spring.k}-${nameTwo}`,
       force: force,
       elasticEnergy: elasticEnergy,
     });
