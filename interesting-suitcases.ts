@@ -164,15 +164,80 @@ export const bug1 = new SuitcaseBuilder()
   .springs([{ one: 0, two: MAX_Y_ANCHOR, k: 10, restingLen: 80 }])
   .build();
 
+export const crashNoDrag = new SuitcaseBuilder()
+  .description("crash no drag")
+  .size(120, 800)
+  .dragCoeff(0)
+  .dynamics(
+    Array.from({ length: 6 }, (_, idx) => ({
+      box: yv(330 + idx * 30, 0, 0),
+      mass: undefined,
+    })).concat({ box: yv(200, 3, 0), mass: 600 }),
+  )
+  .springs(
+    Array.from({ length: 5 }, (_, idx) => ({
+      k: 30,
+      one: idx,
+      two: idx + 1,
+      restingLen: 30,
+    })),
+  )
+  .build();
+
+export const crash4 = new SuitcaseBuilder()
+  .description("crash4")
+  .size(120, 800)
+  .dynamics([
+    {
+      box: yv(330 + 75 + (150 + 12 - 100) / 2, 0, 0),
+      mass: 500,
+      size: 100,
+    },
+    {
+      box: yv(330 + 75 - 40 - (150 + 12 - 100) / 2, 0, 0),
+      mass: 100,
+      size: 22,
+    },
+    {
+      box: yv(200, 3, 0),
+      mass: 600,
+    },
+  ])
+  .springs([
+    {
+      one: 0,
+      two: 1,
+      k: 18e-2,
+      restingLen: 40 + 50 + 12,
+    },
+  ])
+  .build();
+
+export const crash3 = new SuitcaseBuilder()
+  .description("crash3")
+  .size(120, 800)
+  .dynamics([
+    {
+      box: yv(330 + 75, 0, 0),
+      mass: 600,
+      size: 150 + 12,
+    },
+    {
+      box: yv(200, 3, 0),
+      mass: 600,
+    },
+  ])
+  .build();
+
 export const crash = new SuitcaseBuilder()
   .description("crash")
-  .size(120, 500)
+  .size(120, 800)
   .dragCoeff(1e-1)
   .dynamics(
     Array.from({ length: 6 }, (_, idx) => ({
-      box: yv(330 + idx * 30, -3, 0),
+      box: yv(330 + idx * 30, 0, 0),
       mass: undefined,
-    })).concat({ box: yv(12, 3, 0), mass: 600 }),
+    })).concat({ box: yv(200, 3, 0), mass: 600 }),
   )
   .springs(
     Array.from({ length: 5 }, (_, idx) => ({
@@ -215,6 +280,9 @@ export const realNewtonsCradle = new SuitcaseBuilder()
 const all = [
   sanityCheck,
   crash,
+  crashNoDrag,
+  crash3,
+  crash4,
   newtonsCradle,
   realNewtonsCradle,
   spring1,
