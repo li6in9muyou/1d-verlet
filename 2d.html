@@ -123,7 +123,7 @@
 
         canvasWidth = windowWidth;
         canvasHeight = windowHeight;
-        rodLength = Math.min(canvasWidth, canvasHeight) * 0.3;
+        rodLength = Math.min(canvasWidth, canvasHeight) * 0.1;
 
         resetSystem();
 
@@ -270,11 +270,11 @@
         );
 
         // 给质点B初始向下速度
-        particles[1].velocity.y = 9;
-        particles[1].velocity.x = 9;
+        particles[1].velocity.x = -3 * Math.sqrt(3);
+        particles[1].velocity.y = 3;
         particles[1].previous = createVector(
-          particles[1].position.x - 9,
-          particles[1].position.y - 9,
+          particles[1].position.x - particles[1].velocity.x,
+          particles[1].position.y - particles[1].velocity.y,
         );
 
         // 创建距离约束
