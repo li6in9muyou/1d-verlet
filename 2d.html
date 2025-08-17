@@ -153,7 +153,7 @@
           this.radius = 10; // 减小半径
           this.color = color;
           this.trail = [];
-          this.maxTrail = 50;
+          this.maxTrail = 300;
         }
 
         update(dt) {
@@ -260,27 +260,18 @@
 
         // 创建质点A和B
         particles.push(
-          new Particle(
-            centerX - rodLength / 2,
-            100,
-            10,
-            color(255, 100, 100),
-          ),
+          new Particle(centerX - rodLength / 2, 100, 30, color(255, 100, 100)),
         );
         particles.push(
-          new Particle(
-            centerX + rodLength / 2,
-            100,
-            10,
-            color(100, 255, 100),
-          ),
+          new Particle(centerX + rodLength / 2, 100, 10, color(100, 255, 100)),
         );
 
         // 给质点B初始向下速度（减小速度）
-        particles[1].velocity.y = 1.5;
+        particles[1].velocity.y = 3;
+        particles[1].velocity.x = 1;
         particles[1].previous = createVector(
-          particles[1].position.x,
-          particles[1].position.y - 1.5,
+          particles[1].position.x - 1,
+          particles[1].position.y - 3,
         );
 
         // 创建距离约束
