@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>全屏轻杆约束模拟</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <title>摄像机跟随质心的轻杆约束模拟</title>
+    <script src="./public/vendor/p5.min.js"></script>
     <style>
       * {
         margin: 0;
@@ -48,6 +48,7 @@
         left: 20px;
         display: flex;
         gap: 10px;
+        z-index: 10;
       }
 
       button {
@@ -82,11 +83,11 @@
   </head>
   <body>
     <div class="info">
-      <h2>轻杆约束物理模拟</h2>
+      <h2>摄像机跟随质心的轻杆约束模拟</h2>
+      <p>• 摄像机始终跟随A和B的质心</p>
       <p>• 质点A(红色)和质点B(绿色)通过轻杆刚性连接</p>
-      <p>• 初始状态：质点B以速度1.5向下移动</p>
+      <p>• 初始状态：质点B以速度3向下移动</p>
       <p>• 模拟方法：Position-Based Dynamics(PBD)</p>
-      <p>• 系统质心显示为黄色点</p>
     </div>
 
     <div class="controls">
@@ -102,17 +103,16 @@
       let rodLength;
       let paused = false;
       let canvas;
-      let centerX, centerY;
       let canvasWidth, canvasHeight;
+      let cameraOffset = null;
+      let cameraTarget = null;
+      let cameraSmoothness = 0.1; // 摄像机跟随平滑度
 
       // 响应窗口大小变化
       function windowResized() {
         resizeCanvas(windowWidth, windowHeight);
         canvasWidth = windowWidth;
         canvasHeight = windowHeight;
-        centerX = canvasWidth / 2;
-        centerY = canvasHeight / 2;
-        rodLength = Math.min(canvasWidth, canvasHeight) * 0.3;
         resetSystem();
       }
 
@@ -123,8 +123,6 @@
 
         canvasWidth = windowWidth;
         canvasHeight = windowHeight;
-        centerX = canvasWidth / 2;
-        centerY = canvasHeight / 2;
         rodLength = Math.min(canvasWidth, canvasHeight) * 0.3;
 
         resetSystem();
@@ -139,6 +137,24 @@
 
         // 响应窗口大小变化
         window.addEventListener("resize", windowResized);
+
+        cameraOffset = createVector(0, 0);
+        cameraTarget = createVector(0, 0);
+      }
+
+      // 计算质心位置
+      function calculateCenterOfMass() {
+        let comX = 0;
+        let comY = 0;
+        let totalMass = 0;
+
+        for (let p of particles) {
+          comX += p.position.x * p.mass;
+          comY += p.position.y * p.mass;
+          totalMass += p.mass;
+        }
+
+        return createVector(comX / totalMass, comY / totalMass);
       }
 
       // 质点类
@@ -150,7 +166,7 @@
           this.acceleration = createVector(0, 0);
           this.mass = mass;
           this.invMass = 1.0 / mass;
-          this.radius = 10; // 减小半径
+          this.radius = 10;
           this.color = color;
           this.trail = [];
           this.maxTrail = 300;
@@ -172,19 +188,6 @@
           this.trail.push(this.position.copy());
           if (this.trail.length > this.maxTrail) {
             this.trail.shift();
-          }
-
-          // 边界约束 - 防止跑出屏幕
-          if (this.position.x < this.radius) {
-            this.position.x = this.radius;
-          } else if (this.position.x > canvasWidth - this.radius) {
-            this.position.x = canvasWidth - this.radius;
-          }
-
-          if (this.position.y < this.radius) {
-            this.position.y = this.radius;
-          } else if (this.position.y > canvasHeight - this.radius) {
-            this.position.y = canvasHeight - this.radius;
           }
         }
 
@@ -260,28 +263,45 @@
 
         // 创建质点A和B
         particles.push(
-          new Particle(centerX - rodLength / 2, 100, 30, color(255, 100, 100)),
+          new Particle(-rodLength / 2, 0, 30, color(255, 100, 100)),
         );
         particles.push(
-          new Particle(centerX + rodLength / 2, 100, 10, color(100, 255, 100)),
+          new Particle(rodLength / 2, 0, 10, color(100, 255, 100)),
         );
 
-        // 给质点B初始向下速度（减小速度）
-        particles[1].velocity.y = 3;
-        particles[1].velocity.x = 1;
+        // 给质点B初始向下速度
+        particles[1].velocity.y = 9;
+        particles[1].velocity.x = 9;
         particles[1].previous = createVector(
-          particles[1].position.x - 1,
-          particles[1].position.y - 3,
+          particles[1].position.x - 9,
+          particles[1].position.y - 9,
         );
 
         // 创建距离约束
         constraints.push(
           new DistanceConstraint(particles[0], particles[1], rodLength),
         );
+
+        // 重置摄像机位置
+        cameraOffset = createVector(0, 0);
+        cameraTarget = createVector(0, 0);
       }
 
       function draw() {
         background(20, 30, 50, 200);
+
+        // 计算质心位置
+        const com = calculateCenterOfMass();
+
+        // 平滑更新摄像机位置
+        cameraTarget = p5.Vector.lerp(cameraTarget, com, cameraSmoothness);
+        cameraOffset = createVector(
+          width / 2 - cameraTarget.x,
+          height / 2 - cameraTarget.y,
+        );
+
+        // 应用摄像机偏移
+        translate(cameraOffset.x, cameraOffset.y);
 
         // 绘制半透明网格
         drawGrid();
@@ -305,7 +325,7 @@
 
         // 绘制轻杆
         stroke(180, 200, 255, 200);
-        strokeWeight(3); // 减小杆宽
+        strokeWeight(3);
         line(
           particles[0].position.x,
           particles[0].position.y,
@@ -319,7 +339,13 @@
         }
 
         // 绘制质心
-        drawCenterOfMass();
+        drawCenterOfMass(com);
+
+        // 绘制摄像机位置指示器
+        drawCameraIndicator();
+
+        // 恢复原始坐标系绘制UI
+        resetMatrix();
 
         // 绘制状态信息
         drawStatus();
@@ -329,36 +355,30 @@
         stroke(50, 50, 70, 60);
         strokeWeight(1);
 
+        // 绘制网格线（基于世界坐标）
+        const gridSize = 4000;
+        const step = 50;
+        const startX = -gridSize;
+        const endX = gridSize;
+        const startY = -gridSize;
+        const endY = gridSize;
+
         // 垂直线
-        for (let x = 0; x <= canvasWidth; x += 50) {
-          line(x, 0, x, canvasHeight);
+        for (let x = startX; x <= endX; x += step) {
+          line(x, startY, x, endY);
         }
 
         // 水平线
-        for (let y = 0; y <= canvasHeight; y += 50) {
-          line(0, y, canvasWidth, y);
+        for (let y = startY; y <= endY; y += step) {
+          line(startX, y, endX, y);
         }
       }
 
-      function drawCenterOfMass() {
-        // 计算质心位置
-        let comX = 0;
-        let comY = 0;
-        let totalMass = 0;
-
-        for (let p of particles) {
-          comX += p.position.x * p.mass;
-          comY += p.position.y * p.mass;
-          totalMass += p.mass;
-        }
-
-        comX /= totalMass;
-        comY /= totalMass;
-
+      function drawCenterOfMass(com) {
         // 绘制质心
         fill(255, 255, 0, 200);
         noStroke();
-        ellipse(comX, comY, 10, 10);
+        ellipse(com.x, com.y, 10, 10);
 
         // 绘制质心轨迹
         stroke(255, 255, 0, 100);
@@ -369,14 +389,27 @@
           const x =
             (particles[0].trail[i].x * particles[0].mass +
               particles[1].trail[i].x * particles[1].mass) /
-            totalMass;
+            (particles[0].mass + particles[1].mass);
           const y =
             (particles[0].trail[i].y * particles[0].mass +
               particles[1].trail[i].y * particles[1].mass) /
-            totalMass;
+            (particles[0].mass + particles[1].mass);
           vertex(x, y);
         }
         endShape();
+      }
+
+      function drawCameraIndicator() {
+        // 绘制世界中心点
+        fill(255, 0, 0, 150);
+        noStroke();
+        ellipse(0, 0, 8, 8);
+
+        // 绘制世界中心标记
+        stroke(255, 0, 0, 150);
+        strokeWeight(1);
+        line(-10, 0, 10, 0);
+        line(0, -10, 0, 10);
       }
 
       function drawStatus() {
@@ -388,9 +421,9 @@
         const vA = particles[0].velocity.mag().toFixed(2);
         const vB = particles[1].velocity.mag().toFixed(2);
 
-        text(`质点A速度: ${vA}`, canvasWidth - 20, 20);
-        text(`质点B速度: ${vB}`, canvasWidth - 20, 45);
-        text(`系统状态: ${paused ? "已暂停" : "运行中"}`, canvasWidth - 20, 70);
+        text(`质点A速度: ${vA}`, width - 20, 20);
+        text(`质点B速度: ${vB}`, width - 20, 45);
+        text(`系统状态: ${paused ? "已暂停" : "运行中"}`, width - 20, 70);
 
         // 计算角速度
         const delta = p5.Vector.sub(
@@ -420,7 +453,7 @@
         const omega = ((crossA + crossB) / (rA.magSq() + rB.magSq())).toFixed(
           2,
         );
-        text(`角速度: ${omega} rad/frame`, canvasWidth - 20, 95);
+        text(`角速度: ${omega} rad/frame`, width - 20, 95);
       }
     </script>
   </body>
