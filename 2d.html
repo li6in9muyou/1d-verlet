@@ -118,7 +118,7 @@
 
         canvasWidth = windowWidth;
         canvasHeight = windowHeight;
-        rodLength = Math.min(canvasWidth, canvasHeight) * 0.3;
+        rodLength = 400;
 
         resetSystem();
 
@@ -488,10 +488,11 @@
         const crossA = rA.x * vRelA.y - rA.y * vRelA.x;
         const crossB = rB.x * vRelB.y - rB.y * vRelB.x;
 
-        const omega = ((crossA + crossB) / (rA.magSq() + rB.magSq())).toFixed(
-          2,
-        );
-        text(`角速度: ${omega} rad/frame`, width - 20, 95);
+        const omega = (
+          ((crossA + crossB) / (rA.magSq() + rB.magSq())) *
+          1e6
+        ).toFixed(0);
+        text(`角速度: ${omega} *1e-6 rad/frame`, width - 20, 95);
       }
 
       function drawEnergyGraph() {
@@ -557,17 +558,29 @@
         );
       }
 
-      // 计算系统总能量
+      // 计算系统总能量（只考虑平动）
       function calculateTotalEnergy() {
-        let kinetic = 0;
-        let potential = 0;
+        const m1 = particles[0].mass;
+        const m2 = particles[1].mass;
 
-        // 动能 = 1/2 * m * v^2
-        for (let p of particles) {
-          kinetic += 0.5 * p.mass * p.velocity.magSq();
-        }
+        const v1 = particles[0].velocity;
+        const v2 = particles[1].velocity;
+
+        const totalMass = m1 + m2;
+
+        // 计算质心速度
+        const vcmX = (m1 * v1.x + m2 * v2.x) / totalMass;
+        const vcmY = (m1 * v1.y + m2 * v2.y) / totalMass;
+
+        // 质心速度的平方
+        const vcmSq = vcmX * vcmX + vcmY * vcmY;
+
+        // 系统的平动动能
+        const kinetic = 0.5 * totalMass * vcmSq;
 
         // 这里没有势能，但为了完整性保留
+        const potential = 0;
+
         return kinetic + potential;
       }
     </script>
