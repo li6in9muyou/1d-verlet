@@ -19,6 +19,7 @@ This list is ordered in decreasing order of importance.
 - [x] suitcase coordinates stuff need major refactoring, do no change MAX/MIN_X/Y or boxes for the ease of drawing
 - [x] save short names and long names of suitcases
 - [ ] stat numbers make no sense, plot them
+- [ ] introduce a 2d vector class in preparation of transition to 2d
 - [ ] speed up crashing detection with fancy algorithm
 - [ ] make it interactive
 - [ ] figure out how to fit more demos on the screen, handle scrolling by handle or let browser do it
