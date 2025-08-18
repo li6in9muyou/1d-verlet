@@ -234,7 +234,7 @@
         }
       }
 
-      // 距离约束类
+      // 距离约束类（显式保持角动量不变）
       class DistanceConstraint {
         constructor(p1, p2, distance) {
           this.p1 = p1;
@@ -253,14 +253,78 @@
           correction.normalize();
           correction.mult((currentDistance - this.distance) * this.stiffness);
 
-          // 根据质量分配修正量
+          // 计算质心位置
+          const com = createVector(
+            (this.p1.position.x * this.p1.mass +
+              this.p2.position.x * this.p2.mass) /
+              (this.p1.mass + this.p2.mass),
+            (this.p1.position.y * this.p1.mass +
+              this.p2.position.y * this.p2.mass) /
+              (this.p1.mass + this.p2.mass),
+          );
+
+          // 计算相对位置向量
+          const r1 = p5.Vector.sub(this.p1.position, com);
+          const r2 = p5.Vector.sub(this.p2.position, com);
+
+          // 计算当前速度
+          const v1 = p5.Vector.sub(this.p1.position, this.p1.previous);
+          const v2 = p5.Vector.sub(this.p2.position, this.p2.previous);
+
+          // 计算当前角动量（标量形式）
+          const currentAngularMomentum =
+            this.p1.mass * (r1.x * v1.y - r1.y * v1.x) +
+            this.p2.mass * (r2.x * v2.y - r2.y * v2.x);
+
+          // 应用位置修正
           const totalMass = this.p1.mass + this.p2.mass;
           const ratio1 = this.p2.mass / totalMass;
           const ratio2 = this.p1.mass / totalMass;
 
-          // 应用位置修正
+          const originalPos1 = this.p1.position.copy();
+          const originalPos2 = this.p2.position.copy();
+
           this.p1.position.add(p5.Vector.mult(correction, ratio1));
           this.p2.position.sub(p5.Vector.mult(correction, ratio2));
+
+          // 计算修正后的相对位置
+          const r1_new = p5.Vector.sub(this.p1.position, com);
+          const r2_new = p5.Vector.sub(this.p2.position, com);
+
+          // 计算修正后的速度
+          const v1_new = p5.Vector.sub(this.p1.position, this.p1.previous);
+          const v2_new = p5.Vector.sub(this.p2.position, this.p2.previous);
+
+          // 计算修正后的角动量
+          const newAngularMomentum =
+            this.p1.mass * (r1_new.x * v1_new.y - r1_new.y * v1_new.x) +
+            this.p2.mass * (r2_new.x * v2_new.y - r2_new.y * v2_new.x);
+
+          // 计算角动量误差
+          const angularMomentumError =
+            currentAngularMomentum - newAngularMomentum;
+
+          // 如果角动量误差显著，进行调整
+          if (Math.abs(angularMomentumError) > 50) {
+            // 计算转动惯量
+            const I =
+              this.p1.mass * r1_new.magSq() + this.p2.mass * r2_new.magSq();
+
+            // 计算所需的角速度变化
+            const deltaOmega = angularMomentumError / I;
+
+            // 计算切向方向单位向量（垂直于位置向量）
+            const tangent1 = createVector(-r1_new.y, r1_new.x).normalize();
+            const tangent2 = createVector(-r2_new.y, r2_new.x).normalize();
+
+            // 应用角动量修正
+            const deltaV1 = p5.Vector.mult(tangent1, deltaOmega * r1_new.mag());
+            const deltaV2 = p5.Vector.mult(tangent2, deltaOmega * r2_new.mag());
+
+            // 调整位置以修正角动量
+            this.p1.position.add(deltaV1);
+            this.p2.position.add(deltaV2);
+          }
         }
       }
 
