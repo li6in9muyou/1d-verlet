@@ -45,6 +45,8 @@ export type SimStuff = {
 export type CtrlEvents =
   | { name: "toggle" }
   | { name: "next-frame" }
+  | { name: "park" }
+  | { name: "unpark" }
   | { name: "prev-frame" };
 
 export type ControlState = {

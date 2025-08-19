@@ -4,6 +4,10 @@ import { Suitcase } from "./types";
 export function afterHandlingEvents(w: Suitcase): Suitcase {
   for (const e of w.ctrl.events) {
     switch (e.name) {
+      case "park": {
+      }
+      case "unpark": {
+      }
       case "toggle": {
         const ww = {
           ...w,

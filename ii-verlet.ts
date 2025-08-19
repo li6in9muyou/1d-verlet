@@ -337,12 +337,18 @@ export function draw() {
   strokeCap(SQUARE);
   background("#000");
 
-  const showing = getShowingSuitcases();
+  const allSuitcases = [{}, {}];
+  // const showing = getShowingSuitcases();
   for (let i = 0; i < showing.length; i++) {
     const frameStart = performance.now();
 
-    const API = currentApi[i];
-    let SCASE = showing[i];
+    const API = computeLayout(SCASE, allSuitcases);
+    if (SCASE.showing === false) {
+      continue;
+    }
+
+    // const API = currentApi[i];
+    // let SCASE = showing[i];
 
     SCASE = afterHandlingEvents(SCASE);
 
@@ -350,6 +356,7 @@ export function draw() {
       SCASE.frameCnt++;
       SCASE = afterSimulate(SCASE);
       SCASE = afterDrawing(SCASE);
+      SCASE = afterCalculatingStats(SCAE);
     }
 
     drawBoxes(SCASE, API);
