@@ -1,8 +1,4 @@
-import {
-  afterCrashing,
-  afterHittingWall,
-  afterMoving,
-} from "./ii-verlet";
+import { afterCrashing, afterHittingWall, afterMoving } from "./ii-verlet";
 import { describe, expect, test } from "vitest";
 import { getV, yv } from "./ii-utils";
 
