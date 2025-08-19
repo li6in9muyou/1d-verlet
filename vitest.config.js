@@ -1,8 +1,8 @@
-import { defineConfig } from 'vitest/config';
-import CustomTitleReporter from './custom-title-reporter'; // Adjust path
+import CustomTitleReporter from "./custom-title-reporter";
+import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    reporters: ['default', new CustomTitleReporter()],
+    reporters: ["dot", new CustomTitleReporter()],
   },
 });

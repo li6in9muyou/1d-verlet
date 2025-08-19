@@ -1,18 +1,128 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <script src="./vendor/p5.js"></script>
-    <script src="./vendor/p5.sound.min.js"></script>
+    <script src="./vendor/p5.min.js"></script>
     <link rel="stylesheet" type="text/css" href="style.css" />
     <meta charset="utf-8" />
+    <style>
+      * {
+        font-family: monospace;
+      }
+      .controls {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        display: flex;
+        width: 100vw;
+        color: white;
+        font-size: 1.4rem;
+      }
+      .controls > .playpause {
+        flex-shrink: 0;
+        align-self: end;
+      }
+      .enable-suitcases:hover {
+        opacity: 1;
+        background: #333;
+      }
+      .enable-suitcases {
+        opacity: 0.05;
+        column-gap: 8px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        flex-shrink: 0;
+        max-width: 300px;
+      }
+    </style>
   </head>
   <body>
     <main></main>
-    <script src="verlet-sketch.js" type="module"></script>
+    <section class="controls">
+      <div class="playpause">
+        <button id="prev">prev</button>
+        <button id="pause">pause</button>
+        <button id="next">next</button>
+      </div>
+      <div id="checkbox-group" class="enable-suitcases"></div>
+    </section>
+    <script src="ii-verlet.ts" type="module"></script>
     <script type="module">
-      import { setup, draw } from "./verlet-sketch.js";
+      import { setup, draw, emitEvent } from "./ii-verlet.ts";
+      import suitcases from "./interesting-suitcases.ts";
+
+      window.suitcases = suitcases;
       window.setup = setup;
       window.draw = draw;
+
+      document.getElementById("prev").addEventListener("click", () => {
+        emitEvent({ name: "prev-frame" });
+      });
+      document.getElementById("pause").addEventListener("click", () => {
+        emitEvent({ name: "toggle" });
+      });
+      document.getElementById("next").addEventListener("click", () => {
+        emitEvent({ name: "next-frame" });
+      });
+
+      const override = new URLSearchParams(window.location.search);
+      if (override.has("pause")) {
+        emitEvent({ name: "toggle" });
+      }
+    </script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const CHECKBOX_KEY = "ii-verlet-showing-suitcases";
+
+        function createCheckboxGroup(options, elementId) {
+          const container = document.getElementById(elementId);
+          if (!container) {
+            console.error(`Element with id "${elementId}" not found.`);
+            return;
+          }
+
+          let checkedValues =
+            JSON.parse(localStorage.getItem(CHECKBOX_KEY)) || [];
+
+          function saveState() {
+            const checkboxes = container.querySelectorAll(
+              'input[type="checkbox"]',
+            );
+            const valuesToSave = Array.from(checkboxes)
+              .filter((checkbox) => checkbox.checked)
+              .map((checkbox) => checkbox.value);
+            localStorage.setItem(CHECKBOX_KEY, JSON.stringify(valuesToSave));
+          }
+
+          options.forEach((option) => {
+            const item = document.createElement("div");
+            item.className = "checkbox-item";
+
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.id = option.value;
+            checkbox.value = option.value;
+            checkbox.checked = checkedValues.includes(option.value.toString());
+
+            const label = document.createElement("label");
+            label.htmlFor = option.value;
+            label.textContent = option.label;
+
+            checkbox.addEventListener("change", saveState);
+
+            item.appendChild(checkbox);
+            item.appendChild(label);
+            container.appendChild(item);
+          });
+        }
+
+        createCheckboxGroup(
+          suitcases.map((s, idx) => ({
+            label: s.name ?? `suitecase-${idx}`,
+            value: idx,
+          })),
+          "checkbox-group",
+        );
+      });
     </script>
   </body>
 </html>

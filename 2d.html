@@ -1,0 +1,652 @@
+<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>摄像机跟随质心的轻杆约束模拟</title>
+    <script src="/vendor/p5.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        overflow: hidden;
+        background: black;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        height: 100vh;
+        width: 100vw;
+        position: relative;
+        font-size: 0;
+      }
+
+      #canvas-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      .info {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: rgba(25, 35, 70, 0.7);
+        padding: 15px;
+        border-radius: 10px;
+        color: white;
+        font-size: 16px;
+        max-width: 350px;
+        z-index: 10;
+      }
+
+      .controls {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        display: flex;
+        gap: 10px;
+        z-index: 10;
+      }
+
+      button {
+        background: linear-gradient(to bottom, #4fc3f7, #0288d1);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 30px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: all 0.3s;
+      }
+
+      button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      }
+
+      @media (max-width: 768px) {
+        .info {
+          font-size: 14px;
+          padding: 10px;
+          max-width: 300px;
+        }
+
+        button {
+          padding: 8px 15px;
+          font-size: 14px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="controls">
+      <button id="resetBtn">重置系统</button>
+      <button id="pauseBtn">暂停/继续</button>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <script>
+      let particles = [];
+      let constraints = [];
+      let rodLength;
+      let paused = false;
+      let canvas;
+      let canvasWidth, canvasHeight;
+      let cameraOffset = null;
+      let cameraTarget = null;
+      let totalEnergy = 0;
+      let energyHistory = [];
+      const maxEnergyHistory = 100;
+
+      // 响应窗口大小变化
+      function windowResized() {
+        resizeCanvas(windowWidth, windowHeight);
+        canvasWidth = windowWidth;
+        canvasHeight = windowHeight;
+        resetSystem();
+      }
+
+      function setup() {
+        // 创建全屏画布
+        canvas = createCanvas(windowWidth, windowHeight);
+        canvas.parent("canvas-container");
+
+        canvasWidth = windowWidth;
+        canvasHeight = windowHeight;
+        rodLength = 400;
+
+        resetSystem();
+
+        // 设置按钮事件
+        document
+          .getElementById("resetBtn")
+          .addEventListener("click", resetSystem);
+        document.getElementById("pauseBtn").addEventListener("click", () => {
+          paused = !paused;
+        });
+
+        // 响应窗口大小变化
+        window.addEventListener("resize", windowResized);
+
+        cameraOffset = createVector(0, 0);
+        cameraTarget = createVector(0, 0);
+      }
+
+      // 计算质心位置
+      function calculateCenterOfMass() {
+        let comX = 0;
+        let comY = 0;
+        let totalMass = 0;
+
+        for (let p of particles) {
+          comX += p.position.x * p.mass;
+          comY += p.position.y * p.mass;
+          totalMass += p.mass;
+        }
+
+        return createVector(comX / totalMass, comY / totalMass);
+      }
+
+      // 质点类
+      class Particle {
+        constructor(x, y, mass, color) {
+          this.position = createVector(x, y);
+          this.previous = createVector(x, y);
+          this.velocity = createVector(0, 0);
+          this.acceleration = createVector(0, 0);
+          this.mass = mass;
+          this.invMass = 1.0 / mass;
+          this.radius = 10;
+          this.color = color;
+          this.trail = [];
+          this.maxTrail = 300;
+        }
+
+        update(dt) {
+          // Verlet积分
+          this.velocity = p5.Vector.sub(this.position, this.previous);
+          this.previous = this.position.copy();
+
+          // 应用加速度
+          this.position.add(this.velocity);
+          this.position.add(p5.Vector.mult(this.acceleration, dt * dt));
+
+          // 重置加速度
+          this.acceleration.mult(0);
+
+          // 保存轨迹
+          this.trail.push(this.position.copy());
+          if (this.trail.length > this.maxTrail) {
+            this.trail.shift();
+          }
+        }
+
+        applyForce(force) {
+          const f = p5.Vector.div(force, this.mass);
+          this.acceleration.add(f);
+        }
+
+        display() {
+          // 绘制轨迹
+          noFill();
+          stroke(255, 100);
+          strokeWeight(1);
+          beginShape();
+          for (let i = 0; i < this.trail.length; i++) {
+            vertex(this.trail[i].x, this.trail[i].y);
+          }
+          endShape();
+
+          // 绘制质点
+          fill(this.color);
+          noStroke();
+          ellipse(this.position.x, this.position.y, this.radius * 2);
+
+          // 绘制速度向量
+          if (this.velocity.mag() > 0.1) {
+            stroke(255, 255, 0);
+            strokeWeight(1.5);
+            const vel = this.velocity.copy().mult(8);
+            line(
+              this.position.x,
+              this.position.y,
+              this.position.x + vel.x,
+              this.position.y + vel.y,
+            );
+          }
+        }
+      }
+
+      class FixPosition {
+        constructor(p1, x, y) {
+          this.p1 = p1;
+          this.fixedPoint = createVector(x, y);
+        }
+
+        apply() {
+          this.p1.position = this.fixedPoint;
+          this.p1.previous = this.fixedPoint;
+        }
+      }
+
+      // 距离约束类（显式保持角动量不变）
+      class DistanceConstraint {
+        constructor(p1, p2, distance) {
+          this.p1 = p1;
+          this.p2 = p2;
+          this.distance = distance;
+          this.stiffness = 1.0;
+        }
+
+        apply() {
+          // 计算当前距离
+          const delta = p5.Vector.sub(this.p2.position, this.p1.position);
+          const currentDistance = delta.mag();
+
+          // 计算修正向量
+          const correction = delta.copy();
+          correction.normalize();
+          correction.mult((currentDistance - this.distance) * this.stiffness);
+
+          // 计算质心位置
+          const com = createVector(
+            (this.p1.position.x * this.p1.mass +
+              this.p2.position.x * this.p2.mass) /
+              (this.p1.mass + this.p2.mass),
+            (this.p1.position.y * this.p1.mass +
+              this.p2.position.y * this.p2.mass) /
+              (this.p1.mass + this.p2.mass),
+          );
+
+          // 计算相对位置向量
+          const r1 = p5.Vector.sub(this.p1.position, com);
+          const r2 = p5.Vector.sub(this.p2.position, com);
+
+          // 计算当前速度
+          const v1 = p5.Vector.sub(this.p1.position, this.p1.previous);
+          const v2 = p5.Vector.sub(this.p2.position, this.p2.previous);
+
+          // 计算当前角动量（标量形式）
+          const currentAngularMomentum =
+            this.p1.mass * (r1.x * v1.y - r1.y * v1.x) +
+            this.p2.mass * (r2.x * v2.y - r2.y * v2.x);
+
+          // 应用位置修正
+          const totalMass = this.p1.mass + this.p2.mass;
+          const ratio1 = this.p2.mass / totalMass;
+          const ratio2 = this.p1.mass / totalMass;
+
+          const originalPos1 = this.p1.position.copy();
+          const originalPos2 = this.p2.position.copy();
+
+          this.p1.position.add(p5.Vector.mult(correction, ratio1));
+          this.p2.position.sub(p5.Vector.mult(correction, ratio2));
+
+          // 计算修正后的相对位置
+          const r1_new = p5.Vector.sub(this.p1.position, com);
+          const r2_new = p5.Vector.sub(this.p2.position, com);
+
+          // 计算修正后的速度
+          const v1_new = p5.Vector.sub(this.p1.position, this.p1.previous);
+          const v2_new = p5.Vector.sub(this.p2.position, this.p2.previous);
+
+          // 计算修正后的角动量
+          const newAngularMomentum =
+            this.p1.mass * (r1_new.x * v1_new.y - r1_new.y * v1_new.x) +
+            this.p2.mass * (r2_new.x * v2_new.y - r2_new.y * v2_new.x);
+
+          // 计算角动量误差
+          const angularMomentumError =
+            currentAngularMomentum - newAngularMomentum;
+
+          // 如果角动量误差显著，进行调整
+          if (Math.abs(angularMomentumError) > 50) {
+            // 计算转动惯量
+            const I =
+              this.p1.mass * r1_new.magSq() + this.p2.mass * r2_new.magSq();
+
+            // 计算所需的角速度变化
+            const deltaOmega = angularMomentumError / I;
+
+            // 计算切向方向单位向量（垂直于位置向量）
+            const tangent1 = createVector(-r1_new.y, r1_new.x).normalize();
+            const tangent2 = createVector(-r2_new.y, r2_new.x).normalize();
+
+            // 应用角动量修正
+            const deltaV1 = p5.Vector.mult(tangent1, deltaOmega * r1_new.mag());
+            const deltaV2 = p5.Vector.mult(tangent2, deltaOmega * r2_new.mag());
+
+            // 调整位置以修正角动量
+            this.p1.position.add(deltaV1);
+            this.p2.position.add(deltaV2);
+          }
+        }
+      }
+
+      function resetSystem() {
+        particles = [];
+        constraints = [];
+        energyHistory = [];
+
+        const ma = 10;
+        const mb = 10;
+        // 创建质点A和B
+        particles.push(
+          new Particle(
+            -rodLength * (ma / (ma + mb)),
+            0,
+            ma,
+            color(255, 100, 100),
+          ),
+        );
+        particles.push(
+          new Particle(
+            rodLength * (mb / (ma + mb)),
+            0,
+            mb,
+            color(100, 255, 100),
+          ),
+        );
+
+        particles[0].velocity.x = 0;
+        particles[0].velocity.y = -30;
+        particles[0].previous = createVector(
+          particles[0].position.x - particles[0].velocity.x,
+          particles[0].position.y - particles[0].velocity.y,
+        );
+
+        // 给质点B初始向下速度
+        particles[1].velocity.x = 0;
+        particles[1].velocity.y = 30;
+        particles[1].previous = createVector(
+          particles[1].position.x - particles[1].velocity.x,
+          particles[1].position.y - particles[1].velocity.y,
+        );
+
+        // constraints.push(new FixPosition(particles[0], -rodLength / 4, 0));
+        // 创建距离约束
+        constraints.push(
+          new DistanceConstraint(particles[0], particles[1], rodLength),
+        );
+
+        // 重置摄像机位置
+        cameraOffset = createVector(0, 0);
+        cameraTarget = createVector(0, 0);
+      }
+
+      function draw() {
+        background(20, 30, 50, 200);
+
+        // 更新物理
+        if (!paused) {
+          const dt = 1 / 60;
+
+          // 更新质点位置
+          for (let p of particles) {
+            p.update(dt);
+          }
+
+          // 应用约束（多次迭代提高稳定性）
+          for (let i = 0; i < 5; i++) {
+            for (let c of constraints) {
+              c.apply();
+            }
+          }
+
+          // 更新能量计算
+          totalEnergy = calculateTotalEnergy();
+          energyHistory.push(totalEnergy);
+          if (energyHistory.length > maxEnergyHistory) {
+            energyHistory.shift();
+          }
+        }
+
+        // 计算质心位置
+        const com = calculateCenterOfMass();
+
+        cameraTarget = com;
+        cameraOffset = createVector(
+          width / 2 - cameraTarget.x,
+          height / 2 - cameraTarget.y,
+        );
+
+        // 应用摄像机偏移
+        translate(cameraOffset.x, cameraOffset.y);
+
+        // 绘制半透明网格
+        drawGrid();
+
+        // 绘制轻杆
+        stroke(180, 200, 255, 200);
+        strokeWeight(3);
+        line(
+          particles[0].position.x,
+          particles[0].position.y,
+          particles[1].position.x,
+          particles[1].position.y,
+        );
+
+        // 绘制质点
+        for (let p of particles) {
+          p.display();
+        }
+
+        // 绘制质心
+        drawCenterOfMass(com);
+
+        // 绘制摄像机位置指示器
+        drawCameraIndicator();
+
+        // 恢复原始坐标系绘制UI
+        resetMatrix();
+
+        // 绘制状态信息
+        drawStatus();
+
+        // 绘制能量图
+        drawEnergyGraph();
+      }
+
+      function drawGrid() {
+        stroke(50, 50, 70, 60);
+        strokeWeight(1);
+
+        const gridSize = 1000;
+        const step = 50;
+        const startX = -gridSize;
+        const endX = gridSize;
+        const startY = -gridSize;
+        const endY = gridSize;
+
+        translate(-cameraOffset.x, -cameraOffset.y);
+        // 垂直线
+        for (let x = startX; x <= endX; x += step) {
+          line(x, startY, x, endY);
+        }
+
+        // 水平线
+        for (let y = startY; y <= endY; y += step) {
+          line(startX, y, endX, y);
+        }
+        translate(cameraOffset.x, cameraOffset.y);
+      }
+
+      function drawCenterOfMass(com) {
+        // 绘制质心
+        fill(255, 255, 0, 200);
+        noStroke();
+        ellipse(com.x, com.y, 10, 10);
+
+        // 绘制质心轨迹
+        stroke(255, 255, 0, 100);
+        strokeWeight(1.5);
+        noFill();
+        beginShape();
+        for (let i = 0; i < particles[0].trail.length; i++) {
+          const x =
+            (particles[0].trail[i].x * particles[0].mass +
+              particles[1].trail[i].x * particles[1].mass) /
+            (particles[0].mass + particles[1].mass);
+          const y =
+            (particles[0].trail[i].y * particles[0].mass +
+              particles[1].trail[i].y * particles[1].mass) /
+            (particles[0].mass + particles[1].mass);
+          vertex(x, y);
+        }
+        endShape();
+      }
+
+      function drawCameraIndicator() {
+        // 绘制世界中心点
+        fill(255, 0, 0, 150);
+        noStroke();
+        ellipse(0, 0, 8, 8);
+
+        // 绘制世界中心标记
+        stroke(255, 0, 0, 150);
+        strokeWeight(1);
+        line(-10, 0, 10, 0);
+        line(0, -10, 0, 10);
+      }
+
+      function drawStatus() {
+        fill(255);
+        noStroke();
+        textSize(16);
+        textAlign(RIGHT, TOP);
+
+        const vA = particles[0].velocity.mag().toFixed(2);
+        const vB = particles[1].velocity.mag().toFixed(2);
+
+        text(`质点A速度: ${vA}`, width - 20, 20);
+        text(`质点B速度: ${vB}`, width - 20, 45);
+        text(`系统状态: ${paused ? "已暂停" : "运行中"}`, width - 20, 70);
+
+        // 计算角速度
+        const delta = p5.Vector.sub(
+          particles[1].position,
+          particles[0].position,
+        );
+        const center = p5.Vector.add(
+          particles[0].position,
+          p5.Vector.div(delta, 2),
+        );
+        const rA = p5.Vector.sub(particles[0].position, center);
+        const rB = p5.Vector.sub(particles[1].position, center);
+
+        // 计算角速度 (ω = (v × r) / |r|²)
+        const vRelA = p5.Vector.sub(
+          particles[0].velocity,
+          particles[0].velocity,
+        );
+        const vRelB = p5.Vector.sub(
+          particles[1].velocity,
+          particles[0].velocity,
+        );
+
+        const crossA = rA.x * vRelA.y - rA.y * vRelA.x;
+        const crossB = rB.x * vRelB.y - rB.y * vRelB.x;
+
+        const omega = (
+          ((crossA + crossB) / (rA.magSq() + rB.magSq())) *
+          1e6
+        ).toFixed(0);
+        text(`角速度: ${omega} *1e-6 rad/frame`, width - 20, 95);
+      }
+
+      function drawEnergyGraph() {
+        if (energyHistory.length < 2) return;
+
+        const graphWidth = 200;
+        const graphHeight = 80;
+        const graphX = width - graphWidth - 20;
+        const graphY = height - graphHeight - 20;
+
+        // 绘制背景
+        fill(25, 35, 70, 200);
+        noStroke();
+        rect(graphX, graphY, graphWidth, graphHeight);
+
+        // 绘制标题
+        fill(255);
+        textSize(14);
+        textAlign(LEFT, TOP);
+        text("系统能量变化", graphX + 5, graphY + 5);
+
+        // 找出最大最小值
+        let maxEnergy = Math.max(...energyHistory);
+        let minEnergy = Math.min(...energyHistory);
+        if (maxEnergy === minEnergy) {
+          maxEnergy = minEnergy + 1;
+        }
+
+        // 绘制坐标轴
+        stroke(200);
+        strokeWeight(1);
+        line(
+          graphX,
+          graphY + graphHeight - 10,
+          graphX + graphWidth,
+          graphY + graphHeight - 10,
+        );
+        line(graphX + 10, graphY + 25, graphX + 10, graphY + graphHeight - 10);
+
+        // 绘制能量曲线
+        noFill();
+        stroke(100, 255, 100);
+        strokeWeight(2);
+        beginShape();
+        for (let i = 0; i < energyHistory.length; i++) {
+          const x =
+            graphX + 10 + (i * (graphWidth - 20)) / (maxEnergyHistory - 1);
+          const y =
+            graphY +
+            25 +
+            (1 - (energyHistory[i] - minEnergy) / (maxEnergy - minEnergy)) *
+              (graphHeight - 35);
+          vertex(x, y);
+        }
+        endShape();
+
+        // 绘制当前能量值
+        const currentEnergy = energyHistory[energyHistory.length - 1];
+        text(
+          `当前能量: ${currentEnergy.toFixed(2)}`,
+          graphX + 10,
+          graphY + graphHeight - 20,
+        );
+      }
+
+      // 计算系统总能量（只考虑平动）
+      function calculateTotalEnergy() {
+        const m1 = particles[0].mass;
+        const m2 = particles[1].mass;
+
+        const v1 = particles[0].velocity;
+        const v2 = particles[1].velocity;
+
+        const totalMass = m1 + m2;
+
+        // 计算质心速度
+        const vcmX = (m1 * v1.x + m2 * v2.x) / totalMass;
+        const vcmY = (m1 * v1.y + m2 * v2.y) / totalMass;
+
+        // 质心速度的平方
+        const vcmSq = vcmX * vcmX + vcmY * vcmY;
+
+        // 系统的平动动能
+        const kinetic = 0.5 * totalMass * vcmSq;
+
+        // 这里没有势能，但为了完整性保留
+        const potential = 0;
+
+        return kinetic + potential;
+      }
+    </script>
+  </body>
+</html>
