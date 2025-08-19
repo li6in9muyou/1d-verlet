@@ -1,7 +1,16 @@
 <!doctype html>
 <html lang="en">
   <head>
+    {% if site.dev %}
     <script src="./vendor/p5.min.js"></script>
+    {% else %}
+    <!-- this else block will be deleted by vite during `npm run dev` -->
+    <script
+      src="https://lf9-cdn-tos.bytecdntp.com/cdn/expire-1-M/p5.js/1.4.1/p5.min.js"
+      type="application/javascript"
+    ></script>
+    {% endif %}
+
     <link rel="stylesheet" type="text/css" href="style.css" />
     <meta charset="utf-8" />
     <style>
