@@ -21,6 +21,7 @@ This list is ordered in decreasing order of importance.
 - [ ] stat numbers make no sense, plot them
 - [ ] introduce a 2d vector class in preparation of transition to 2d
 - [ ] speed up crashing detection with fancy algorithm
+- [ ] publish this branch to ghpages
 - [ ] make it interactive
 - [ ] figure out how to fit more demos on the screen, handle scrolling by handle or let browser do it
 - [ ] toggle detail and overall stats
