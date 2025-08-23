@@ -275,36 +275,66 @@ function drawFrameTimeAndFrameCnt(
 }
 
 let lastText = "";
-let currentShowingIdx: string[] = [];
-let currentShowing: Suitcase[] = [];
-let currentApi: Painter[] = [];
+let currentShowingSuitcases: Suitcase[] = [];
 function getShowingSuitcases(): Suitcase[] {
   const text = localStorage.getItem("ii-verlet-showing-suitcases");
-  if (text === lastText && currentApi[0].fill !== undefined) {
-    return currentShowing;
+
+  if (text === lastText && currentShowingSuitcases.length > 0) {
+    return currentShowingSuitcases;
   }
+
   lastText = text;
 
-  const s = JSON.parse(text) || [];
-  const showingIdxToIdx = new Map();
-  const showing: Suitcase[] = s.map((s: string, idx: number) => {
-    showingIdxToIdx.set(s, idx);
-    return cloneDeep(allSuitcases[s]);
-  });
-  const [trans] = leftToRight(
-    showing.map((wd) => ({ w: wd.WIDTH, h: wd.HEIGHT })),
-  );
-  const apis = trans.map(makeApi);
-
-  for (let i = 0; i < currentShowing.length; i++) {
-    const replaceIdx = showingIdxToIdx.get(currentShowingIdx[i]);
-    showing[replaceIdx] = currentShowing[i];
+  if (!text) {
+    currentShowingSuitcases = [];
+    return [];
   }
 
-  currentShowing = showing;
-  currentApi = apis;
-  currentShowingIdx = s;
-  return showing;
+  const suitcaseNames = JSON.parse(text) || [];
+  const newSuitcases: Suitcase[] = [];
+
+  for (const name of suitcaseNames) {
+    const init = allSuitcases.find((s) => s.name === name);
+    if (!init) {
+      console.error(
+        "suitcase saved in localstorage is not valid",
+        name,
+        allSuitcases,
+        text,
+      );
+      continue;
+    }
+
+    const existingSuitcase = currentShowingSuitcases.find(
+      (s) => s.name === name,
+    );
+    if (existingSuitcase) {
+      newSuitcases.push(existingSuitcase);
+    } else {
+      newSuitcases.push(cloneDeep(init));
+    }
+  }
+
+  currentShowingSuitcases = newSuitcases;
+  return newSuitcases;
+}
+
+function computeLayout(suitcases: Suitcase[]): {
+  suitcase: Suitcase;
+  transform: (x: number, y: number) => [number, number];
+}[] {
+  if (suitcases.length === 0) return [];
+
+  const rectangles = suitcases.map((suitcase) => ({
+    w: suitcase.WIDTH,
+    h: suitcase.HEIGHT,
+  }));
+  const [transforms] = leftToRight(rectangles);
+
+  return suitcases.map((suitcase, index) => ({
+    suitcase,
+    transform: transforms[index],
+  }));
 }
 
 function makeApi(
@@ -337,18 +367,14 @@ export function draw() {
   strokeCap(SQUARE);
   background("#000");
 
-  const allSuitcases = [{}, {}];
-  // const showing = getShowingSuitcases();
-  for (let i = 0; i < showing.length; i++) {
+  const showing = getShowingSuitcases();
+  const layouts = computeLayout(showing);
+
+  for (let i = 0; i < layouts.length; i++) {
     const frameStart = performance.now();
-
-    const API = computeLayout(SCASE, allSuitcases);
-    if (SCASE.showing === false) {
-      continue;
-    }
-
-    // const API = currentApi[i];
-    // let SCASE = showing[i];
+    const d = layouts[i];
+    let SCASE = d.suitcase;
+    const API = makeApi(d.transform);
 
     SCASE = afterHandlingEvents(SCASE);
 
@@ -356,7 +382,6 @@ export function draw() {
       SCASE.frameCnt++;
       SCASE = afterSimulate(SCASE);
       SCASE = afterDrawing(SCASE);
-      SCASE = afterCalculatingStats(SCAE);
     }
 
     drawBoxes(SCASE, API);
@@ -367,7 +392,7 @@ export function draw() {
     const frameTime = performance.now() - frameStart;
 
     if (frameTimeWindow[i] === undefined) {
-      frameTimeWindow.push([]);
+      frameTimeWindow[i] = [];
     }
     const thisWindow = frameTimeWindow[i];
     thisWindow.push(frameTime);

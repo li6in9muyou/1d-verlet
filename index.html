@@ -127,9 +127,9 @@
         }
 
         createCheckboxGroup(
-          suitcases.map((s, idx) => ({
-            label: s.name ?? `suitecase-${idx}`,
-            value: idx,
+          suitcases.map((s) => ({
+            label: s.name,
+            value: s.name,
           })),
           "checkbox-group",
         );

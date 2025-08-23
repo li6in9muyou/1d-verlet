@@ -92,6 +92,10 @@ export class SuitcaseBuilder {
   }
 
   public build(): typeof this.scase {
+    if (!this.scase.name) {
+      this.scase.name = `suitcase-${generateName(Math.random() * Math.pow(26, 4))}`;
+    }
+
     this.scase.springs.forEach((spring) => {
       const { one, two } = spring;
       const okOne =
@@ -127,7 +131,8 @@ export class SuitcaseBuilder {
 }
 
 const ALPHABET = "abcdefghijklmnopqrstuvwxyz";
-function generateName(index: number): string {
+function generateName(_index: number): string {
+  const index = Math.round(_index);
   let result = "";
   let n = index + 1;
   while (n > 0) {
