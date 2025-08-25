@@ -39,7 +39,7 @@ export class Graph<T extends string = string> {
   ) {
     this.title = title;
     this.seriesNames = seriesNames;
-    this.maxDataPoints = options.maxDataPoints ?? 100;
+    this.maxDataPoints = options.maxDataPoints ?? 60 * 2;
 
     this.dataHistory = new Map();
     this.seriesColors = new Map<T, string>();
