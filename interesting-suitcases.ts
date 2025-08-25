@@ -130,7 +130,7 @@ export const tennisBallFalling900metersWithoutAir = new SuitcaseBuilder()
 
 export const bouncing2 = new SuitcaseBuilder()
   .description("short")
-  .size(100, 100)
+  .size(300, 100)
   .dynamics(generateBouncingDynamics(100, 6))
   .build();
 
