@@ -132,8 +132,6 @@ export class Graph<T extends string = string> {
       api.text(this.title, x, y + height);
     }
 
-    // 每条曲线使用自身的极值范围，故不再计算全局 dataRange
-
     // 绘制每个数据系列的曲线
     this.seriesNames.forEach((name) => {
       const ss = this.dataHistory.get(name);
@@ -151,7 +149,6 @@ export class Graph<T extends string = string> {
         y,
         width,
         height,
-        ss.min - ss.max || 1,
       );
     });
   }
@@ -162,20 +159,22 @@ export class Graph<T extends string = string> {
   private _drawSmoothLineFixedCapacity(
     api: Painter,
     buffer: RingBuffer<number>,
-    sMin: number,
-    _sMax: number,
+    yMin: number,
+    yMax: number,
     x: number,
     y: number,
     width: number,
     height: number,
-    dataRange: number,
   ) {
     if (this.maxDataPoints < 2) {
       return;
     }
 
-    // 固定容量横轴：总是渲染 maxDataPoints 个逻辑位置，未满时右对齐，左侧为 NaN
     const step = width / (this.maxDataPoints - 1);
+    let dataRange = yMax - yMin;
+    if (Math.abs(dataRange) < 1e-3) {
+      dataRange = 1;
+    }
 
     for (let i = 1; i < this.maxDataPoints; i++) {
       const p1 = buffer.get(i - 1);
@@ -185,9 +184,9 @@ export class Graph<T extends string = string> {
       }
 
       const x1 = x + (i - 1) * step;
-      const y1 = y + height - ((p1 - sMin) / dataRange) * height;
+      const y1 = y + height - ((p1 - yMin) / dataRange) * height;
       const x2 = x + i * step;
-      const y2 = y + height - ((p2 - sMin) / dataRange) * height;
+      const y2 = y + height - ((p2 - yMin) / dataRange) * height;
       api.line(x1, y1, x2, y2);
     }
   }
