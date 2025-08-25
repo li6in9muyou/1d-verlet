@@ -7,6 +7,7 @@ import {
 } from "./types";
 import { MAX_Y_ANCHOR, MIN_Y_ANCHOR } from "./springs";
 import { getV, yv } from "./ii-utils";
+import { Graph } from "./plotter";
 import { cloneDeep } from "lodash";
 import { namedCssColors } from "./named-css-colors";
 
@@ -37,6 +38,7 @@ export class SuitcaseBuilder {
     colors: [],
     names: [],
     masses: [],
+    frameTimeGraph: null,
   } as Suitcase;
 
   public size(w: number, h: number): SuitcaseBuilder {
@@ -116,6 +118,10 @@ export class SuitcaseBuilder {
       this.scase.names.push(item.name);
       this.scase.masses.push(item.mass);
       this.scase.sizes.push(item.size);
+    });
+
+    this.scase.frameTimeGraph = new Graph("frame time", ["ft"], {
+      colors: { ft: "#aa7" },
     });
 
     return cloneDeep(this.scase);

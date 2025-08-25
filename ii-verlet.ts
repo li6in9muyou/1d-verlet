@@ -6,6 +6,7 @@ import {
 } from "./springs";
 import { afterDrawing, afterHandlingEvents } from "./simctrl";
 import { getV, yv } from "./ii-utils";
+import { Graph } from "./plotter";
 import allSuitcases from "./interesting-suitcases";
 import { cloneDeep } from "lodash";
 import { leftToRight } from "./layout";
@@ -239,7 +240,6 @@ const dataHistory = new Map<
     energies: number[];
     kineticEnergies: number[];
     elasticEnergies: number[];
-    frameTimes: number[]; // <--- 新增
     maxDataPoints: number;
   }
 >();
@@ -259,22 +259,10 @@ function getOrCreateHistory(
       energies: [...initialData],
       kineticEnergies: [...initialData],
       elasticEnergies: [...initialData],
-      frameTimes: [...initialData], // <--- 新增
       maxDataPoints: maxPoints,
     });
   }
   return dataHistory.get(key)!;
-}
-
-// 专门为帧时间创建一个添加数据的函数，保持逻辑分离
-function addFrameTimeDataPoint(suitcaseName: string, frameTime: number) {
-  const history = getOrCreateHistory(suitcaseName, "frameTime"); // 使用一个特殊的 boxName
-  history.frameTimes.push(frameTime);
-
-  // 保持数据点数量在限制内
-  if (history.frameTimes.length > history.maxDataPoints) {
-    history.frameTimes.shift();
-  }
 }
 
 function addDataPoint(
@@ -422,45 +410,6 @@ function drawEnergyChart(
   }
 }
 
-function drawFrameTimeChart(
-  api: Painter,
-  suitcaseName: string,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-) {
-  const history = getOrCreateHistory(suitcaseName, "frameTime");
-
-  // 绘制边框
-  api.stroke("#333");
-  api.strokeWeight(1);
-  api.line(x, y, x + width, y);
-  api.line(x + width, y, x + width, y + height);
-  api.line(x + width, y + height, x, y + height);
-  api.line(x, y + height, x, y);
-
-  // 绘制标签
-  api.fill("white");
-  api.noStroke();
-  api.textSize(10);
-  api.text("Frame Time (ms)", x + 5, y + 12);
-
-  // 绘制帧时间曲线
-  if (history.frameTimes.length > 0) {
-    drawSmoothLine(
-      api,
-      history.frameTimes,
-      x,
-      y,
-      width,
-      height,
-      "#66ccff", // 使用一种新的颜色，比如浅蓝色
-      0,
-    );
-  }
-}
-
 function drawStats(w: Suitcase, api: Painter) {
   const stats = getStats(w);
 
@@ -590,6 +539,7 @@ function makeApi(
   transform: (x: number, y: number) => [number, number],
 ): Painter {
   return {
+    noFill: window.noFill,
     fill: window.fill,
     noStroke: window.noStroke,
     stroke: window.stroke,
@@ -639,28 +589,20 @@ export function draw() {
     drawStats(SCASE, API);
 
     const frameTime = performance.now() - frameStart;
+    SCASE.frameTimeGraph.addDataPoint({ ft: frameTime });
 
-    // --- 新增逻辑开始 ---
-
-    // 1. 记录新的帧时间数据点
-    addFrameTimeDataPoint(SCASE.name ?? "unknown", frameTime);
-
-    // 2. 计算新图表的布局
-    // 我们需要 getStats 的结果来确定之前图表的高度
-    const stats = getStats(SCASE);
     const chartHeight = 40;
     const chartSpacing = 5;
     const totalChartHeight = chartHeight + chartSpacing;
     const startY = SCASE.HEIGHT + 10;
     // 能量图表在所有 box 图表之后
-    const energyChartY = startY + stats.boxes.length * totalChartHeight;
+    const energyChartY = startY + SCASE.boxes.length * totalChartHeight;
     // 帧时间图表在能量图表之后
     const frameTimeChartY = energyChartY + totalChartHeight;
 
     // 3. 绘制帧时间图表
-    drawFrameTimeChart(
+    SCASE.frameTimeGraph.draw(
       API,
-      SCASE.name ?? "unknown",
       0,
       frameTimeChartY,
       SCASE.WIDTH,
@@ -672,7 +614,6 @@ export function draw() {
 }
 
 export function setup() {
-  textSize(12);
   createCanvas(windowWidth, windowHeight);
 }
 

@@ -1,3 +1,5 @@
+import { Graph } from "./plotter";
+
 export type DynamicItem = {
   box: Dynamics;
   color?: string;
@@ -12,7 +14,11 @@ export type Dynamics = {
   acc: number;
 };
 
-export type Suitcase = DynamicsStuff & RenderStuff & SimStuff & ControlState;
+export type Suitcase = StatsStuff &
+  DynamicsStuff &
+  RenderStuff &
+  SimStuff &
+  ControlState;
 
 export type SuitcaseWithoutCtrl = DynamicsStuff & RenderStuff & SimStuff;
 
@@ -46,6 +52,10 @@ export type Spring = {
   restingLen: number;
 };
 
+export type StatsStuff = {
+  frameTimeGraph: Graph;
+};
+
 export type SimStuff = {
   dt: number;
 };
@@ -75,6 +85,7 @@ export type DrawConfig = {
 };
 
 export type Painter = {
+  noFill: () => void;
   fill: (v: string) => void;
   noStroke: () => void;
   stroke: (v: string) => void;
