@@ -112,10 +112,18 @@ export const bouncing2 = new SuitcaseBuilder()
   .dynamics(generateBouncingDynamics(100, 6))
   .build();
 
+export const sanityCheckMoving = new SuitcaseBuilder()
+  .description("sanity check moving")
+  .size(100, 400)
+  .dynamics(generateBouncingDynamics(400, 4))
+  .build();
+
 export const sanityCheck = new SuitcaseBuilder()
   .description("sanity check")
-  .size(100, 900)
-  .dynamics(generateBouncingDynamics(900, 4).map((b) => ((b.prevY = b.y), b)))
+  .size(100, 700)
+  .dynamics(
+    generateBouncingDynamics(700, 4).map((d) => ((d.box.prevY = d.box.y), d)),
+  )
   .build();
 
 export const bouncing = new SuitcaseBuilder()
@@ -283,6 +291,7 @@ export const realNewtonsCradle = new SuitcaseBuilder()
 
 const all = [
   sanityCheck,
+  sanityCheckMoving,
   crash,
   crashNoDrag,
   crash3,
