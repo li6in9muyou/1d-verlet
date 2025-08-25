@@ -341,9 +341,7 @@ function drawBoxChart(
   api.line(x, y + height, x, y); // 左边
 
   // 绘制标签
-  api.fill("white");
-  api.noStroke();
-  api.textSize(10);
+  api.fill(boxColor);
   api.text(boxName, x + 5, y + 12);
 
   // 绘制速度和加速度曲线
