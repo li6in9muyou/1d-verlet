@@ -1,3 +1,11 @@
+export type DynamicItem = {
+  box: Dynamics;
+  color?: string;
+  mass?: number;
+  name?: string;
+  size?: number;
+};
+
 export type Dynamics = {
   y: number;
   prevY: number;

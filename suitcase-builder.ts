@@ -1,6 +1,6 @@
 import {
   CtrlEvents,
-  Dynamics,
+  DynamicItem,
   Spring,
   Suitcase,
   SuitcaseWithoutCtrl,
@@ -9,14 +9,6 @@ import { MAX_Y_ANCHOR, MIN_Y_ANCHOR } from "./springs";
 import { getV, yv } from "./ii-utils";
 import { cloneDeep } from "lodash";
 import { namedCssColors } from "./named-css-colors";
-
-type DynamicItem = {
-  box: Dynamics;
-  color?: string;
-  mass?: number;
-  name?: string;
-  size?: number;
-};
 
 export class SuitcaseBuilder {
   private dynamicsData: DynamicItem[] = [];

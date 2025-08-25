@@ -1,3 +1,4 @@
+import { DynamicItem } from "./types";
 import { MAX_Y_ANCHOR } from "./springs";
 import { SuitcaseBuilder } from "./suitcase-builder";
 import { yv } from "./ii-utils";
@@ -30,7 +31,11 @@ export const spring2 = new SuitcaseBuilder()
   .springs([{ one: 0, two: 1, k: 1e-2, restingLen: 100 }])
   .build();
 
-function generateBouncingDynamics(h: number, count: number, size = 12) {
+function generateBouncingDynamics(
+  h: number,
+  count: number,
+  size = 12,
+): DynamicItem[] {
   const pairCnt = (count - 2) / 2;
   const gapCnt = pairCnt + 1;
   const gapH = (h - count * size) / gapCnt;
