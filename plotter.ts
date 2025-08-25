@@ -50,10 +50,7 @@ export class Graph<T extends string = string> {
       this.dataHistory.set(name, {
         min: Infinity,
         max: -Infinity,
-        data: new RingBuffer(
-          this.maxDataPoints,
-          new Array(this.maxDataPoints).fill(NaN),
-        ),
+        data: new RingBuffer(this.maxDataPoints),
       });
 
       // 结合用户提供的颜色和默认颜色
@@ -168,6 +165,8 @@ export class Graph<T extends string = string> {
       dataRange = 1;
     }
 
+    const leftPad = !buffer.isFull() ? this.maxDataPoints - buffer.size() : 0;
+
     for (let i = 1; i < this.maxDataPoints; i++) {
       const p1 = buffer.get(i - 1);
       const p2 = buffer.get(i);
@@ -175,9 +174,9 @@ export class Graph<T extends string = string> {
         continue;
       }
 
-      const x1 = x + (i - 1) * step;
+      const x1 = x + leftPad + (i - 1) * step;
       const y1 = y + height - ((yMax - p1) / dataRange) * height;
-      const x2 = x + i * step;
+      const x2 = x + leftPad + i * step;
       const y2 = y + height - ((yMax - p2) / dataRange) * height;
       api.line(x1, y1, x2, y2);
     }
