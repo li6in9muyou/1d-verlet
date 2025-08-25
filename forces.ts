@@ -1,4 +1,4 @@
-import { Spring, Suitcase } from "./types";
+import { Dynamics, Spring } from "./types";
 import { getV } from "./ii-utils";
 
 export const MIN_Y_ANCHOR = -2;
@@ -18,7 +18,7 @@ export function getAnchorName(anchor: number) {
 }
 
 export function getSpringEndpointY<
-  C extends { boxes: Suitcase["boxes"]; HEIGHT: number },
+  C extends { boxes: Dynamics[]; HEIGHT: number },
 >(w: C, spring: Spring): [number, number] {
   if (!isSpringNotMoving(spring)) {
     return [w.boxes[spring.one].y, w.boxes[spring.two].y];
@@ -33,7 +33,7 @@ export function getSpringEndpointY<
 
 export function afterSpringForces<
   C extends {
-    boxes: Suitcase["boxes"];
+    boxes: Dynamics[];
     masses?: number[];
     springs?: Spring[];
     HEIGHT: number;
@@ -72,7 +72,7 @@ export function afterSpringForces<
 }
 
 export function afterGravity<
-  C extends { boxes: Suitcase["boxes"]; gravityAcc?: number },
+  C extends { boxes: Dynamics[]; gravityAcc?: number },
 >(_w: C): C {
   const w = { ..._w };
   if (w.gravityAcc !== undefined && w.gravityAcc > 0) {
@@ -83,7 +83,7 @@ export function afterGravity<
 
 export function afterAirDrag<
   C extends {
-    boxes: Suitcase["boxes"];
+    boxes: Dynamics[];
     dragCoeff?: number;
     dt?: number;
     masses?: number[];
@@ -107,9 +107,7 @@ export function afterAirDrag<
   return w;
 }
 
-export function afterResettingAcc<C extends { boxes: Suitcase["boxes"] }>(
-  _w: C,
-): C {
+export function afterResettingAcc<C extends { boxes: Dynamics[] }>(_w: C): C {
   const w = { ..._w };
   w.boxes.forEach((box) => (box.acc = 0));
   return w;

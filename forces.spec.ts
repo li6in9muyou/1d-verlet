@@ -82,7 +82,7 @@ describe("forces", () => {
 
   test("spring endpoint with MIN_Y_ANCHOR uses 0 as anchor Y", () => {
     const w = { HEIGHT: 100, boxes: [yv(50, 0, 0)] };
-    const [boxY, anchorY] = getSpringEndpointY(w as any, {
+    const [boxY, anchorY] = getSpringEndpointY(w, {
       one: MIN_Y_ANCHOR,
       two: 0,
       k: 1,
@@ -94,7 +94,7 @@ describe("forces", () => {
 
   test("spring endpoint with MAX_Y_ANCHOR uses HEIGHT as anchor Y", () => {
     const w = { HEIGHT: 120, boxes: [yv(70, 0, 0)] };
-    const [boxY, anchorY] = getSpringEndpointY(w as any, {
+    const [boxY, anchorY] = getSpringEndpointY(w, {
       one: 0,
       two: MAX_Y_ANCHOR,
       k: 1,
