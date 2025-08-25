@@ -171,8 +171,8 @@ function drawWalls(w: RenderStuff & DynamicsStuff, api: Painter) {
 
   api.stroke("#333");
   api.strokeWeight(10);
-  api.line(xTL, yTL - 5, xBR, yTL - 5);
-  api.line(xTL, yBR + 5, xBR, yBR + 5);
+  api.line(xTL - 1, yTL - 5, xBR + 1, yTL - 5);
+  api.line(xTL - 1, yBR + 5, xBR + 1, yBR + 5);
 
   api.strokeWeight(1);
   api.line(xTL, yTL, xTL, yBR);
