@@ -330,8 +330,6 @@ function drawBoxChart(
   height: number,
   boxColor: string,
 ) {
-  const history = getOrCreateHistory(suitcaseName, boxName);
-
   // 绘制边框 - 使用 line 方法绘制四条边，无背景
   api.stroke("#333");
   api.strokeWeight(1);
@@ -345,6 +343,7 @@ function drawBoxChart(
   api.text(boxName, x + 5, y + 12);
 
   // 绘制速度和加速度曲线
+  const history = getOrCreateHistory(suitcaseName, boxName);
   if (history.velocities.length > 0) {
     drawSmoothLine(api, history.velocities, x, y, width, height, "#0f0"); // 绿色表示速度
     drawSmoothLine(api, history.accelerations, x, y, width, height, "#f00"); // 红色表示加速度
