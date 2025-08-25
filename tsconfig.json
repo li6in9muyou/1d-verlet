@@ -2,6 +2,11 @@
   "compilerOptions": {
     "target": "esnext",
     "allowJs": true,
-    "lib": ["esnext", "dom"]
-  }
+    "lib": ["esnext", "dom"],
+    "types": ["vitest"],
+    "noEmit": true,
+    "moduleResolution": "bundler"
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["public/**", "vendor/**", "**/*.js"]
 }
