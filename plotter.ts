@@ -18,9 +18,7 @@ export class Graph<T extends string = string> {
   private readonly maxDataPoints: number;
 
   // 固定容量环形缓冲区：每个系列一个缓冲区、写入指针与有效长度
-  private dataHistory: Map<T, number[]>;
-  private seriesHead: Map<T, number>;
-  private seriesCount: Map<T, number>;
+  private dataHistory: Map<T, RingBuffer<number>>;
   // 系列颜色，结合了默认值和用户自定义值
   private seriesColors: Map<T, string>;
 
@@ -46,9 +44,7 @@ export class Graph<T extends string = string> {
     this.maxDataPoints = options.maxDataPoints ?? 100;
     this.MIN_MAX_RESET_TIME = 3 * this.maxDataPoints;
 
-    this.dataHistory = new Map<T, number[]>();
-    this.seriesHead = new Map<T, number>();
-    this.seriesCount = new Map<T, number>();
+    this.dataHistory = new Map();
     this.seriesColors = new Map<T, string>();
     this.seriesMin = new Map<T, number>();
     this.seriesMax = new Map<T, number>();
@@ -66,9 +62,13 @@ export class Graph<T extends string = string> {
     // 初始化数据历史和颜色配置
     seriesNames.forEach((name, index) => {
       // 初始化环形缓冲区（固定容量）
-      this.dataHistory.set(name, new Array(this.maxDataPoints).fill(NaN));
-      this.seriesHead.set(name, 0);
-      this.seriesCount.set(name, 0);
+      this.dataHistory.set(
+        name,
+        new RingBuffer(
+          this.maxDataPoints,
+          new Array(this.maxDataPoints).fill(NaN),
+        ),
+      );
       this.seriesMin.set(name, Infinity);
       this.seriesMax.set(name, -Infinity);
       this.seriesResetCounter.set(name, this.MIN_MAX_RESET_TIME);
@@ -88,18 +88,6 @@ export class Graph<T extends string = string> {
   public addDataPoint(data: Record<T, number>): void {
     for (const name of this.seriesNames) {
       const value = data[name] ?? 0;
-      const buffer = this.dataHistory.get(name)!;
-      const head = this.seriesHead.get(name)!;
-      const count = this.seriesCount.get(name)!;
-
-      // 即将被覆盖的值（若缓冲区已满）
-      const evicted = count >= this.maxDataPoints ? buffer[head] : NaN;
-
-      // 写入并前移写指针
-      buffer[head] = value;
-      const nextHead = (head + 1) % this.maxDataPoints;
-      this.seriesHead.set(name, nextHead);
-      this.seriesCount.set(name, Math.min(count + 1, this.maxDataPoints));
 
       // 增量更新该系列极值
       let sMin = this.seriesMin.get(name)!;
@@ -113,41 +101,7 @@ export class Graph<T extends string = string> {
       this.seriesMin.set(name, sMin);
       this.seriesMax.set(name, sMax);
 
-      // 需要重算的条件：周期性重置或极值被驱逐（针对该系列）
-      const counter = this.seriesResetCounter.get(name)! - 1;
-      this.seriesResetCounter.set(name, counter);
-      const evictedHitsExtreme =
-        !Number.isNaN(evicted) && (evicted === sMin || evicted === sMax);
-      if (counter < 0 || evictedHitsExtreme) {
-        this._recomputeSeriesMinMax(name);
-        this.seriesResetCounter.set(name, this.MIN_MAX_RESET_TIME);
-      }
-    }
-  }
-
-  private _recomputeSeriesMinMax(name: T): void {
-    const buffer = this.dataHistory.get(name)!;
-    const head = this.seriesHead.get(name)!;
-    const count = this.seriesCount.get(name)!;
-    const start = (head - count + this.maxDataPoints) % this.maxDataPoints;
-    let minV = Infinity;
-    let maxV = -Infinity;
-    for (let i = 0; i < count; i++) {
-      const idx = (start + i) % this.maxDataPoints;
-      const v = buffer[idx];
-      if (v < minV) {
-        minV = v;
-      }
-      if (v > maxV) {
-        maxV = v;
-      }
-    }
-    if (minV === Infinity) {
-      this.seriesMin.set(name, 0);
-      this.seriesMax.set(name, 1);
-    } else {
-      this.seriesMin.set(name, minV);
-      this.seriesMax.set(name, maxV);
+      this.dataHistory.get(name).push(value);
     }
   }
 
@@ -193,8 +147,6 @@ export class Graph<T extends string = string> {
     // 绘制每个数据系列的曲线
     this.seriesNames.forEach((name) => {
       const history = this.dataHistory.get(name)!;
-      const head = this.seriesHead.get(name)!;
-      const count = this.seriesCount.get(name)!;
       const color = this.seriesColors.get(name)!;
 
       api.stroke(color);
@@ -205,8 +157,6 @@ export class Graph<T extends string = string> {
       this._drawSmoothLineFixedCapacity(
         api,
         history,
-        head,
-        count,
         sMin,
         sMax,
         x,
@@ -223,9 +173,7 @@ export class Graph<T extends string = string> {
    */
   private _drawSmoothLineFixedCapacity(
     api: Painter,
-    buffer: number[],
-    head: number,
-    count: number,
+    buffer: RingBuffer<number>,
     sMin: number,
     _sMax: number,
     x: number,
@@ -240,21 +188,10 @@ export class Graph<T extends string = string> {
 
     // 固定容量横轴：总是渲染 maxDataPoints 个逻辑位置，未满时右对齐，左侧为 NaN
     const step = width / (this.maxDataPoints - 1);
-    const start = (head - count + this.maxDataPoints) % this.maxDataPoints;
-    const leftPad = this.maxDataPoints - count;
-
-    const getLogical = (pos: number): number => {
-      if (pos < leftPad) {
-        return NaN;
-      }
-      const k = pos - leftPad; // 0..count-1
-      const idx = (start + k) % this.maxDataPoints;
-      return buffer[idx];
-    };
 
     for (let i = 1; i < this.maxDataPoints; i++) {
-      const p1 = getLogical(i - 1);
-      const p2 = getLogical(i);
+      const p1 = buffer.get(i - 1);
+      const p2 = buffer.get(i);
       if (Number.isNaN(p1) || Number.isNaN(p2)) {
         continue;
       }
@@ -265,5 +202,50 @@ export class Graph<T extends string = string> {
       const y2 = y + height - ((p2 - sMin) / dataRange) * height;
       api.line(x1, y1, x2, y2);
     }
+  }
+}
+
+export class RingBuffer<T> {
+  private readonly buffer: T[];
+  private readonly capacity: number;
+  private head: number = 0; // 指向下一个要写入的位置
+  private count: number = 0; // 缓冲区中有效元素的数量
+
+  constructor(capacity: number, init?: T[]) {
+    if (capacity <= 0) {
+      throw new Error("容量必须大于0");
+    }
+    this.capacity = capacity;
+    this.buffer = init ?? new Array<T>(capacity);
+  }
+
+  public size(): number {
+    return this.count;
+  }
+
+  public isFull(): boolean {
+    return this.count === this.capacity;
+  }
+
+  public isEmpty(): boolean {
+    return this.count === 0;
+  }
+
+  public push(item: T): void {
+    this.buffer[this.head] = item;
+    this.head = (this.head + 1) % this.capacity;
+    if (this.count < this.capacity) {
+      this.count++;
+    }
+  }
+
+  public get(index: number): T | undefined {
+    if (index < 0 || index >= this.count) {
+      return undefined;
+    }
+    // 计算实际的数组索引
+    const bufferIndex =
+      (this.head - this.count + index + this.capacity) % this.capacity;
+    return this.buffer[bufferIndex];
   }
 }
