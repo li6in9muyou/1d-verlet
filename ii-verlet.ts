@@ -258,7 +258,7 @@ function drawStats(w: Suitcase, api: Painter) {
   const chartHeight = 40;
   const chartSpacing = 5;
   const totalChartHeight = chartHeight + chartSpacing;
-  const startY = w.HEIGHT + 10;
+  const startY = w.HEIGHT + 15;
 
   // draw box graphs
   for (let i = 0; i < stats.boxes.length; i++) {
@@ -399,7 +399,7 @@ export function draw() {
     const chartHeight = 40;
     const chartSpacing = 5;
     const totalChartHeight = chartHeight + chartSpacing;
-    const startY = SCASE.HEIGHT + 20; // 增加底部 margin，隔开边界与第一个图表
+    const startY = SCASE.HEIGHT + 15; // 增加底部 margin，隔开边界与第一个图表
     // 能量图表在所有 box 图表之后
     const energyChartY = startY + SCASE.boxes.length * totalChartHeight;
     // 帧时间图表在能量图表之后
