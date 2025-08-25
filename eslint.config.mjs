@@ -8,6 +8,7 @@ export default tseslint.config(
   {
     rules: {
       "sort-imports": "error",
+      curly: ["error", "all"],
     },
     languageOptions: {
       globals: {
