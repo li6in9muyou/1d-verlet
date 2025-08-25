@@ -184,9 +184,9 @@ export class Graph<T extends string = string> {
       }
 
       const x1 = x + (i - 1) * step;
-      const y1 = y + height - ((p1 - yMin) / dataRange) * height;
+      const y1 = y + height - ((yMax - p1) / dataRange) * height;
       const x2 = x + i * step;
-      const y2 = y + height - ((p2 - yMin) / dataRange) * height;
+      const y2 = y + height - ((yMax - p2) / dataRange) * height;
       api.line(x1, y1, x2, y2);
     }
   }
