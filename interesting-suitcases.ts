@@ -1,5 +1,5 @@
+import { MAX_Y_ANCHOR, MIN_Y_ANCHOR } from "./springs";
 import { DynamicItem } from "./types";
-import { MAX_Y_ANCHOR } from "./springs";
 import { SuitcaseBuilder } from "./suitcase-builder";
 import { yv } from "./ii-utils";
 
@@ -85,6 +85,23 @@ export const tennisBallFalling9metersOnTheMoon = new SuitcaseBuilder()
   .gravityAcc((10 * 1e-2) / 6)
   .dragCoeff(0)
   .dynamics([{ box: yv(6, 0, 0), mass: 0.057 }])
+  .build();
+
+export const springOscillator = new SuitcaseBuilder()
+  .description("spring oscillator")
+  .size(100, 400)
+  .gravityAcc(0.1001344)
+  .dragCoeff(0)
+  .dynamics([{ box: yv(200, 0, 0), mass: 200 }])
+  .springs([{ one: 0, two: MIN_Y_ANCHOR, k: 1, restingLen: 200 }])
+  .build();
+
+export const graviOscillator = new SuitcaseBuilder()
+  .description("gravioscillator")
+  .size(100, 400)
+  .gravityAcc(0.1001344)
+  .dragCoeff(0)
+  .dynamics([{ box: yv(6, 0, 0) }])
   .build();
 
 export const tennisBallFalling9meters = new SuitcaseBuilder()
@@ -295,6 +312,8 @@ export const realNewtonsCradle = new SuitcaseBuilder()
   .build();
 
 const all = [
+  graviOscillator,
+  springOscillator,
   sanityCheck,
   sanityCheckMoving,
   crash,
