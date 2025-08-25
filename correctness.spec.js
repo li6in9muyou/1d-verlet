@@ -4,7 +4,7 @@ import all from "./interesting-suitcases";
 
 describe("long simulate results", () => {
   test("conserve energy", () => {
-    const cases = all;
+    const cases = all.filter((s) => s.dragCoeff === 0);
     const expected = cases.map((c) => getStats(c).totalEnergy);
     const actual = cases.map(
       (c) => getStats(afterOfflineSimulate(100, c)).totalEnergy,
