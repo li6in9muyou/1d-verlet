@@ -69,7 +69,7 @@ export type CtrlEvents =
   | { name: "unpark" }
   | { name: "prev-frame" };
 
-export type ControlState = {
+export type ControlState<S> = {
   ctrl: {
     events: CtrlEvents[];
     playing: boolean;
@@ -77,7 +77,7 @@ export type ControlState = {
     history: {
       get MAX_STATES(): number;
       cursor: number;
-      states: (DynamicsStuff & RenderStuff & SimStuff)[];
+      states: S[];
     };
   };
 };

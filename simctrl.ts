@@ -1,13 +1,11 @@
+import { ControlState, Suitcase } from "./types";
 import { cloneDeep, omit } from "lodash";
-import { Suitcase } from "./types";
 
-export function afterHandlingEvents(w: Suitcase): Suitcase {
+export function afterHandlingEvents<C extends ControlState<C>>(w: C): C {
   for (const e of w.ctrl.events) {
     switch (e.name) {
-      case "park": {
-      }
-      case "unpark": {
-      }
+      case "park":
+      case "unpark":
       case "toggle": {
         const ww = {
           ...w,
