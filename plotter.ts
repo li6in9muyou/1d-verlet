@@ -2,6 +2,7 @@
 // 使用泛型 T 使得 colors 的键必须是传入的系列名称之一
 
 import { Painter } from "./types";
+import { namedCssColors } from "./named-css-colors";
 
 // Partial<> 表示 colors 对象以及其内部的属性都是可选的
 interface GraphOptions<T extends string> {
@@ -43,15 +44,6 @@ export class Graph<T extends string = string> {
     this.dataHistory = new Map();
     this.seriesColors = new Map<T, string>();
 
-    const defaultColors = [
-      "#00ffff",
-      "#ff00ff",
-      "#ffff00",
-      "#00ff00",
-      "#ff0000",
-      "#66ccff",
-    ];
-
     // 初始化数据历史和颜色配置
     seriesNames.forEach((name, index) => {
       // 初始化环形缓冲区（固定容量）
@@ -67,7 +59,7 @@ export class Graph<T extends string = string> {
       // 结合用户提供的颜色和默认颜色
       const userColor = options.colors?.[name];
       const finalColor =
-        userColor || defaultColors[index % defaultColors.length];
+        userColor || namedCssColors[index % namedCssColors.length];
       this.seriesColors.set(name, finalColor);
     });
   }
