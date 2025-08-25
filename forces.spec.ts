@@ -1,12 +1,12 @@
-import { describe, expect, test } from "vitest";
 import {
-  afterSpringForces,
-  afterGravity,
-  afterAirDrag,
-  getSpringEndpointY,
-  MIN_Y_ANCHOR,
   MAX_Y_ANCHOR,
+  MIN_Y_ANCHOR,
+  afterAirDrag,
+  afterGravity,
+  afterSpringForces,
+  getSpringEndpointY,
 } from "./forces";
+import { describe, expect, test } from "vitest";
 import { yv } from "./ii-utils";
 
 describe("forces", () => {
