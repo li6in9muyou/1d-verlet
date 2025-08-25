@@ -159,13 +159,14 @@ export class Graph<T extends string = string> {
       return;
     }
 
-    const step = width / (this.maxDataPoints - 1);
     let dataRange = yMax - yMin;
     if (Math.abs(dataRange) < 1e-3) {
       dataRange = 1;
     }
 
-    const leftPad = !buffer.isFull() ? this.maxDataPoints - buffer.size() : 0;
+    const step = width / (this.maxDataPoints - 1);
+    const leftPad =
+      step * (!buffer.isFull() ? this.maxDataPoints - buffer.size() : 0);
 
     for (let i = 1; i < this.maxDataPoints; i++) {
       const p1 = buffer.get(i - 1);

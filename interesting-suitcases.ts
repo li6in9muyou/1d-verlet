@@ -128,9 +128,15 @@ export const tennisBallFalling900metersWithoutAir = new SuitcaseBuilder()
   .dynamics([{ box: yv(6, 0, 0), mass: 0.057 }])
   .build();
 
+export const bouncing3 = new SuitcaseBuilder()
+  .description("short2")
+  .size(400, 100)
+  .dynamics(generateBouncingDynamics(100, 6))
+  .build();
+
 export const bouncing2 = new SuitcaseBuilder()
   .description("short")
-  .size(300, 100)
+  .size(100, 100)
   .dynamics(generateBouncingDynamics(100, 6))
   .build();
 
@@ -328,6 +334,7 @@ const all = [
   bug2,
   bug1,
   bouncing2,
+  bouncing3,
   tennisBallFalling9metersOnTheMoon,
   tennisBallFalling900metersWithoutAir,
   tennisBallFalling900meters,
