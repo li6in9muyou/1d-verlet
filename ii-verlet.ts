@@ -361,6 +361,15 @@ function makeApi(
   };
 }
 
+let overlay: null | {
+  graph: import("./types").StatsStuff["frameTimeGraph"]; // Graph<any>
+  // 由于没有全局鼠标事件系统，这里只记录需要绘制的图表及其布局信息
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+} = null;
+
 export function draw() {
   textFont("monospace");
   strokeCap(SQUARE);
@@ -401,13 +410,16 @@ export function draw() {
     const frameTimeChartY = energyChartY + totalChartHeight;
 
     // 3. 绘制帧时间图表
-    SCASE.frameTimeGraph.draw(
-      API,
-      0,
-      frameTimeChartY,
-      SCASE.WIDTH,
-      chartHeight,
-    );
+    SCASE.frameTimeGraph.draw(API, 0, frameTimeChartY, SCASE.WIDTH, chartHeight);
+
+    // 如果存在放大图表叠加层，绘制之（占 80% 宽高，居中）
+    if (overlay) {
+      const ow = windowWidth * 0.8;
+      const oh = windowHeight * 0.8;
+      const ox = (windowWidth - ow) / 2;
+      const oy = (windowHeight - oh) / 2;
+      overlay.graph.drawOverlay(API, ox, oy, ow, oh, mouseX);
+    }
 
     showing[i] = SCASE;
   }
@@ -419,6 +431,46 @@ export function setup() {
 
 export function emitEvent(ev: Suitcase["ctrl"]["events"][number]) {
   getShowingSuitcases().forEach((SCASE) => SCASE.ctrl.events.push(ev));
+}
+
+// 简单的命中测试：若鼠标位于某个小图表区域，则开启 overlay；再次点击或离开则关闭
+// 注：这里直接挂在全局窗口事件，由宿主页面调用
+// window.mouseClicked/ window.mouseMoved 可在 index.html 中绑定到以下函数
+export function onMouseClicked() {
+  if (overlay) {
+    overlay = null;
+    return;
+  }
+  // 简化：只对帧时间图表区域做示例性的命中，其他小图表可按同理添加
+  const chartHeight = 40;
+  const chartSpacing = 5;
+  const showing = getShowingSuitcases();
+  const layouts = computeLayout(showing);
+  for (let i = 0; i < layouts.length; i++) {
+    const SCASE = layouts[i].suitcase;
+    const totalChartHeight = chartHeight + chartSpacing;
+    const startY = SCASE.HEIGHT + 20;
+    const energyChartY = startY + SCASE.boxes.length * totalChartHeight;
+    const frameTimeChartY = energyChartY + totalChartHeight;
+    const x0 = layouts[i].transform(0, 0)[0];
+    const y0 = layouts[i].transform(0, frameTimeChartY)[1];
+    const x1 = layouts[i].transform(SCASE.WIDTH, 0)[0];
+    const y1 = layouts[i].transform(0, frameTimeChartY + chartHeight)[1];
+    if (mouseX >= x0 && mouseX <= x1 && mouseY >= y0 && mouseY <= y1) {
+      overlay = {
+        graph: SCASE.frameTimeGraph as any,
+        x: x0,
+        y: y0,
+        w: x1 - x0,
+        h: y1 - y0,
+      };
+      break;
+    }
+  }
+}
+
+export function onMouseMoved() {
+  // 若鼠标移出窗口或用户不在 overlay 区域，保持开启直到点击
 }
 
 function afterSimulate(SCASE: Suitcase) {

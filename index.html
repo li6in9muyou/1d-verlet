@@ -63,12 +63,15 @@
     </section>
     <script src="ii-verlet.ts" type="module"></script>
     <script type="module">
-      import { setup, draw, emitEvent } from "./ii-verlet.ts";
+      import { setup, draw, emitEvent, onMouseClicked, onMouseMoved } from "./ii-verlet.ts";
       import suitcases from "./interesting-suitcases.ts";
 
       window.suitcases = suitcases;
       window.setup = setup;
       window.draw = draw;
+
+      window.mouseClicked = () => { onMouseClicked?.(); };
+      window.mouseMoved = () => { onMouseMoved?.(); };
 
       document.getElementById("prev").addEventListener("click", () => {
         emitEvent({ name: "prev-frame" });

@@ -211,6 +211,96 @@ export class Graph<T extends string = string> {
   }
 
   /**
+   * 绘制放大版图表，并在顶部/侧边显示每条曲线的 min/max 与当前值
+   * cursorAbsX: 传入全局坐标系下的鼠标 x，用于计算当前值位置（可选）
+   */
+  public drawOverlay(
+    api: Painter,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    cursorAbsX?: number,
+  ): void {
+    // 边框
+    api.stroke("#333");
+    api.strokeWeight(1);
+    api.line(x, y, x + width, y);
+    api.line(x + width, y, x + width, y + height);
+    api.line(x + width, y + height, x, y + height);
+    api.line(x, y + height, x, y);
+
+    // 标题
+    api.fill("white");
+    api.noStroke();
+    api.textSize(12);
+    api.text(this.title, x, y + height);
+
+    // 计算当前逻辑位置
+    const step = this.maxDataPoints > 1 ? width / (this.maxDataPoints - 1) : width;
+    let logicalPos: number | undefined;
+    if (typeof cursorAbsX === "number") {
+      logicalPos = Math.round((cursorAbsX - x) / step);
+      if (logicalPos < 0) logicalPos = 0;
+      if (logicalPos > this.maxDataPoints - 1) logicalPos = this.maxDataPoints - 1;
+    }
+
+    // 绘制各曲线与标注
+    let legendY = y + 12;
+    this.seriesNames.forEach((name) => {
+      const history = this.dataHistory.get(name)!;
+      const head = this.seriesHead.get(name)!;
+      const count = this.seriesCount.get(name)!;
+      const color = this.seriesColors.get(name)!;
+      const sMin = this.seriesMin.get(name)!;
+      const sMax = this.seriesMax.get(name)!;
+
+      api.stroke(color);
+      api.strokeWeight(1);
+      api.noFill();
+      this._drawSmoothLineFixedCapacity(
+        api,
+        history,
+        head,
+        count,
+        sMin,
+        sMax,
+        x,
+        y,
+        width,
+        height,
+        sMax - sMin || 1,
+      );
+
+      // 标注（min / max / current）
+      api.noStroke();
+      api.fill(color);
+      api.textSize(10);
+      let currentText = "";
+      if (logicalPos !== undefined) {
+        const v = this._getLogicalValue(name, logicalPos);
+        if (!Number.isNaN(v)) {
+          currentText = ` cur=${v.toFixed(2)}`;
+        }
+      }
+      api.text(
+        `${String(name)}: min=${sMin.toFixed(2)} max=${sMax.toFixed(2)}${currentText}`,
+        x + 4,
+        legendY,
+      );
+      legendY += 12;
+    });
+
+    // 光标线
+    if (logicalPos !== undefined) {
+      const cx = x + logicalPos * step;
+      api.stroke("#777");
+      api.strokeWeight(1);
+      api.line(cx, y, cx, y + height);
+    }
+  }
+
+  /**
    * 绘制单条曲线的私有辅助方法。
    */
   private _drawSmoothLineFixedCapacity(
@@ -251,5 +341,17 @@ export class Graph<T extends string = string> {
       const y2 = y + height - ((p2 - sMin) / dataRange) * height;
       api.line(x1, y1, x2, y2);
     }
+  }
+
+  private _getLogicalValue(name: T, pos: number): number {
+    const buffer = this.dataHistory.get(name)!;
+    const head = this.seriesHead.get(name)!;
+    const count = this.seriesCount.get(name)!;
+    const start = (head - count + this.maxDataPoints) % this.maxDataPoints;
+    const leftPad = this.maxDataPoints - count;
+    if (pos < leftPad) return NaN;
+    const k = pos - leftPad;
+    const idx = (start + k) % this.maxDataPoints;
+    return buffer[idx];
   }
 }
