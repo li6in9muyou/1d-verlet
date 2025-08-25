@@ -17,16 +17,18 @@ export class Graph<T extends string = string> {
   private readonly seriesNames: readonly T[];
   private readonly maxDataPoints: number;
 
-  // 数据历史记录，现在是类的私有成员
+  // 固定容量环形缓冲区：每个系列一个缓冲区、写入指针与有效长度
   private dataHistory: Map<T, number[]>;
+  private seriesHead: Map<T, number>;
+  private seriesCount: Map<T, number>;
   // 系列颜色，结合了默认值和用户自定义值
   private seriesColors: Map<T, string>;
 
-  // 用于追踪Y轴的全局历史范围
-  private historicalMin: number = Infinity;
-  private historicalMax: number = -Infinity;
+  // 用于追踪每条曲线的历史范围（独立 Y 轴域）
+  private seriesMin: Map<T, number>;
+  private seriesMax: Map<T, number>;
   private MIN_MAX_RESET_TIME: number;
-  private minMaxResetCounter: number;
+  private seriesResetCounter: Map<T, number>;
 
   /**
    * 构造一个新的图表实例。
@@ -43,10 +45,14 @@ export class Graph<T extends string = string> {
     this.seriesNames = seriesNames;
     this.maxDataPoints = options.maxDataPoints ?? 100;
     this.MIN_MAX_RESET_TIME = 3 * this.maxDataPoints;
-    this.minMaxResetCounter = this.MIN_MAX_RESET_TIME;
 
     this.dataHistory = new Map<T, number[]>();
+    this.seriesHead = new Map<T, number>();
+    this.seriesCount = new Map<T, number>();
     this.seriesColors = new Map<T, string>();
+    this.seriesMin = new Map<T, number>();
+    this.seriesMax = new Map<T, number>();
+    this.seriesResetCounter = new Map<T, number>();
 
     const defaultColors = [
       "#00ffff",
@@ -59,8 +65,13 @@ export class Graph<T extends string = string> {
 
     // 初始化数据历史和颜色配置
     seriesNames.forEach((name, index) => {
-      // 初始化滑动窗口数据
+      // 初始化环形缓冲区（固定容量）
       this.dataHistory.set(name, new Array(this.maxDataPoints).fill(NaN));
+      this.seriesHead.set(name, 0);
+      this.seriesCount.set(name, 0);
+      this.seriesMin.set(name, Infinity);
+      this.seriesMax.set(name, -Infinity);
+      this.seriesResetCounter.set(name, this.MIN_MAX_RESET_TIME);
 
       // 结合用户提供的颜色和默认颜色
       const userColor = options.colors?.[name];
@@ -77,28 +88,58 @@ export class Graph<T extends string = string> {
   public addDataPoint(data: Record<T, number>): void {
     for (const name of this.seriesNames) {
       const value = data[name] ?? 0;
-      const history = this.dataHistory.get(name)!;
+      const buffer = this.dataHistory.get(name)!;
+      const head = this.seriesHead.get(name)!;
+      const count = this.seriesCount.get(name)!;
 
-      // 1. 更新滑动窗口数据
-      history.push(value);
-      if (history.length > this.maxDataPoints) {
-        history.shift();
-      }
+      // 即将被覆盖的值（若缓冲区已满）
+      const evicted = count >= this.maxDataPoints ? buffer[head] : NaN;
 
-      this.minMaxResetCounter--;
-      if (this.minMaxResetCounter < 0) {
-        this.historicalMax = Math.max(...history);
-        this.historicalMin = Math.min(...history);
-        this.minMaxResetCounter = this.MIN_MAX_RESET_TIME;
-      }
+      // 写入并前移写指针
+      buffer[head] = value;
+      const nextHead = (head + 1) % this.maxDataPoints;
+      this.seriesHead.set(name, nextHead);
+      this.seriesCount.set(name, Math.min(count + 1, this.maxDataPoints));
 
-      // 2. 更新历史极值
-      if (value < this.historicalMin) {
-        this.historicalMin = value;
+      // 增量更新该系列极值
+      let sMin = this.seriesMin.get(name)!;
+      let sMax = this.seriesMax.get(name)!;
+      if (value < sMin) sMin = value;
+      if (value > sMax) sMax = value;
+      this.seriesMin.set(name, sMin);
+      this.seriesMax.set(name, sMax);
+
+      // 需要重算的条件：周期性重置或极值被驱逐（针对该系列）
+      const counter = this.seriesResetCounter.get(name)! - 1;
+      this.seriesResetCounter.set(name, counter);
+      const evictedHitsExtreme =
+        !Number.isNaN(evicted) && (evicted === sMin || evicted === sMax);
+      if (counter < 0 || evictedHitsExtreme) {
+        this._recomputeSeriesMinMax(name);
+        this.seriesResetCounter.set(name, this.MIN_MAX_RESET_TIME);
       }
-      if (value > this.historicalMax) {
-        this.historicalMax = value;
-      }
+    }
+  }
+
+  private _recomputeSeriesMinMax(name: T): void {
+    const buffer = this.dataHistory.get(name)!;
+    const head = this.seriesHead.get(name)!;
+    const count = this.seriesCount.get(name)!;
+    const start = (head - count + this.maxDataPoints) % this.maxDataPoints;
+    let minV = Infinity;
+    let maxV = -Infinity;
+    for (let i = 0; i < count; i++) {
+      const idx = (start + i) % this.maxDataPoints;
+      const v = buffer[idx];
+      if (v < minV) minV = v;
+      if (v > maxV) maxV = v;
+    }
+    if (minV === Infinity) {
+      this.seriesMin.set(name, 0);
+      this.seriesMax.set(name, 1);
+    } else {
+      this.seriesMin.set(name, minV);
+      this.seriesMax.set(name, maxV);
     }
   }
 
@@ -128,56 +169,86 @@ export class Graph<T extends string = string> {
     api.fill("white");
     api.noStroke();
     api.textSize(10);
-    api.text(this.historicalMax.toFixed(2), x, y + 5 + 2);
-    api.text(`${this.historicalMin.toFixed(2)} ${this.title}`, x, y + height);
+    if (this.seriesNames.length === 1) {
+      const name = this.seriesNames[0];
+      const sMin = this.seriesMin.get(name)!;
+      const sMax = this.seriesMax.get(name)!;
+      api.text(sMax.toFixed(2), x, y + 5 + 2);
+      api.text(`${sMin.toFixed(2)} ${this.title}`, x, y + height);
+    } else {
+      // 多条曲线时仅显示标题
+      api.text(this.title, x, y + height);
+    }
 
-    // 根据历史极值计算Y轴的范围和缩放比例
-    // 添加一个小的 "epsilon" 来避免当所有值都相同时除以零
-    const dataRange = this.historicalMax - this.historicalMin || 1;
+    // 每条曲线使用自身的极值范围，故不再计算全局 dataRange
 
     // 绘制每个数据系列的曲线
     this.seriesNames.forEach((name) => {
       const history = this.dataHistory.get(name)!;
+      const head = this.seriesHead.get(name)!;
+      const count = this.seriesCount.get(name)!;
       const color = this.seriesColors.get(name)!;
 
       api.stroke(color);
       api.strokeWeight(1);
       api.noFill();
-      this._drawSmoothLine(api, history, x, y, width, height, dataRange);
+      const sMin = this.seriesMin.get(name)!;
+      const sMax = this.seriesMax.get(name)!;
+      this._drawSmoothLineFixedCapacity(
+        api,
+        history,
+        head,
+        count,
+        sMin,
+        sMax,
+        x,
+        y,
+        width,
+        height,
+        sMax - sMin || 1,
+      );
     });
   }
 
   /**
    * 绘制单条曲线的私有辅助方法。
    */
-  private _drawSmoothLine(
+  private _drawSmoothLineFixedCapacity(
     api: Painter,
-    points: number[],
+    buffer: number[],
+    head: number,
+    count: number,
+    sMin: number,
+    _sMax: number,
     x: number,
     y: number,
     width: number,
     height: number,
     dataRange: number,
   ) {
-    if (points.length < 2) return;
+    if (this.maxDataPoints < 2) return;
 
-    const step = width / (points.length - 1);
+    // 固定容量横轴：总是渲染 maxDataPoints 个逻辑位置，未满时右对齐，左侧为 NaN
+    const step = width / (this.maxDataPoints - 1);
+    const start = (head - count + this.maxDataPoints) % this.maxDataPoints;
+    const leftPad = this.maxDataPoints - count;
 
-    for (let i = 1; i < points.length; i++) {
-      const p1 = points[i - 1];
-      const p2 = points[i];
+    const getLogical = (pos: number): number => {
+      if (pos < leftPad) return NaN;
+      const k = pos - leftPad; // 0..count-1
+      const idx = (start + k) % this.maxDataPoints;
+      return buffer[idx];
+    };
 
-      if (Number.isNaN(p1) || Number.isNaN(p2)) {
-        continue;
-      }
+    for (let i = 1; i < this.maxDataPoints; i++) {
+      const p1 = getLogical(i - 1);
+      const p2 = getLogical(i);
+      if (Number.isNaN(p1) || Number.isNaN(p2)) continue;
 
       const x1 = x + (i - 1) * step;
-      // 根据全局历史范围来计算y坐标
-      const y1 = y + height - ((p1 - this.historicalMin) / dataRange) * height;
-
+      const y1 = y + height - ((p1 - sMin) / dataRange) * height;
       const x2 = x + i * step;
-      const y2 = y + height - ((p2 - this.historicalMin) / dataRange) * height;
-
+      const y2 = y + height - ((p2 - sMin) / dataRange) * height;
       api.line(x1, y1, x2, y2);
     }
   }

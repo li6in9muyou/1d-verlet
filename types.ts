@@ -1,4 +1,4 @@
-import { Graph } from "./plotter";
+import type { Graph } from "./plotter";
 
 export type DynamicItem = {
   box: Dynamics;
@@ -53,7 +53,9 @@ export type Spring = {
 };
 
 export type StatsStuff = {
-  frameTimeGraph: Graph;
+  frameTimeGraph: Graph<"ft">;
+  boxGraphs: Record<string, Graph<"vel" | "acc">>;
+  energyGraph: Graph<"energy" | "kin" | "elastic">;
 };
 
 export type SimStuff = {

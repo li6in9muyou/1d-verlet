@@ -39,6 +39,8 @@ export class SuitcaseBuilder {
     names: [],
     masses: [],
     frameTimeGraph: null,
+    boxGraphs: {},
+    energyGraph: null,
   } as Suitcase;
 
   public size(w: number, h: number): SuitcaseBuilder {
@@ -123,6 +125,27 @@ export class SuitcaseBuilder {
     this.scase.frameTimeGraph = new Graph("frame time", ["ft"], {
       colors: { ft: "#aa7" },
     });
+
+    // init graph per box
+    this.scase.boxGraphs = {} as Record<string, Graph<"vel" | "acc">>;
+    for (const name of this.scase.names) {
+      this.scase.boxGraphs[name] = new Graph<"vel" | "acc">(
+        `${name}`,
+        ["vel", "acc"],
+        {
+          colors: { vel: "#0f0", acc: "#f00" },
+        },
+      );
+    }
+
+    // init energy graph
+    this.scase.energyGraph = new Graph<"energy" | "kin" | "elastic">(
+      "energy",
+      ["energy", "kin", "elastic"],
+      {
+        colors: { energy: "#ff0", kin: "#0ff", elastic: "#f0f" },
+      },
+    );
 
     return cloneDeep(this.scase);
   }

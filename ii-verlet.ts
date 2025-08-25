@@ -6,7 +6,6 @@ import {
 } from "./springs";
 import { afterDrawing, afterHandlingEvents } from "./simctrl";
 import { getV, yv } from "./ii-utils";
-import { Graph } from "./plotter";
 import allSuitcases from "./interesting-suitcases";
 import { cloneDeep } from "lodash";
 import { leftToRight } from "./layout";
@@ -231,245 +230,46 @@ export function getStats(w: Suitcase) {
   return stats;
 }
 
-// 数据历史记录系统
-const dataHistory = new Map<
-  string,
-  {
-    velocities: number[];
-    accelerations: number[];
-    energies: number[];
-    kineticEnergies: number[];
-    elasticEnergies: number[];
-    maxDataPoints: number;
-  }
->();
-
-function getOrCreateHistory(
-  suitcaseName: string,
-  boxName: string,
-  maxPoints: number = 100,
-) {
-  const key = `${suitcaseName}-${boxName}`;
-  if (!dataHistory.has(key)) {
-    // 初始化数据历史，填充0值
-    const initialData = new Array(maxPoints).fill(0);
-    dataHistory.set(key, {
-      velocities: [...initialData],
-      accelerations: [...initialData],
-      energies: [...initialData],
-      kineticEnergies: [...initialData],
-      elasticEnergies: [...initialData],
-      maxDataPoints: maxPoints,
-    });
-  }
-  return dataHistory.get(key)!;
-}
-
-function addDataPoint(
-  suitcaseName: string,
-  boxName: string,
-  velocity: number,
-  acceleration: number,
-  energy: number,
-  kineticEnergy: number,
-  elasticEnergy: number,
-) {
-  const history = getOrCreateHistory(suitcaseName, boxName);
-
-  history.velocities.push(velocity);
-  history.accelerations.push(acceleration);
-  history.energies.push(energy);
-  history.kineticEnergies.push(kineticEnergy);
-  history.elasticEnergies.push(elasticEnergy);
-
-  // 保持数据点数量在限制内
-  if (history.velocities.length > history.maxDataPoints) {
-    history.velocities.shift();
-    history.accelerations.shift();
-    history.energies.shift();
-    history.kineticEnergies.shift();
-    history.elasticEnergies.shift();
-  }
-}
-
-function drawSmoothLine(
-  api: Painter,
-  points: number[],
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  color: string,
-  yOffset: number = 0,
-) {
-  if (points.length < 2) return;
-
-  api.stroke(color);
-  api.strokeWeight(1);
-
-  const step = width / (points.length - 1);
-  const maxValue = Math.max(...points.map(Math.abs));
-  const scale = maxValue > 0 ? (height * 0.3) / maxValue : 1;
-
-  // 使用 line 方法绘制平滑曲线，Y轴正方向指向屏幕下方
-  for (let i = 1; i < points.length; i++) {
-    const x1 = x + (i - 1) * step;
-    const y1 = y + height / 2 + points[i - 1] * scale + yOffset;
-    const x2 = x + i * step;
-    const y2 = y + height / 2 + points[i] * scale + yOffset;
-    api.line(x1, y1, x2, y2);
-  }
-}
-
-function drawBoxChart(
-  api: Painter,
-  suitcaseName: string,
-  boxName: string,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  boxColor: string,
-) {
-  // 绘制边框 - 使用 line 方法绘制四条边，无背景
-  api.stroke("#333");
-  api.strokeWeight(1);
-  api.line(x, y, x + width, y); // 上边
-  api.line(x + width, y, x + width, y + height); // 右边
-  api.line(x + width, y + height, x, y + height); // 下边
-  api.line(x, y + height, x, y); // 左边
-
-  // 绘制标签
-  api.fill(boxColor);
-  api.text(boxName, x + 5, y + 12);
-
-  // 绘制速度和加速度曲线
-  const history = getOrCreateHistory(suitcaseName, boxName);
-  if (history.velocities.length > 0) {
-    drawSmoothLine(api, history.velocities, x, y, width, height, "#0f0"); // 绿色表示速度
-    drawSmoothLine(api, history.accelerations, x, y, width, height, "#f00"); // 红色表示加速度
-  }
-}
-
-function drawEnergyChart(
-  api: Painter,
-  suitcaseName: string,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-) {
-  const history = getOrCreateHistory(suitcaseName, "energy");
-
-  // 绘制边框 - 使用 line 方法绘制四条边，无背景
-  api.stroke("#333");
-  api.strokeWeight(1);
-  api.line(x, y, x + width, y); // 上边
-  api.line(x + width, y, x + width, y + height); // 右边
-  api.line(x + width, y + height, x, y + height); // 下边
-  api.line(x, y + height, x, y); // 左边
-
-  // 绘制标签
-  api.fill("white");
-  api.noStroke();
-  api.textSize(10);
-  api.text("Energy", x + 5, y + 12);
-
-  // 绘制能量曲线，上下错开避免重合
-  if (history.energies.length > 0) {
-    drawSmoothLine(
-      api,
-      history.energies,
-      x,
-      y,
-      width,
-      height,
-      "#ffff00",
-      -height * 0.1,
-    ); // 黄色表示总能量，向上偏移
-    drawSmoothLine(
-      api,
-      history.kineticEnergies,
-      x,
-      y,
-      width,
-      height,
-      "#00ffff",
-      height * 0.1,
-    ); // 青色表示动能，向下偏移
-    drawSmoothLine(
-      api,
-      history.elasticEnergies,
-      x,
-      y,
-      width,
-      height,
-      "#ff00ff",
-      0,
-    ); // 洋红色表示弹性势能，不偏移
-  }
-}
+// remove legacy chart history and draw helpers; replaced by Graph instances
 
 function drawStats(w: Suitcase, api: Painter) {
   const stats = getStats(w);
 
-  // 更新数据历史
+  // update per-box graphs
+  stats.boxes.sort((i, j) => i.y - j.y);
   for (const boxStat of stats.boxes) {
-    addDataPoint(
-      w.name ?? "unknown",
-      boxStat.name,
-      boxStat.velocity,
-      boxStat.acc,
-      0,
-      boxStat.kineticEnergy,
-      0,
-    );
+    const g = w.boxGraphs[boxStat.name];
+    if (g) {
+      g.addDataPoint({ vel: boxStat.velocity, acc: boxStat.acc });
+    }
   }
 
-  // 添加总能量数据
-  addDataPoint(
-    w.name ?? "unknown",
-    "energy",
-    0,
-    0,
-    stats.totalEnergy,
-    stats.totalKineticEnergy,
-    stats.totalElasticEnergy,
-  );
+  // update energy graph
+  w.energyGraph.addDataPoint({
+    energy: stats.totalEnergy,
+    kin: stats.totalKineticEnergy,
+    elastic: stats.totalElasticEnergy,
+  });
 
-  // 计算图表布局
+  // layout
   const chartHeight = 40;
   const chartSpacing = 5;
   const totalChartHeight = chartHeight + chartSpacing;
   const startY = w.HEIGHT + 10;
 
-  // 绘制每个 box 的图表
-  stats.boxes.sort((i, j) => i.y - j.y);
+  // draw box graphs
   for (let i = 0; i < stats.boxes.length; i++) {
     const boxStat = stats.boxes[i];
     const chartY = startY + i * totalChartHeight;
-    drawBoxChart(
-      api,
-      w.name ?? "unknown",
-      boxStat.name,
-      0,
-      chartY,
-      w.WIDTH,
-      chartHeight,
-      boxStat.color,
-    );
+    const g = w.boxGraphs[boxStat.name];
+    if (g) {
+      g.draw(api, 0, chartY, w.WIDTH, chartHeight);
+    }
   }
 
-  // 绘制全局能量图表
+  // draw energy graph after boxes
   const energyChartY = startY + stats.boxes.length * totalChartHeight;
-  drawEnergyChart(
-    api,
-    w.name ?? "unknown",
-    0,
-    energyChartY,
-    w.WIDTH,
-    chartHeight,
-  );
+  w.energyGraph.draw(api, 0, energyChartY, w.WIDTH, chartHeight);
 }
 
 let lastText = "";
@@ -594,7 +394,7 @@ export function draw() {
     const chartHeight = 40;
     const chartSpacing = 5;
     const totalChartHeight = chartHeight + chartSpacing;
-    const startY = SCASE.HEIGHT + 10;
+    const startY = SCASE.HEIGHT + 20; // 增加底部 margin，隔开边界与第一个图表
     // 能量图表在所有 box 图表之后
     const energyChartY = startY + SCASE.boxes.length * totalChartHeight;
     // 帧时间图表在能量图表之后
