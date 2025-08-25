@@ -241,10 +241,10 @@ function drawStats(w: Suitcase, api: Painter) {
   // update per-box graphs
   stats.boxes.sort((i, j) => i.y - j.y);
   for (const boxStat of stats.boxes) {
-    const g = w.boxGraphs[boxStat.name];
-    if (g) {
-      g.addDataPoint({ vel: boxStat.velocity, acc: boxStat.acc });
-    }
+    w.boxGraphs[boxStat.name]?.addDataPoint({
+      vel: boxStat.velocity,
+      acc: boxStat.acc,
+    });
   }
 
   // update energy graph
