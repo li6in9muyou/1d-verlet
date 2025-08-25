@@ -18,15 +18,12 @@ export class Graph<T extends string = string> {
   private readonly maxDataPoints: number;
 
   // 固定容量环形缓冲区：每个系列一个缓冲区、写入指针与有效长度
-  private dataHistory: Map<T, RingBuffer<number>>;
+  private dataHistory: Map<
+    T,
+    { min: number; max: number; data: RingBuffer<number> }
+  >;
   // 系列颜色，结合了默认值和用户自定义值
   private seriesColors: Map<T, string>;
-
-  // 用于追踪每条曲线的历史范围（独立 Y 轴域）
-  private seriesMin: Map<T, number>;
-  private seriesMax: Map<T, number>;
-  private MIN_MAX_RESET_TIME: number;
-  private seriesResetCounter: Map<T, number>;
 
   /**
    * 构造一个新的图表实例。
@@ -42,13 +39,9 @@ export class Graph<T extends string = string> {
     this.title = title;
     this.seriesNames = seriesNames;
     this.maxDataPoints = options.maxDataPoints ?? 100;
-    this.MIN_MAX_RESET_TIME = 3 * this.maxDataPoints;
 
     this.dataHistory = new Map();
     this.seriesColors = new Map<T, string>();
-    this.seriesMin = new Map<T, number>();
-    this.seriesMax = new Map<T, number>();
-    this.seriesResetCounter = new Map<T, number>();
 
     const defaultColors = [
       "#00ffff",
@@ -62,16 +55,14 @@ export class Graph<T extends string = string> {
     // 初始化数据历史和颜色配置
     seriesNames.forEach((name, index) => {
       // 初始化环形缓冲区（固定容量）
-      this.dataHistory.set(
-        name,
-        new RingBuffer(
+      this.dataHistory.set(name, {
+        min: Infinity,
+        max: -Infinity,
+        data: new RingBuffer(
           this.maxDataPoints,
           new Array(this.maxDataPoints).fill(NaN),
         ),
-      );
-      this.seriesMin.set(name, Infinity);
-      this.seriesMax.set(name, -Infinity);
-      this.seriesResetCounter.set(name, this.MIN_MAX_RESET_TIME);
+      });
 
       // 结合用户提供的颜色和默认颜色
       const userColor = options.colors?.[name];
@@ -87,21 +78,21 @@ export class Graph<T extends string = string> {
    */
   public addDataPoint(data: Record<T, number>): void {
     for (const name of this.seriesNames) {
-      const value = data[name] ?? 0;
-
-      // 增量更新该系列极值
-      let sMin = this.seriesMin.get(name)!;
-      let sMax = this.seriesMax.get(name)!;
-      if (value < sMin) {
-        sMin = value;
+      const value = data[name];
+      if (value === undefined) {
+        continue;
       }
-      if (value > sMax) {
-        sMax = value;
-      }
-      this.seriesMin.set(name, sMin);
-      this.seriesMax.set(name, sMax);
 
-      this.dataHistory.get(name).push(value);
+      const ss = this.dataHistory.get(name);
+
+      if (value < ss.min) {
+        ss.min = value;
+      }
+      if (value > ss.max) {
+        ss.max = value;
+      }
+
+      ss.data.push(value);
     }
   }
 
@@ -131,12 +122,11 @@ export class Graph<T extends string = string> {
     api.fill("white");
     api.noStroke();
     api.textSize(10);
+
     if (this.seriesNames.length === 1) {
-      const name = this.seriesNames[0];
-      const sMin = this.seriesMin.get(name)!;
-      const sMax = this.seriesMax.get(name)!;
-      api.text(sMax.toFixed(2), x, y + 5 + 2);
-      api.text(`${sMin.toFixed(2)} ${this.title}`, x, y + height);
+      const ss = this.dataHistory.get(this.seriesNames[0]);
+      api.text(ss.max.toFixed(2), x, y + 5 + 2);
+      api.text(`${ss.min.toFixed(2)} ${this.title}`, x, y + height);
     } else {
       // 多条曲线时仅显示标题
       api.text(this.title, x, y + height);
@@ -146,24 +136,22 @@ export class Graph<T extends string = string> {
 
     // 绘制每个数据系列的曲线
     this.seriesNames.forEach((name) => {
-      const history = this.dataHistory.get(name)!;
+      const ss = this.dataHistory.get(name);
       const color = this.seriesColors.get(name)!;
 
       api.stroke(color);
       api.strokeWeight(1);
       api.noFill();
-      const sMin = this.seriesMin.get(name)!;
-      const sMax = this.seriesMax.get(name)!;
       this._drawSmoothLineFixedCapacity(
         api,
-        history,
-        sMin,
-        sMax,
+        ss.data,
+        ss.min,
+        ss.max,
         x,
         y,
         width,
         height,
-        sMax - sMin || 1,
+        ss.min - ss.max || 1,
       );
     });
   }
