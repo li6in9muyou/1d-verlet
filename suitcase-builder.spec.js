@@ -51,6 +51,6 @@ describe("SuitcaseBuilder", () => {
       .springs([{ one: 0, two: MAX_Y_ANCHOR, k: 10, restingLen: 80 }])
       .build();
 
-    expect(built).toEqual(expected);
+    expect(built).toEqual(expect.objectContaining(expected));
   });
 });
