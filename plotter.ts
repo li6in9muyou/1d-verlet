@@ -139,7 +139,11 @@ export class Graph<T extends string = string> {
     this.seriesNames.forEach((name) => {
       const history = this.dataHistory.get(name)!;
       const color = this.seriesColors.get(name)!;
-      this._drawSmoothLine(api, history, x, y, width, height, color, dataRange);
+
+      api.stroke(color);
+      api.strokeWeight(1);
+      api.noFill();
+      this._drawSmoothLine(api, history, x, y, width, height, dataRange);
     });
   }
 
@@ -153,14 +157,9 @@ export class Graph<T extends string = string> {
     y: number,
     width: number,
     height: number,
-    color: string,
     dataRange: number,
   ) {
     if (points.length < 2) return;
-
-    api.stroke(color);
-    api.strokeWeight(1);
-    api.noFill();
 
     const step = width / (points.length - 1);
 
