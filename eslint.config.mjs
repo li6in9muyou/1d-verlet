@@ -18,6 +18,6 @@ export default tseslint.config(
     },
   },
   {
-    ignores: ["./vendor/**"],
+    ignores: ["./public/vendor/**"],
   },
 );

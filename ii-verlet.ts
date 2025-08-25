@@ -324,7 +324,9 @@ function computeLayout(suitcases: Suitcase[]): {
   suitcase: Suitcase;
   transform: (x: number, y: number) => [number, number];
 }[] {
-  if (suitcases.length === 0) return [];
+  if (suitcases.length === 0) {
+    return [];
+  }
 
   const rectangles = suitcases.map((suitcase) => ({
     w: suitcase.WIDTH,

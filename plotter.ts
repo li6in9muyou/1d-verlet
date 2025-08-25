@@ -104,8 +104,12 @@ export class Graph<T extends string = string> {
       // 增量更新该系列极值
       let sMin = this.seriesMin.get(name)!;
       let sMax = this.seriesMax.get(name)!;
-      if (value < sMin) sMin = value;
-      if (value > sMax) sMax = value;
+      if (value < sMin) {
+        sMin = value;
+      }
+      if (value > sMax) {
+        sMax = value;
+      }
       this.seriesMin.set(name, sMin);
       this.seriesMax.set(name, sMax);
 
@@ -131,8 +135,12 @@ export class Graph<T extends string = string> {
     for (let i = 0; i < count; i++) {
       const idx = (start + i) % this.maxDataPoints;
       const v = buffer[idx];
-      if (v < minV) minV = v;
-      if (v > maxV) maxV = v;
+      if (v < minV) {
+        minV = v;
+      }
+      if (v > maxV) {
+        maxV = v;
+      }
     }
     if (minV === Infinity) {
       this.seriesMin.set(name, 0);
@@ -226,7 +234,9 @@ export class Graph<T extends string = string> {
     height: number,
     dataRange: number,
   ) {
-    if (this.maxDataPoints < 2) return;
+    if (this.maxDataPoints < 2) {
+      return;
+    }
 
     // 固定容量横轴：总是渲染 maxDataPoints 个逻辑位置，未满时右对齐，左侧为 NaN
     const step = width / (this.maxDataPoints - 1);
@@ -234,7 +244,9 @@ export class Graph<T extends string = string> {
     const leftPad = this.maxDataPoints - count;
 
     const getLogical = (pos: number): number => {
-      if (pos < leftPad) return NaN;
+      if (pos < leftPad) {
+        return NaN;
+      }
       const k = pos - leftPad; // 0..count-1
       const idx = (start + k) % this.maxDataPoints;
       return buffer[idx];
@@ -243,7 +255,9 @@ export class Graph<T extends string = string> {
     for (let i = 1; i < this.maxDataPoints; i++) {
       const p1 = getLogical(i - 1);
       const p2 = getLogical(i);
-      if (Number.isNaN(p1) || Number.isNaN(p2)) continue;
+      if (Number.isNaN(p1) || Number.isNaN(p2)) {
+        continue;
+      }
 
       const x1 = x + (i - 1) * step;
       const y1 = y + height - ((p1 - sMin) / dataRange) * height;
