@@ -1,10 +1,11 @@
 import { describe, expect, test } from "vitest";
-import { afterApplyingForce } from "./springs";
+import { afterSpringForces } from "./forces";
 import { yv } from "./ii-utils";
 
-describe("springs", () => {
+describe("forces", () => {
   test("equal forces", () => {
-    const after = afterApplyingForce({
+    const after = afterSpringForces({
+      HEIGHT: NaN,
       boxes: [yv(30, 0, 0), yv(20, 0, 0)],
       masses: [10, 10],
       springs: [
@@ -20,7 +21,8 @@ describe("springs", () => {
   });
 
   test("zero length", () => {
-    const after = afterApplyingForce({
+    const after = afterSpringForces({
+      HEIGHT: NaN,
       boxes: [yv(30, 20, 0), yv(30, 10, 0)],
       masses: [10, 10],
       springs: [
@@ -36,7 +38,8 @@ describe("springs", () => {
   });
 
   test("no force at resting len", () => {
-    const after = afterApplyingForce({
+    const after = afterSpringForces({
+      HEIGHT: NaN,
       boxes: [yv(30, 20, 0), yv(35, 10, 0)],
       masses: [10, 10],
       springs: [

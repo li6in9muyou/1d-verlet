@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { MAX_Y_ANCHOR } from "./springs";
+import { MAX_Y_ANCHOR } from "./forces";
 import { SuitcaseBuilder } from "./suitcase-builder";
 import { yv } from "./ii-utils";
 

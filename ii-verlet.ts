@@ -1,9 +1,12 @@
 import { DynamicsStuff, Painter, RenderStuff, Spring, Suitcase } from "./types";
 import {
-  afterApplyingForce,
+  afterAirDrag,
+  afterGravity,
+  afterResettingAcc,
+  afterSpringForces,
   getAnchorName,
   getSpringEndpointY,
-} from "./springs";
+} from "./forces";
 import { afterDrawing, afterHandlingEvents } from "./simctrl";
 import { getV, yv } from "./ii-utils";
 import allSuitcases from "./interesting-suitcases";
@@ -428,7 +431,10 @@ function afterSimulate(SCASE: Suitcase) {
     SCASE = afterMoving(SCASE);
     SCASE = afterHittingWall(SCASE);
     SCASE = afterCrashing(SCASE);
-    SCASE = afterApplyingForce(SCASE);
+    SCASE = afterResettingAcc(SCASE);
+    SCASE = afterAirDrag(SCASE);
+    SCASE = afterGravity(SCASE);
+    SCASE = afterSpringForces(SCASE);
   }
   return SCASE;
 }

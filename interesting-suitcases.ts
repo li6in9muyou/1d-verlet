@@ -1,4 +1,4 @@
-import { MAX_Y_ANCHOR, MIN_Y_ANCHOR } from "./springs";
+import { MAX_Y_ANCHOR, MIN_Y_ANCHOR } from "./forces";
 import { DynamicItem } from "./types";
 import { SuitcaseBuilder } from "./suitcase-builder";
 import { yv } from "./ii-utils";

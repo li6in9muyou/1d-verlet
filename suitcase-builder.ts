@@ -5,7 +5,7 @@ import {
   Suitcase,
   SuitcaseWithoutCtrl,
 } from "./types";
-import { MAX_Y_ANCHOR, MIN_Y_ANCHOR } from "./springs";
+import { MAX_Y_ANCHOR, MIN_Y_ANCHOR } from "./forces";
 import { getV, yv } from "./ii-utils";
 import { Graph } from "./plotter";
 import { cloneDeep } from "lodash";
